@@ -1,28 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import webpush from "web-push";
 
-webpush.setVapidDetails(
-  process.env.VAPID_CONTACT ?? "mailto:info@vimperk.app",
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
-
 // In production store subscriptions in Supabase/DB.
-// For now we log them — this endpoint is a foundation for future scaling.
 const subscriptions: webpush.PushSubscription[] = [];
+
+function initVapid() {
+  webpush.setVapidDetails(
+    process.env.VAPID_CONTACT ?? "mailto:info@vimperk.app",
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+    process.env.VAPID_PRIVATE_KEY!
+  );
+}
 
 export async function POST(req: NextRequest) {
   try {
+    initVapid();
     const subscription: webpush.PushSubscription = await req.json();
     if (!subscription?.endpoint) {
       return NextResponse.json({ error: "Invalid subscription" }, { status: 400 });
     }
 
-    // Deduplicate by endpoint
     const exists = subscriptions.some((s) => s.endpoint === subscription.endpoint);
     if (!exists) subscriptions.push(subscription);
 
-    // Send welcome notification
     await webpush.sendNotification(
       subscription,
       JSON.stringify({
