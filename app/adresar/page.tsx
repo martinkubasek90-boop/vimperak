@@ -13,8 +13,10 @@ const filters: { value: Cat; label: string }[] = [
   { value: "lékárna",    label: "Lékárny" },
   { value: "restaurace", label: "Restaurace" },
   { value: "lékař",      label: "Lékaři" },
+  { value: "sport",      label: "Sport & Fitness" },
   { value: "opravna",    label: "Opravny" },
-  { value: "sport",      label: "Sport" },
+  { value: "ubytování",  label: "Ubytování" },
+  { value: "obchod",     label: "Obchody" },
 ];
 
 const catIcon: Record<string, string> = {
@@ -23,7 +25,7 @@ const catIcon: Record<string, string> = {
   restaurace: "restaurant",
   lékař:      "health_and_safety",
   opravna:    "build",
-  sport:      "sports_tennis",
+  sport:      "fitness_center",
   ubytování:  "hotel",
   obchod:     "storefront",
 };

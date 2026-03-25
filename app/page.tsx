@@ -1,6 +1,8 @@
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
 import Link from "next/link";
+import Image from "next/image";
+import { events } from "@/lib/data";
 
 const quickActions = [
   { icon: "local_taxi",       label: "Taxi",        href: "/adresar?k=taxi",       bg: "#baecbb", color: "#002109" },
@@ -11,11 +13,13 @@ const quickActions = [
   { icon: "campaign",         label: "Závady",      href: "/zhlasit",              bg: "#ffdad6", color: "#93000a" },
 ];
 
-const busPreview = [
-  { number: "190", to: "České Budějovice", next: "07:45", via: "přes Prachatice" },
-  { number: "191", to: "Prachatice",       next: "08:00", via: "" },
-  { number: "195", to: "Kašperské Hory",  next: "09:45", via: "Šumava Express" },
-];
+const eventCatColor: Record<string, { bg: string; text: string }> = {
+  kino:    { bg: "var(--primary-fixed)",       text: "var(--on-primary-fixed)" },
+  kultura: { bg: "var(--secondary-container)", text: "var(--on-secondary-container)" },
+  sport:   { bg: "var(--tertiary-fixed)",      text: "var(--on-tertiary-fixed)" },
+  trhy:    { bg: "var(--secondary-container)", text: "var(--on-secondary-container)" },
+  úřad:    { bg: "var(--surface-container)",   text: "var(--on-surface-variant)" },
+};
 
 const pollOptions = [
   { label: "Moderní prolézačky", pct: 38 },
@@ -24,6 +28,10 @@ const pollOptions = [
 ];
 
 export default function HomePage() {
+  const upcoming = [...events]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 4);
+
   return (
     <>
       <TopBar />
@@ -34,14 +42,12 @@ export default function HomePage() {
           className="relative px-5 pt-8 pb-10 overflow-hidden"
           style={{ background: "linear-gradient(145deg, #b2001c 0%, #da1e2d 55%, #e8402e 100%)" }}
         >
-          {/* decorative circles */}
           <div className="absolute top-0 right-0 w-56 h-56 rounded-full opacity-10 -mt-16 -mr-16"
                style={{ background: "radial-gradient(circle, #fff 0%, transparent 70%)" }} />
           <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full opacity-10 -mb-10 -ml-10"
                style={{ background: "radial-gradient(circle, #fff 0%, transparent 70%)" }} />
-
           <div className="relative z-10">
-            <p className="text-white/70 text-sm font-medium mb-1 font-label">Středa, 25. března 2026</p>
+            <p className="text-white/70 text-sm font-medium mb-1 font-label">Čtvrtek, 26. března 2026</p>
             <h1 className="font-headline font-extrabold text-4xl text-white leading-none tracking-tight mb-1">
               Dobré ráno,
             </h1>
@@ -49,8 +55,6 @@ export default function HomePage() {
                 style={{ color: "rgba(255,218,215,0.9)" }}>
               Vimperku! ☀️
             </h2>
-
-            {/* Weather strip */}
             <div className="flex items-center gap-4 bg-white/15 backdrop-blur rounded-2xl px-4 py-3">
               <div className="flex items-center gap-2 text-white">
                 <span className="material-symbols-outlined text-2xl">wb_sunny</span>
@@ -69,16 +73,15 @@ export default function HomePage() {
         </section>
 
         {/* ── Quick access ──────────────────────────────── */}
-        <section className="px-4 -mt-1 pt-6">
-          <h2 className="font-headline font-bold text-lg text-on-surface mb-4">Rychlý přístup</h2>
+        <section className="px-4 pt-6">
+          <h2 className="font-headline font-bold text-lg mb-4" style={{ color: "var(--on-surface)" }}>
+            Rychlý přístup
+          </h2>
           <div className="grid grid-cols-3 gap-3">
             {quickActions.map(({ icon, label, href, bg, color }) => (
-              <Link
-                key={label}
-                href={href}
+              <Link key={label} href={href}
                 className="flex flex-col items-center gap-2.5 p-4 rounded-3xl transition-all active:scale-95 hover:brightness-95"
-                style={{ backgroundColor: bg }}
-              >
+                style={{ backgroundColor: bg }}>
                 <span className="material-symbols-outlined text-2xl" style={{ color }}>{icon}</span>
                 <span className="text-xs font-semibold text-center leading-tight" style={{ color }}>{label}</span>
               </Link>
@@ -86,114 +89,155 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── Bus departures ────────────────────────────── */}
+        {/* ── Kulturní program (místo odjezdů) ──────────── */}
         <section className="px-4 pt-8">
-          <div className="bg-surface-container-lowest rounded-[2rem] overflow-hidden shadow-sm"
-               style={{ boxShadow: "0 2px 16px rgba(24,28,32,0.06)" }}>
-            <div className="flex items-center justify-between px-5 pt-5 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-tertiary-fixed flex items-center justify-center">
-                  <span className="material-symbols-outlined text-on-tertiary-fixed text-lg">directions_bus</span>
-                </div>
-                <h2 className="font-headline font-bold text-base text-on-surface">Odjezdy z Vimperka</h2>
-              </div>
-              <Link href="/jizdy" className="text-primary text-sm font-bold">Vše →</Link>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="font-headline font-bold text-lg" style={{ color: "var(--on-surface)" }}>
+                Kulturní program
+              </h2>
+              <p className="text-xs mt-0.5" style={{ color: "var(--on-surface-variant)" }}>
+                Co se děje v Vimperku
+              </p>
             </div>
-            <div className="px-4 pb-4 space-y-2">
-              {busPreview.map((b) => (
-                <div key={b.number}
-                     className="flex items-center gap-3 bg-surface-container-low rounded-2xl px-4 py-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-headline font-black text-sm text-on-tertiary shrink-0"
-                       style={{ background: "var(--tertiary)" }}>
-                    {b.number}
+            <Link href="/zpravodaj" className="text-sm font-bold" style={{ color: "var(--primary)" }}>
+              Vše →
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {upcoming.map((event) => {
+              const cs = eventCatColor[event.category] ?? { bg: "var(--surface-container)", text: "var(--on-surface-variant)" };
+              return (
+                <div key={event.id}
+                     className="rounded-3xl p-4 flex gap-4 items-center"
+                     style={{ background: "var(--surface-container-lowest)", boxShadow: "0 1px 8px rgba(24,28,32,0.06)" }}>
+                  <div className="w-14 h-16 rounded-2xl flex flex-col items-center justify-center shrink-0"
+                       style={{ background: cs.bg }}>
+                    <span className="font-headline font-black text-xl leading-none" style={{ color: cs.text }}>
+                      {new Date(event.date).getDate()}
+                    </span>
+                    <span className="text-xs uppercase font-semibold" style={{ color: cs.text, opacity: 0.7 }}>
+                      {new Date(event.date).toLocaleDateString("cs-CZ", { month: "short" })}
+                    </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-on-surface">→ {b.to}</p>
-                    {b.via && <p className="text-xs text-on-surface-variant">{b.via}</p>}
+                    <span className="text-[10px] font-bold tracking-widest uppercase block mb-0.5"
+                          style={{ color: "var(--secondary)" }}>
+                      {event.place} · {event.time}
+                    </span>
+                    <h4 className="font-headline font-bold text-base leading-tight truncate"
+                        style={{ color: "var(--on-surface)" }}>
+                      {event.title}
+                    </h4>
+                    <span className="mt-1.5 inline-block text-xs font-semibold px-2.5 py-1 rounded-full"
+                          style={event.free
+                            ? { background: "var(--secondary-container)", color: "var(--on-secondary-container)" }
+                            : { background: "var(--surface-container)", color: "var(--on-surface-variant)" }}>
+                      {event.free ? "Vstup zdarma" : event.price}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1 font-bold text-sm text-tertiary">
-                    <span className="material-symbols-outlined text-base">schedule</span>
-                    {b.next}
-                  </div>
+                  <button className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                          style={{ background: "var(--surface-container-low)", color: "var(--on-surface-variant)" }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>calendar_add_on</span>
+                  </button>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </section>
 
-        {/* ── Featured news ─────────────────────────────── */}
+        {/* ── Featured news s obrázkem ───────────────────── */}
         <section className="px-4 pt-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-headline font-bold text-lg text-on-surface">Zprávy z radnice</h2>
-            <Link href="/zpravodaj" className="text-primary text-sm font-bold">Vše →</Link>
+            <h2 className="font-headline font-bold text-lg" style={{ color: "var(--on-surface)" }}>
+              Zprávy z radnice
+            </h2>
+            <Link href="/zpravodaj" className="text-sm font-bold" style={{ color: "var(--primary)" }}>
+              Vše →
+            </Link>
           </div>
 
-          {/* Main card with gradient overlay */}
+          {/* Main card s reálným obrázkem */}
           <div className="relative rounded-[2rem] overflow-hidden"
                style={{ boxShadow: "0 4px 24px rgba(24,28,32,0.10)" }}>
-            <div className="h-52 w-full"
-                 style={{ background: "linear-gradient(135deg, #3c6842 0%, #095999 100%)" }}>
-              <div className="absolute inset-0 flex items-end p-6"
-                   style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)" }}>
-                <div>
-                  <span className="text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full mb-2 inline-block"
-                        style={{ background: "var(--primary)", color: "var(--on-primary)" }}>
-                    Místní zpravodaj
-                  </span>
-                  <h3 className="font-headline font-bold text-xl text-white leading-tight mt-2">
-                    Nová hřiště v parku Blanice — hlasujte!
-                  </h3>
-                </div>
+            {/* Image container — position relative aby se overlay scoped */}
+            <div className="relative h-52 w-full overflow-hidden">
+              <Image
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Vimperk_zamek.jpg/800px-Vimperk_zamek.jpg"
+                alt="Zámek Vimperk"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+              <div className="absolute inset-0"
+                   style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)" }} />
+              <div className="absolute top-4 left-4">
+                <span className="text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full"
+                      style={{ background: "var(--primary)", color: "var(--on-primary)" }}>
+                  Místní zpravodaj
+                </span>
+              </div>
+              <div className="absolute bottom-4 left-5 right-5">
+                <h3 className="font-headline font-bold text-xl text-white leading-tight">
+                  Nová hřiště v parku Blanice — hlasujte!
+                </h3>
               </div>
             </div>
-            <div className="bg-surface-container-lowest px-5 py-4">
-              <p className="text-sm text-on-surface-variant leading-relaxed line-clamp-2">
+            <div className="px-5 py-4" style={{ background: "var(--surface-container-lowest)" }}>
+              <p className="text-sm leading-relaxed line-clamp-2" style={{ color: "var(--on-surface-variant)" }}>
                 Radnice spustila hlasování o podobě nových dětských hřišť v parku Blanice.
                 Hlasování trvá do 10. dubna.
               </p>
-              <button className="mt-3 text-primary font-bold text-sm flex items-center gap-1 group">
+              <button className="mt-3 font-bold text-sm flex items-center gap-1 group"
+                      style={{ color: "var(--primary)" }}>
                 Číst více
-                <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">
+                  arrow_forward
+                </span>
               </button>
             </div>
           </div>
 
           {/* 2 secondary cards */}
           <div className="grid grid-cols-2 gap-3 mt-3">
-            <div className="bg-surface-container-low rounded-[1.5rem] p-4">
-              <span className="text-[10px] font-bold tracking-widest uppercase text-secondary">Ekologie</span>
-              <p className="font-headline font-bold text-sm leading-snug mt-2 text-on-surface">
+            <div className="rounded-[1.5rem] p-4" style={{ background: "var(--surface-container-low)" }}>
+              <span className="text-[10px] font-bold tracking-widest uppercase"
+                    style={{ color: "var(--secondary)" }}>Ekologie</span>
+              <p className="font-headline font-bold text-sm leading-snug mt-2" style={{ color: "var(--on-surface)" }}>
                 Nové kontejnery na bioodpad v ul. 1. máje
               </p>
-              <p className="text-xs text-on-surface-variant mt-1">Včera</p>
+              <p className="text-xs mt-1" style={{ color: "var(--on-surface-variant)" }}>Včera</p>
             </div>
-            <div className="bg-surface-container-low rounded-[1.5rem] p-4">
-              <span className="text-[10px] font-bold tracking-widest uppercase text-tertiary">Doprava</span>
-              <p className="font-headline font-bold text-sm leading-snug mt-2 text-on-surface">
+            <div className="rounded-[1.5rem] p-4" style={{ background: "var(--surface-container-low)" }}>
+              <span className="text-[10px] font-bold tracking-widest uppercase"
+                    style={{ color: "var(--tertiary)" }}>Doprava</span>
+              <p className="font-headline font-bold text-sm leading-snug mt-2" style={{ color: "var(--on-surface)" }}>
                 Uzavírka mostu přes Volyňku
               </p>
-              <p className="text-xs text-on-surface-variant mt-1">Před 3 dny</p>
+              <p className="text-xs mt-1" style={{ color: "var(--on-surface-variant)" }}>Před 3 dny</p>
             </div>
           </div>
         </section>
 
         {/* ── Active poll ───────────────────────────────── */}
         <section className="px-4 pt-8">
-          <div className="bg-surface-container-lowest rounded-[2rem] p-5"
-               style={{ boxShadow: "0 2px 16px rgba(24,28,32,0.06)" }}>
+          <div className="rounded-[2rem] p-5"
+               style={{ background: "var(--surface-container-lowest)", boxShadow: "0 2px 16px rgba(24,28,32,0.06)" }}>
             <div className="flex items-center gap-2 mb-1">
-              <span className="material-symbols-outlined text-secondary">how_to_vote</span>
-              <span className="text-[10px] font-black tracking-widest uppercase text-secondary">Hlasování</span>
+              <span className="material-symbols-outlined" style={{ color: "var(--secondary)" }}>how_to_vote</span>
+              <span className="text-[10px] font-black tracking-widest uppercase" style={{ color: "var(--secondary)" }}>
+                Hlasování
+              </span>
             </div>
-            <p className="font-headline font-bold text-base text-on-surface mb-4 leading-snug">
+            <p className="font-headline font-bold text-base leading-snug mb-4" style={{ color: "var(--on-surface)" }}>
               Jakou podobu hřiště v parku Blanice preferujete?
             </p>
             <div className="space-y-3 mb-4">
               {pollOptions.map((opt) => (
                 <div key={opt.label}>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-on-surface-variant">{opt.label}</span>
-                    <span className="font-bold text-on-surface">{opt.pct}%</span>
+                    <span style={{ color: "var(--on-surface-variant)" }}>{opt.label}</span>
+                    <span className="font-bold" style={{ color: "var(--on-surface)" }}>{opt.pct}%</span>
                   </div>
                   <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--surface-container-high)" }}>
                     <div className="h-full rounded-full transition-all duration-700"
@@ -222,23 +266,27 @@ export default function HomePage() {
             <div className="relative z-10">
               <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-4"
                    style={{ background: "var(--secondary-container)" }}>
-                <span className="material-symbols-outlined text-on-secondary-container"
-                      style={{ fontVariationSettings: "'FILL' 1" }}>mail</span>
+                <span className="material-symbols-outlined"
+                      style={{ color: "var(--on-secondary-container)", fontVariationSettings: "'FILL' 1" }}>
+                  mark_email_unread
+                </span>
               </div>
-              <h3 className="font-headline font-extrabold text-2xl text-white mb-1">Vimperk do kapsy</h3>
-              <p className="text-sm mb-5 max-w-[200px]" style={{ color: "rgba(189,239,190,0.8)" }}>
-                Nejdůležitější upozornění každé ráno.
+              <h3 className="font-headline font-extrabold text-2xl text-white mb-1">
+                Newsletter Vimperk
+              </h3>
+              <p className="text-sm mb-5" style={{ color: "rgba(189,239,190,0.85)", maxWidth: "220px" }}>
+                Nejdůležitější zprávy z města jednou týdně přímo do vašeho mailu.
               </p>
               <div className="flex gap-2">
                 <input
-                  className="flex-1 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:ring-2"
-                  style={{ background: "rgba(255,255,255,0.15)", border: "none", "--tw-ring-color": "var(--secondary-fixed)" } as React.CSSProperties}
+                  className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none"
+                  style={{ background: "rgba(255,255,255,0.15)", border: "none", color: "#fff" }}
                   placeholder="Váš e-mail"
                   type="email"
                 />
                 <button className="px-4 py-2.5 rounded-xl font-bold text-sm active:scale-95 transition-transform whitespace-nowrap"
                         style={{ background: "#fff", color: "var(--secondary)" }}>
-                  Odebírat
+                  Přihlásit
                 </button>
               </div>
             </div>

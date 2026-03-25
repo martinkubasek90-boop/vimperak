@@ -5,6 +5,16 @@ import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
 import { news, events } from "@/lib/data";
 import Link from "next/link";
+import Image from "next/image";
+
+// Obrázky pro různé kategorie zpráv
+const newsImages: Record<string, string> = {
+  upozornění: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Vimperk_zamek.jpg/800px-Vimperk_zamek.jpg",
+  radnice:    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Vimperk_zamek.jpg/800px-Vimperk_zamek.jpg",
+  sport:      "https://images.unsplash.com/photo-1515703407324-5f753afd8be8?w=800&q=75",
+  kultura:    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=75",
+  komunita:   "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=75",
+};
 
 const catColor: Record<string, string> = {
   upozornění: "var(--error)",
@@ -73,14 +83,19 @@ export default function ZpravodajPage() {
             {/* Featured */}
             <div className="rounded-[2rem] overflow-hidden"
                  style={{ boxShadow: "0 4px 20px rgba(24,28,32,0.08)" }}>
-              {/* Gradient image placeholder */}
-              <div className="relative h-56"
-                   style={{ background: "linear-gradient(135deg, #095999 0%, #3372b4 100%)" }}>
+              <div className="relative h-56 overflow-hidden">
+                <Image
+                  src={newsImages[featured.category] ?? newsImages.radnice}
+                  alt={featured.title}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
                 <div className="absolute inset-0"
-                     style={{ background: "linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)" }} />
+                     style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)" }} />
                 {featured.urgent && (
-                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase text-on-primary"
-                       style={{ background: "var(--primary)" }}>
+                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase"
+                       style={{ background: "var(--primary)", color: "var(--on-primary)" }}>
                     Důležité upozornění
                   </div>
                 )}
@@ -200,9 +215,9 @@ export default function ZpravodajPage() {
                 <span className="material-symbols-outlined text-on-secondary-container"
                       style={{ fontVariationSettings: "'FILL' 1" }}>mail</span>
               </div>
-              <h3 className="font-headline font-extrabold text-2xl text-white mb-1">Vimperk do kapsy</h3>
-              <p className="text-sm mb-5" style={{ color: "rgba(189,239,190,0.85)", maxWidth: "200px" }}>
-                Dostávejte upozornění přímo na telefon.
+              <h3 className="font-headline font-extrabold text-2xl text-white mb-1">Newsletter Vimperk</h3>
+              <p className="text-sm mb-5" style={{ color: "rgba(189,239,190,0.85)", maxWidth: "220px" }}>
+                Nejdůležitější zprávy z města jednou týdně přímo do vašeho mailu.
               </p>
               <div className="flex gap-2">
                 <input className="flex-1 rounded-xl px-4 py-2.5 text-white text-sm outline-none"
@@ -210,7 +225,7 @@ export default function ZpravodajPage() {
                        placeholder="Váš e-mail" type="email" />
                 <button className="px-4 py-2.5 rounded-xl font-bold text-sm active:scale-95"
                         style={{ background: "#fff", color: "var(--secondary)" }}>
-                  Odebírat
+                  Přihlásit
                 </button>
               </div>
             </div>
