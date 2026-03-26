@@ -124,12 +124,15 @@ export const busLines: BusLine[] = [
 export type DirectoryItem = {
   id: number;
   name: string;
-  category: "taxi" | "restaurace" | "lékař" | "lékárna" | "opravna" | "sport" | "ubytování" | "obchod";
+  category: "taxi" | "restaurace" | "lékař" | "lékárna" | "opravna" | "sport" | "ubytování" | "obchod" | "město";
   phone: string;
   address: string;
   hours?: string;
   rating?: number;
   note?: string;
+  email?: string;
+  website?: string;
+  sourceUrl?: string;
 };
 
 export const directory: DirectoryItem[] = [
@@ -344,6 +347,73 @@ export const directory: DirectoryItem[] = [
     hours: "Duben–Říjen 8:00–20:00",
     rating: 4.3,
     note: "4 antukové kurty, půjčovna raket",
+  },
+  // Město a veřejné služby — doplněno podle vimperk.cz
+  {
+    id: 22,
+    name: "Městský úřad Vimperk",
+    category: "město",
+    phone: "388 402 231",
+    address: "Steinbrenerova 6/2, 385 17 Vimperk",
+    hours: "Po 7:30–11:30, 12:30–17:00 · St 7:30–11:30, 12:30–17:00 · Pá 7:30–11:30",
+    note: "Úřední hodiny hlavních odborů",
+    email: "urad@mesto.vimperk.cz",
+    website: "https://www.vimperk.cz",
+    sourceUrl: "https://www.vimperk.cz/mestsky-urad-vimperk-kontakty/os-10",
+  },
+  {
+    id: 23,
+    name: "Informační centrum Vimperk",
+    category: "město",
+    phone: "388 402 230",
+    address: "Náměstí Svobody 42, 385 01 Vimperk",
+    hours: "Kontaktní a otevírací doba dle infocentra",
+    note: "Turistické informace a služby pro návštěvníky",
+    email: "infocentrum@mesto.vimperk.cz",
+    website: "https://www.vimperk.cz/ic/",
+    sourceUrl: "https://www.vimperk.cz/turisticky-portal-vimperk/os-901",
+  },
+  {
+    id: 24,
+    name: "Městská policie Vimperk",
+    category: "město",
+    phone: "388 414 365",
+    address: "Vimperk",
+    note: "Hlídka ve službě: 778 410 790",
+    sourceUrl: "https://www.vimperk.cz/mestske-organizace/os-1048",
+  },
+  {
+    id: 25,
+    name: "Městská knihovna Vimperk",
+    category: "město",
+    phone: "778 748 996",
+    address: "1. máje 194, 385 01 Vimperk",
+    hours: "Po–Čt 9:00–11:30, 12:30–17:00",
+    note: "Oddělení pro dospělé · děti: 778 747 437",
+    email: "knihovna@mesto.vimperk.cz",
+    website: "https://www.knihovna.vimperk.cz",
+    sourceUrl: "https://www.vimperk.cz/mestska-knihovna-vimperk/os-1054",
+  },
+  {
+    id: 26,
+    name: "Městské služby Vimperk, s.r.o.",
+    category: "město",
+    phone: "725 593 583",
+    address: "Vimperk",
+    note: "Jednatel: Mgr. Bc. Radek Rubeš",
+    email: "msl.vimperk@volny.cz",
+    sourceUrl: "https://www.vimperk.cz/mestske-organizace/os-1048",
+  },
+  {
+    id: 27,
+    name: "Městské kulturní středisko Vimperk",
+    category: "město",
+    phone: "775 955 043",
+    address: "Johnova 226, 385 01 Vimperk",
+    note: "Ředitel: Tomáš Jiřička · hlavní kontakt kulturních akcí",
+    email: "info@kulturavimperk.cz",
+    website: "https://www.kulturavimperk.cz",
+    sourceUrl: "https://www.vimperk.cz/mestske-kulturni-stredisko-vimperk/os-1053",
   },
 ];
 

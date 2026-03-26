@@ -9,6 +9,7 @@ type Cat = DirectoryItem["category"] | "vše";
 
 const filters: { value: Cat; label: string }[] = [
   { value: "vše",        label: "Vše" },
+  { value: "město",      label: "Město" },
   { value: "taxi",       label: "Taxi" },
   { value: "lékárna",    label: "Lékárny" },
   { value: "restaurace", label: "Restaurace" },
@@ -20,6 +21,7 @@ const filters: { value: Cat; label: string }[] = [
 ];
 
 const catIcon: Record<string, string> = {
+  město:      "apartment",
   taxi:       "local_taxi",
   lékárna:    "medical_services",
   restaurace: "restaurant",
@@ -31,6 +33,7 @@ const catIcon: Record<string, string> = {
 };
 
 const catStyle: Record<string, { bg: string; color: string }> = {
+  město:      { bg: "var(--primary-fixed)",         color: "var(--on-primary-fixed)" },
   taxi:       { bg: "var(--secondary-container)",  color: "var(--on-secondary-container)" },
   lékárna:    { bg: "var(--tertiary-fixed)",        color: "var(--on-tertiary-fixed)" },
   restaurace: { bg: "var(--surface-container)",     color: "var(--on-surface-variant)" },
@@ -41,7 +44,7 @@ const catStyle: Record<string, { bg: string; color: string }> = {
   obchod:     { bg: "var(--surface-container-high)",color: "var(--on-surface)" },
 };
 
-const openIds = [1, 2, 4, 5, 6, 7, 9, 10];
+const openIds = [1, 2, 4, 5, 6, 7, 9, 10, 22, 23, 25];
 
 export default function AdresarPage() {
   const [search, setSearch] = useState("");
@@ -153,6 +156,14 @@ export default function AdresarPage() {
                     )}
                   </div>
                 )}
+                {!featured.rating && featured.note && (
+                  <div className="mt-2 text-sm text-white/85">{featured.note}</div>
+                )}
+                <div className="mt-4 space-y-1.5 text-sm text-white/90">
+                  <div>{featured.phone}</div>
+                  <div>{featured.address}</div>
+                  {featured.email && <div>{featured.email}</div>}
+                </div>
                 <div className="flex gap-3 mt-5">
                   <a href={`tel:${featured.phone.replace(/\s/g,"")}`}
                      className="flex-1 py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
@@ -209,6 +220,22 @@ export default function AdresarPage() {
                       <span className="text-xs text-on-surface-variant">· {item.hours}</span>
                     )}
                   </div>
+                  <div className="mt-2 text-sm text-on-surface-variant">
+                    {item.phone}
+                  </div>
+                  <div className="mt-0.5 text-sm text-on-surface-variant">
+                    {item.address}
+                  </div>
+                  {item.email && (
+                    <div className="mt-0.5 text-xs text-on-surface-variant break-all">
+                      {item.email}
+                    </div>
+                  )}
+                  {item.note && (
+                    <div className="mt-1 text-xs text-on-surface-variant">
+                      {item.note}
+                    </div>
+                  )}
                 </div>
 
                 {/* Call */}
