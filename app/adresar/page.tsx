@@ -171,10 +171,22 @@ export default function AdresarPage() {
                     <span className="material-symbols-outlined text-sm">call</span>
                     Zavolat hned
                   </a>
-                  <button className="w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95"
-                          style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}>
-                    <span className="material-symbols-outlined">map</span>
-                  </button>
+                  {featured.website ? (
+                    <a
+                      href={featured.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95"
+                      style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}
+                    >
+                      <span className="material-symbols-outlined">language</span>
+                    </a>
+                  ) : (
+                    <button className="w-12 h-12 rounded-2xl flex items-center justify-center active:scale-95"
+                            style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}>
+                      <span className="material-symbols-outlined">map</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -234,6 +246,20 @@ export default function AdresarPage() {
                   {item.note && (
                     <div className="mt-1 text-xs text-on-surface-variant">
                       {item.note}
+                    </div>
+                  )}
+                  {(item.website || item.sourceUrl) && (
+                    <div className="mt-2 flex gap-3 text-xs">
+                      {item.website && (
+                        <a href={item.website} target="_blank" rel="noreferrer" className="text-primary font-semibold">
+                          Web
+                        </a>
+                      )}
+                      {item.sourceUrl && (
+                        <a href={item.sourceUrl} target="_blank" rel="noreferrer" className="text-on-surface-variant">
+                          Zdroj
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>
