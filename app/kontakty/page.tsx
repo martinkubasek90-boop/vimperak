@@ -98,12 +98,6 @@ export default function KontaktyPage() {
           <div className="editorial-shell rounded-[2rem] p-5 md:p-6">
             <div className="relative z-10 grid gap-5">
               <div>
-                <span
-                  className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase mb-3"
-                  style={{ background: "rgba(53, 110, 92, 0.14)", color: "var(--secondary)" }}
-                >
-                  Potřebuji někoho najít
-                </span>
                 <h1 className="font-headline font-extrabold text-3xl tracking-tight md:text-[2.6rem]" style={{ color: "var(--primary)" }}>
                   Kontakty
                 </h1>
@@ -352,16 +346,13 @@ export default function KontaktyPage() {
             className="editorial-shell rounded-[2rem] p-5 block"
             style={{ boxShadow: "0 14px 30px rgba(67,17,24,0.08)" }}
           >
-            <span
-              className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase"
-              style={{ background: "rgba(53, 110, 92, 0.14)", color: "var(--secondary)" }}
-            >
-              Přímý kontakt
-            </span>
-            <h2 className="mt-4 font-headline text-3xl font-extrabold" style={{ color: "var(--primary)" }}>
-              Napsat městu
-            </h2>
-            <p className="mt-2 max-w-lg text-sm leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-headline text-3xl font-extrabold" style={{ color: "var(--primary)" }}>
+                Napsat městu
+              </h2>
+              <span className="material-symbols-outlined text-2xl" style={{ color: "var(--primary)" }}>arrow_forward</span>
+            </div>
+            <p className="mt-3 max-w-lg text-sm leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
               Nenašli jste správný kontakt nebo potřebujete něco poslat přímo městu? Použijte jednoduchý formulář.
             </p>
           </Link>
