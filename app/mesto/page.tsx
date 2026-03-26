@@ -70,7 +70,7 @@ export default function MestoPage() {
             />
 
             <div className="relative z-10 flex min-h-[17rem] flex-col justify-end p-5 md:min-h-[18rem] md:p-6">
-              <div>
+              <div className="mt-auto">
                 <span
                   className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase mb-3"
                   style={{ background: "rgba(215,232,223,0.16)", color: "#d7e8df", border: "1px solid rgba(215,232,223,0.18)" }}
@@ -85,18 +85,18 @@ export default function MestoPage() {
                 </p>
               </div>
 
-              <div className="mt-5 grid grid-cols-3 gap-3">
-                <div className="rounded-[1.35rem] p-4 backdrop-blur-sm" style={{ background: "rgba(255,250,246,0.82)" }}>
-                  <p className="text-xs font-semibold" style={{ color: "var(--on-surface-variant)" }}>Aktivní ankety</p>
-                  <p className="mt-2 font-headline text-2xl font-black" style={{ color: "var(--primary)" }}>{polls.length}</p>
+              <div className="mt-3 grid grid-cols-3 gap-2.5">
+                <div className="rounded-[1.15rem] px-4 py-3 backdrop-blur-sm" style={{ background: "rgba(255,250,246,0.82)" }}>
+                  <p className="text-[11px] font-semibold" style={{ color: "var(--on-surface-variant)" }}>Aktivní ankety</p>
+                  <p className="mt-1.5 font-headline text-[1.7rem] font-black leading-none" style={{ color: "var(--primary)" }}>{polls.length}</p>
                 </div>
-                <div className="rounded-[1.35rem] p-4 backdrop-blur-sm" style={{ background: "rgba(215,232,223,0.92)" }}>
-                  <p className="text-xs font-semibold" style={{ color: "var(--on-secondary-container)" }}>Top kontakty</p>
-                  <p className="mt-2 font-headline text-2xl font-black" style={{ color: "var(--secondary)" }}>{cityContacts.length}</p>
+                <div className="rounded-[1.15rem] px-4 py-3 backdrop-blur-sm" style={{ background: "rgba(215,232,223,0.92)" }}>
+                  <p className="text-[11px] font-semibold" style={{ color: "var(--on-secondary-container)" }}>Top kontakty</p>
+                  <p className="mt-1.5 font-headline text-[1.7rem] font-black leading-none" style={{ color: "var(--secondary)" }}>{cityContacts.length}</p>
                 </div>
-                <div className="rounded-[1.35rem] p-4 backdrop-blur-sm" style={{ background: "rgba(239,220,207,0.90)" }}>
-                  <p className="text-xs font-semibold" style={{ color: "var(--on-surface-variant)" }}>Novinky</p>
-                  <p className="mt-2 font-headline text-2xl font-black" style={{ color: "var(--primary)" }}>{latestNews.length}</p>
+                <div className="rounded-[1.15rem] px-4 py-3 backdrop-blur-sm" style={{ background: "rgba(239,220,207,0.90)" }}>
+                  <p className="text-[11px] font-semibold" style={{ color: "var(--on-surface-variant)" }}>Novinky</p>
+                  <p className="mt-1.5 font-headline text-[1.7rem] font-black leading-none" style={{ color: "var(--primary)" }}>{latestNews.length}</p>
                 </div>
               </div>
             </div>
@@ -203,20 +203,20 @@ export default function MestoPage() {
                 key={poll.id}
                 href="/hlasovani"
                 className="rounded-[1.8rem] p-5 block"
-                style={{ background: "var(--secondary-container)", boxShadow: "0 14px 28px rgba(53,110,92,0.12)", border: "1px solid rgba(53,110,92,0.12)" }}
+                style={{ background: "var(--primary-fixed)", boxShadow: "0 14px 28px rgba(143,32,48,0.10)", border: "1px solid rgba(159,29,47,0.10)" }}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <span className="rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em]" style={{ background: "rgba(255,255,255,0.76)", color: "var(--secondary)" }}>
+                  <span className="rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em]" style={{ background: "rgba(255,255,255,0.72)", color: "var(--primary)" }}>
                     Anketa
                   </span>
-                  <span className="text-xs font-semibold" style={{ color: "var(--on-secondary-container)" }}>
+                  <span className="text-xs font-semibold" style={{ color: "var(--on-primary-fixed)" }}>
                     {poll.totalVotes.toLocaleString("cs-CZ")} hlasů
                   </span>
                 </div>
-                <h3 className="mt-3 font-headline text-base font-extrabold leading-snug" style={{ color: "var(--on-secondary-container)" }}>
+                <h3 className="mt-3 font-headline text-base font-extrabold leading-snug" style={{ color: "var(--on-primary-fixed)" }}>
                   {poll.question}
                 </h3>
-                <p className="mt-3 text-sm font-semibold" style={{ color: "var(--secondary)" }}>
+                <p className="mt-3 text-sm font-semibold" style={{ color: "var(--primary)" }}>
                   Otevřít anketu →
                 </p>
               </Link>
