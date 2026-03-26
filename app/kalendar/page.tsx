@@ -42,12 +42,6 @@ export default function KalendarPage() {
           <div className="editorial-shell rounded-[2rem] p-5 md:p-6">
             <div className="relative z-10 grid gap-5">
               <div>
-                <span
-                  className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase mb-3"
-                  style={{ background: "rgba(53, 110, 92, 0.14)", color: "var(--secondary)" }}
-                >
-                  Co se děje ve městě
-                </span>
                 <h1
                   className="font-headline font-extrabold text-3xl tracking-tight md:text-[2.6rem]"
                   style={{ color: "var(--primary)" }}

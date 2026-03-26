@@ -71,12 +71,6 @@ export default function MestoPage() {
 
             <div className="relative z-10 flex min-h-[17rem] flex-col justify-end p-5 md:min-h-[18rem] md:p-6">
               <div className="mt-auto pt-16 md:pt-20">
-                <span
-                  className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase mb-3"
-                  style={{ background: "rgba(53,110,92,0.24)", color: "#7bf0af", border: "1px solid rgba(123,240,175,0.32)" }}
-                >
-                  Občanská sekce
-                </span>
                 <h1 className="font-headline font-extrabold text-3xl tracking-tight text-white md:text-[2.8rem]">
                   Město
                 </h1>

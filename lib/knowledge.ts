@@ -102,7 +102,7 @@ export function retrieveRelevantChunks(query: string, topK = 6): string {
   // Ohodnoť všechny chunks
   const scored = kb.pages
     .map((page) => ({ page, score: scoreChunk(page, queryTokens) }))
-    .filter(({ score }) => score > 0)
+    .filter(({ score }) => score >= 4)
     .sort((a, b) => b.score - a.score)
     .slice(0, topK);
 
@@ -157,7 +157,7 @@ export function getTopRelevantPages(query: string, topK = 3): KBPage[] {
 
   return kb.pages
     .map((page) => ({ page, score: scoreChunk(page, queryTokens) }))
-    .filter(({ score }) => score > 0)
+    .filter(({ score }) => score >= 4)
     .sort((a, b) => b.score - a.score)
     .slice(0, topK)
     .map(({ page }) => page);

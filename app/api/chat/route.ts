@@ -39,8 +39,40 @@ function normalize(text: string): string {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+function shouldUseDirectActionReply(query: string): boolean {
+  const q = normalize(query);
+  return /(obcank|obcansk|osobni doklad|pas|cestovni doklad|ridicsk|rezervac|objednat|prepazk|kino|vstupenk|listek|predprodej)/.test(q);
+}
+
+function isTransportIntent(query: string): boolean {
+  return /(autobus|spoj|jede|jede to|jizdni rad|odjezd|prijezd|doprava)/.test(query);
+}
+
+function shouldReturnScopeGuardReply(query: string): boolean {
+  const q = normalize(query);
+  if (!q.trim()) return false;
+
+  if (/(kolik obyvatel|pocet obyvatel|populace)/.test(q) && !q.includes("vimperk")) {
+    return true;
+  }
+
+  if (/(prachat|strakon|susic|bud(ej|ejo|eov)|ceske budejovice|volyn)/.test(q) && !q.includes("vimperk") && !isTransportIntent(q)) {
+    return true;
+  }
+
+  return false;
+}
+
+function buildScopeGuardReply(): string {
+  return "Pomohu hlavně s informacemi o Vimperku a městských službách. Na jiné město teď nemám spolehlivá data. Zeptejte se prosím na Vimperk, radnici, kontakty, akce nebo dopravu z a do Vimperka.";
+}
+
 function buildLocalFallbackReply(query: string): string {
   const q = normalize(query);
+
+  if (shouldReturnScopeGuardReply(query)) {
+    return buildScopeGuardReply();
+  }
 
   if (q.includes("rezervac") || q.includes("objednat") || q.includes("prepazk")) {
     const reservationUrl = "https://vimperk.cz/on%2Dline%2Drezervace%2Dna%2Dprepazky/d-21021/p1=9487";
@@ -52,7 +84,7 @@ function buildLocalFallbackReply(query: string): string {
     ].join("\n");
   }
 
-  if (q.includes("prachat") || q.includes("autobus") || q.includes("jizdni rad")) {
+  if (isTransportIntent(q)) {
     const line = busLines.find((item) => normalize(item.to).includes("prachat")) ?? busLines[0];
     return [
       `Nejbližší lokální odpověď k autobusům: linka ${line.number} ${line.from} -> ${line.to}.`,
@@ -108,6 +140,27 @@ export async function POST(req: NextRequest) {
 
     // Vezmi poslední uživatelský dotaz pro retrieval a fallback
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
+
+    if (shouldReturnScopeGuardReply(lastUserMessage)) {
+      return NextResponse.json({
+        reply: buildScopeGuardReply(),
+        kb: null,
+        mode: "fallback",
+      }, { status: 200 });
+    }
+
+    const directAnswer = shouldUseDirectActionReply(lastUserMessage)
+      ? answerFromKnowledgeBase(lastUserMessage)
+      : null;
+
+    if (directAnswer) {
+      return NextResponse.json({
+        reply: directAnswer.reply,
+        kb: getKBStatus().available ? { chunks_used: 1, scraped_at: getKBStatus().scraped_at } : null,
+        mode: "ai",
+      });
+    }
+
     const apiKey = process.env.GROQ_API_KEY?.trim();
 
     if (!apiKey) {

@@ -22,26 +22,40 @@ function renderMessageContent(content: string, isUser: boolean) {
 
   const lines = content.split("\n").map((line) => line.trim()).filter(Boolean);
   const elements: React.ReactNode[] = [];
-  const urlPattern = /^((odkaz|zdroj):\s*)?(https?:\/\/\S+)$/i;
+  const urlPattern = /https?:\/\/\S+/gi;
 
   lines.forEach((line, index) => {
-    const match = line.match(urlPattern);
-    if (match) {
-      const url = match[3];
-      const label = /^zdroj:/i.test(line) ? "Otevřít zdroj" : "Otevřít odkaz";
-      elements.push(
-        <a
-          key={`cta-${index}`}
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-1 inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold"
-          style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>open_in_new</span>
-          {label}
-        </a>,
-      );
+    const matches = line.match(urlPattern);
+    if (matches?.length) {
+      const labelPrefix = line.replace(urlPattern, "").replace(/[:\s-]+$/g, "").trim();
+      const buttonLabel = (() => {
+        if (/^zdroj/i.test(line)) return "Otevřít zdroj";
+        if (/^odkaz/i.test(line)) return "Otevřít odkaz";
+        if (/rezervac|objednat|termin|prepazk/i.test(line)) return "Rezervovat termín";
+        if (/predprodej|vstupenk|listek|kino/i.test(line)) return "Otevřít vstupenky";
+        if (/zadost|formular/i.test(line)) return "Otevřít žádost";
+        if (labelPrefix.length >= 4 && labelPrefix.length <= 36) return labelPrefix;
+        return "Otevřít odkaz";
+      })();
+
+      matches.forEach((rawUrl, urlIndex) => {
+        const url = rawUrl.replace(/[.,)]+$/g, "");
+        const label = matches.length > 1 ? `${buttonLabel} ${urlIndex + 1}` : buttonLabel;
+        elements.push(
+          <a
+            key={`cta-${index}-${urlIndex}`}
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-1 inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold"
+            style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>open_in_new</span>
+            {label}
+          </a>,
+        );
+      });
+
       return;
     }
 
