@@ -70,11 +70,11 @@ export default function HomePage() {
             />
 
             <div className="relative z-10 flex min-h-[25rem] flex-col justify-end p-5 md:min-h-[27rem] md:p-6">
-              <div className="max-w-[16rem] md:max-w-[20rem] mb-2">
-                <p className="text-sm font-semibold mb-3" style={{ color: "#d7e8df" }}>
+              <div className="max-w-[16rem] md:max-w-[20rem] mb-0.5">
+                <p className="text-sm font-semibold mb-2" style={{ color: "#d7e8df" }}>
                   Čtvrtek, 26. března 2026
                 </p>
-                <h1 className="font-headline font-extrabold text-[2.7rem] leading-[0.94] tracking-tight mb-3 text-white md:text-[3.4rem]">
+                <h1 className="font-headline font-extrabold text-[2.7rem] leading-[0.94] tracking-tight mb-0 text-white md:text-[3.4rem]">
                   Dobré ráno,
                   <br />
                   <span style={{ color: "#d7e8df" }}>Vimperku!</span>
