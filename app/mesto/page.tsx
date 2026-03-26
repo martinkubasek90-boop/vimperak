@@ -54,21 +54,6 @@ export default function MestoPage() {
               fill
               className="object-cover object-[56%_18%] md:object-[54%_16%]"
             />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(34,18,16,0.02) 0%, rgba(34,18,16,0.08) 100%)",
-              }}
-            />
-            <div
-              className="absolute left-0 bottom-0 h-[56%] w-[68%] md:h-[48%] md:w-[40%]"
-              style={{
-                background:
-                  "radial-gradient(circle at left bottom, rgba(44,24,22,0.58) 0%, rgba(44,24,22,0.34) 38%, rgba(44,24,22,0.14) 62%, rgba(44,24,22,0.00) 100%)",
-              }}
-            />
-
             <div className="relative z-10 flex min-h-[17rem] flex-col justify-end p-5 md:min-h-[18rem] md:p-6">
               <div className="mt-auto pt-16 md:pt-20">
                 <h1 className="font-headline font-extrabold text-3xl tracking-tight text-white md:text-[2.8rem]">

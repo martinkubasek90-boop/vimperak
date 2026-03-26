@@ -50,25 +50,6 @@ export default function HomePage() {
               priority
               className="object-cover object-[64%_center] md:object-[center_38%]"
             />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(34,18,16,0.02) 0%, rgba(34,18,16,0.08) 100%)",
-              }}
-            />
-            <div
-              className="absolute left-0 bottom-0 h-[58%] w-[78%] md:h-[52%] md:w-[48%]"
-              style={{
-                background:
-                  "radial-gradient(circle at left bottom, rgba(37,20,18,0.64) 0%, rgba(37,20,18,0.42) 36%, rgba(37,20,18,0.18) 62%, rgba(37,20,18,0.00) 100%)",
-              }}
-            />
-            <div
-              className="absolute left-0 top-0 h-28 w-full"
-              style={{ background: "linear-gradient(180deg, rgba(47,91,79,0.14) 0%, transparent 100%)" }}
-            />
-
             <div className="relative z-10 flex min-h-[25rem] flex-col justify-end p-5 md:min-h-[27rem] md:p-6">
               <div className="max-w-[15rem] md:max-w-[18rem] mb-2">
                 <p className="text-sm font-semibold mb-2" style={{ color: "#d7e8df" }}>
