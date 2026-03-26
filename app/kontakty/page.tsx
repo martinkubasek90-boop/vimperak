@@ -6,6 +6,7 @@ import BottomNav from "@/components/layout/BottomNav";
 import { directory, type DirectoryItem } from "@/lib/data";
 
 type Cat = DirectoryItem["category"] | "vše";
+type CityDepartment = NonNullable<DirectoryItem["cityDepartment"]> | "vše";
 
 const filters: { value: Cat; label: string }[] = [
   { value: "vše", label: "Vše" },
@@ -29,6 +30,17 @@ const heroFilters: { value: Cat; label: string; icon: string }[] = [
   { value: "opravna", label: "Opravny", icon: "build" },
 ];
 
+const cityDepartmentFilters: { value: CityDepartment; label: string }[] = [
+  { value: "vše", label: "Všechny odbory" },
+  { value: "vnitrni-veci", label: "Doklady a matrika" },
+  { value: "doprava", label: "Doprava" },
+  { value: "zivnostensky", label: "Podnikání" },
+  { value: "vystavba", label: "Výstavba" },
+  { value: "zivotni-prostredi", label: "Životní prostředí" },
+  { value: "socialni", label: "Sociální oblast" },
+  { value: "bezpecnost", label: "Bezpečnost" },
+];
+
 const catIcon: Record<string, string> = {
   město: "apartment",
   taxi: "local_taxi",
@@ -42,16 +54,22 @@ const catIcon: Record<string, string> = {
 };
 
 const municipalIds = [22, 24, 25, 26, 27, 23];
-const openIds = [1, 2, 4, 5, 6, 7, 9, 10, 22, 23, 25];
+const openIds = [1, 2, 4, 5, 6, 7, 9, 10, 22, 23, 25, 28, 29, 30, 31, 32, 33];
 
 export default function KontaktyPage() {
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState<Cat>("vše");
+  const [cityDepartment, setCityDepartment] = useState<CityDepartment>("vše");
 
   useEffect(() => {
-    const filter = new URLSearchParams(window.location.search).get("k") as Cat | null;
+    const params = new URLSearchParams(window.location.search);
+    const filter = params.get("k") as Cat | null;
+    const office = params.get("u") as CityDepartment | null;
     if (filter && filters.some((item) => item.value === filter)) {
       setCat(filter);
+    }
+    if (office && cityDepartmentFilters.some((item) => item.value === office)) {
+      setCityDepartment(office);
     }
   }, []);
 
@@ -62,9 +80,10 @@ export default function KontaktyPage() {
 
   const filtered = directory.filter((item) => {
     const matchCat = cat === "vše" || item.category === cat;
+    const matchDepartment = cat !== "město" || cityDepartment === "vše" || item.cityDepartment === cityDepartment;
     const q = search.toLowerCase();
     const matchQ = !q || [item.name, item.address, item.note ?? ""].join(" ").toLowerCase().includes(q);
-    return matchCat && matchQ;
+    return matchCat && matchDepartment && matchQ;
   });
 
   const featured = filtered.find((item) => item.category === "město") ?? filtered[0];
@@ -138,7 +157,12 @@ export default function KontaktyPage() {
           {filters.map(({ value, label }) => (
             <button
               key={value}
-              onClick={() => setCat(value)}
+              onClick={() => {
+                setCat(value);
+                if (value !== "město") {
+                  setCityDepartment("vše");
+                }
+              }}
               className="flex-shrink-0 px-5 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95"
               style={cat === value ? {
                 background: "linear-gradient(135deg, var(--primary), var(--primary-container))",
@@ -153,6 +177,28 @@ export default function KontaktyPage() {
             </button>
           ))}
         </div>
+
+        {cat === "město" && (
+          <div className="flex gap-2.5 overflow-x-auto hide-scrollbar px-4 pb-2 pt-3">
+            {cityDepartmentFilters.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setCityDepartment(value)}
+                className="flex-shrink-0 px-4 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95"
+                style={cityDepartment === value ? {
+                  background: "var(--secondary-container)",
+                  color: "var(--on-secondary-container)",
+                  boxShadow: "0 10px 18px rgba(53,110,92,0.12)",
+                } : {
+                  background: "var(--surface-container-low)",
+                  color: "var(--on-surface)",
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {showMunicipalSection && (
         <section className="px-4 pt-4">
@@ -241,6 +287,44 @@ export default function KontaktyPage() {
                   </div>
                   <div className="mt-2 text-sm" style={{ color: "var(--on-surface-variant)" }}>{item.phone}</div>
                   <div className="mt-0.5 text-sm" style={{ color: "var(--on-surface-variant)" }}>{item.address}</div>
+                  {item.note && <div className="mt-1.5 text-xs leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>{item.note}</div>}
+                  {(item.appointmentUrl || item.website || item.sourceUrl) && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {item.appointmentUrl && (
+                        <a
+                          href={item.appointmentUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-full px-3 py-2 text-xs font-bold"
+                          style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}
+                        >
+                          {item.appointmentLabel ?? "Objednat online"}
+                        </a>
+                      )}
+                      {item.website && (
+                        <a
+                          href={item.website}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-full px-3 py-2 text-xs font-bold"
+                          style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
+                        >
+                          Online žádosti
+                        </a>
+                      )}
+                      {!item.website && item.sourceUrl && item.category === "město" && (
+                        <a
+                          href={item.sourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-full px-3 py-2 text-xs font-bold"
+                          style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
+                        >
+                          Detail odboru
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <a
                   href={`tel:${item.phone.replace(/\s/g, "")}`}

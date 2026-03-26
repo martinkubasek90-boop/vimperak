@@ -125,6 +125,7 @@ export type DirectoryItem = {
   id: number;
   name: string;
   category: "taxi" | "restaurace" | "lékař" | "lékárna" | "opravna" | "sport" | "ubytování" | "obchod" | "město";
+  cityDepartment?: "central" | "vnitrni-veci" | "doprava" | "zivnostensky" | "vystavba" | "zivotni-prostredi" | "socialni" | "kultura" | "bezpecnost";
   phone: string;
   address: string;
   hours?: string;
@@ -133,6 +134,8 @@ export type DirectoryItem = {
   email?: string;
   website?: string;
   sourceUrl?: string;
+  appointmentUrl?: string;
+  appointmentLabel?: string;
 };
 
 export const directory: DirectoryItem[] = [
@@ -358,6 +361,7 @@ export const directory: DirectoryItem[] = [
     id: 22,
     name: "Městský úřad Vimperk",
     category: "město",
+    cityDepartment: "central",
     phone: "388 402 231",
     address: "Steinbrenerova 6/2, 385 17 Vimperk",
     hours: "Po 7:30–11:30, 12:30–17:00 · St 7:30–11:30, 12:30–17:00 · Pá 7:30–11:30",
@@ -365,11 +369,14 @@ export const directory: DirectoryItem[] = [
     email: "urad@mesto.vimperk.cz",
     website: "https://www.vimperk.cz",
     sourceUrl: "https://www.vimperk.cz/mestsky-urad-vimperk-kontakty/os-10",
+    appointmentUrl: "https://www.vimperk.cz/on-line-rezervace-na-prepazky/d-21021",
+    appointmentLabel: "Objednat termín",
   },
   {
     id: 23,
     name: "Informační centrum Vimperk",
     category: "město",
+    cityDepartment: "kultura",
     phone: "388 402 230",
     address: "Náměstí Svobody 42, 385 01 Vimperk",
     hours: "Kontaktní a otevírací doba dle infocentra",
@@ -382,6 +389,7 @@ export const directory: DirectoryItem[] = [
     id: 24,
     name: "Městská policie Vimperk",
     category: "město",
+    cityDepartment: "bezpecnost",
     phone: "388 414 365",
     address: "Vimperk",
     note: "Hlídka ve službě: 778 410 790",
@@ -391,6 +399,7 @@ export const directory: DirectoryItem[] = [
     id: 25,
     name: "Městská knihovna Vimperk",
     category: "město",
+    cityDepartment: "kultura",
     phone: "778 748 996",
     address: "1. máje 194, 385 01 Vimperk",
     hours: "Po–Čt 9:00–11:30, 12:30–17:00",
@@ -403,6 +412,7 @@ export const directory: DirectoryItem[] = [
     id: 26,
     name: "Městské služby Vimperk, s.r.o.",
     category: "město",
+    cityDepartment: "central",
     phone: "725 593 583",
     address: "Vimperk",
     note: "Jednatel: Mgr. Bc. Radek Rubeš",
@@ -413,12 +423,94 @@ export const directory: DirectoryItem[] = [
     id: 27,
     name: "Městské kulturní středisko Vimperk",
     category: "město",
+    cityDepartment: "kultura",
     phone: "775 955 043",
     address: "Johnova 226, 385 01 Vimperk",
     note: "Ředitel: Tomáš Jiřička · hlavní kontakt kulturních akcí",
     email: "info@kulturavimperk.cz",
     website: "https://www.kulturavimperk.cz",
     sourceUrl: "https://www.vimperk.cz/mestske-kulturni-stredisko-vimperk/os-1053",
+  },
+  {
+    id: 28,
+    name: "Odbor vnitřních věcí",
+    category: "město",
+    cityDepartment: "vnitrni-veci",
+    phone: "388 402 215",
+    address: "Steinbrenerova 6/2, 385 01 Vimperk",
+    hours: "Po 7:30–11:30, 12:30–17:00 · St 7:30–11:30, 12:30–17:00 · Pá 7:30–11:30",
+    note: "Občanské průkazy, cestovní doklady, matrika, evidence obyvatel a přestupky.",
+    email: "Jana.Schererova@mesto.vimperk.cz",
+    sourceUrl: "https://www.vimperk.cz/odbor-vnitrnich-veci/os-1012",
+    appointmentUrl: "https://www.vimperk.cz/on-line-rezervace-na-prepazky/d-21021",
+    appointmentLabel: "Objednat termín online",
+  },
+  {
+    id: 29,
+    name: "Odbor dopravy a silničního hospodářství",
+    category: "město",
+    cityDepartment: "doprava",
+    phone: "388 402 231",
+    address: "Steinbrenerova 6/2, 385 17 Vimperk",
+    hours: "Po 7:30–11:30, 12:30–17:00 · St 7:30–11:30, 12:30–17:00 · Pá 7:30–11:30",
+    note: "Řidičské průkazy, registr vozidel, silniční hospodářství a dopravní agenda.",
+    email: "urad@mesto.vimperk.cz",
+    sourceUrl: "https://www.vimperk.cz/odbor-dopravy-a-silnicniho-hospodarstvi/ms-9711",
+    appointmentUrl: "https://www.vimperk.cz/on-line-rezervace-na-prepazky/d-21021",
+    appointmentLabel: "Objednat termín online",
+  },
+  {
+    id: 30,
+    name: "Odbor obecní živnostenský úřad",
+    category: "město",
+    cityDepartment: "zivnostensky",
+    phone: "388 459 055",
+    address: "Nad Stadiónem 199, 385 01 Vimperk",
+    hours: "Po 7:30–11:30, 12:30–17:00 · St 7:30–11:30, 12:30–17:00 · Pá 7:30–11:30",
+    note: "Podnikání, registrace osob, výpisy, kontrola, stížnosti a přestupky.",
+    email: "Vladimir.Chum@mesto.vimperk.cz",
+    sourceUrl: "https://www.vimperk.cz/odbor-obecni-zivnostensky-urad/os-1008",
+    appointmentUrl: "https://www.vimperk.cz/on-line-rezervace-na-prepazky/d-21021",
+    appointmentLabel: "Objednat termín online",
+  },
+  {
+    id: 31,
+    name: "Odbor výstavby a územního plánování",
+    category: "město",
+    cityDepartment: "vystavba",
+    phone: "388 402 231",
+    address: "Steinbrenerova 6/2, 385 17 Vimperk",
+    hours: "Po 7:30–11:30, 12:30–17:00 · St 7:30–11:30, 12:30–17:00",
+    note: "Stavební řízení, územní plánování, byty a nemovitosti.",
+    email: "urad@mesto.vimperk.cz",
+    website: "https://portal.vimperk.cz",
+    sourceUrl: "https://www.vimperk.cz",
+  },
+  {
+    id: 32,
+    name: "Odbor životního prostředí",
+    category: "město",
+    cityDepartment: "zivotni-prostredi",
+    phone: "388 402 231",
+    address: "Steinbrenerova 6/2, 385 17 Vimperk",
+    hours: "Po 7:30–11:30, 12:30–17:00 · St 7:30–11:30, 12:30–17:00",
+    note: "Odpady, zeleň, ochrana přírody, lesy, voda a životní prostředí.",
+    email: "urad@mesto.vimperk.cz",
+    website: "https://portal.vimperk.cz",
+    sourceUrl: "https://www.vimperk.cz",
+  },
+  {
+    id: 33,
+    name: "Odbor sociálních věcí a zdravotnictví",
+    category: "město",
+    cityDepartment: "socialni",
+    phone: "388 402 231",
+    address: "Steinbrenerova 6/2, 385 17 Vimperk",
+    hours: "Po 7:30–11:30, 12:30–17:00 · St 7:30–11:30, 12:30–17:00",
+    note: "Sociální služby, dávky, péče a agenda zdravotnictví.",
+    email: "urad@mesto.vimperk.cz",
+    website: "https://portal.vimperk.cz",
+    sourceUrl: "https://www.vimperk.cz",
   },
 ];
 

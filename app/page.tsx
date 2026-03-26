@@ -5,12 +5,12 @@ import Image from "next/image";
 import { events, news } from "@/lib/data";
 
 const quickActions = [
-  { icon: "calendar_month",   label: "Kalendář",    href: "/kalendar",             bg: "var(--secondary-fixed)", color: "var(--on-secondary-fixed)" },
-  { icon: "apartment",        label: "Radnice",     href: "/kontakty?k=město",     bg: "var(--secondary-container)", color: "var(--on-secondary-container)" },
-  { icon: "medical_services", label: "Lékaři",      href: "/kontakty?k=lékař",     bg: "var(--primary-fixed)", color: "var(--on-primary-fixed)" },
-  { icon: "local_pharmacy",   label: "Lékárny",     href: "/kontakty?k=lékárna",   bg: "var(--surface-container)", color: "var(--on-surface)" },
-  { icon: "local_taxi",       label: "Taxi",        href: "/kontakty?k=taxi",      bg: "var(--tertiary-fixed)", color: "var(--on-tertiary-fixed)" },
-  { icon: "campaign",         label: "Podněty",     href: "/mesto",                bg: "var(--error-container)", color: "var(--on-error-container)" },
+  { icon: "badge",            label: "Doklady",     href: "/kontakty?k=město&u=vnitrni-veci", bg: "var(--secondary-container)", color: "var(--on-secondary-container)" },
+  { icon: "calendar_month",   label: "Kalendář",    href: "/kalendar",                         bg: "var(--secondary-fixed)", color: "var(--on-secondary-fixed)" },
+  { icon: "directions_bus",   label: "Autobusy",    href: "/jizdy",                             bg: "var(--tertiary-fixed)", color: "var(--on-tertiary-fixed)" },
+  { icon: "medical_services", label: "Lékaři",      href: "/kontakty?k=lékař",                  bg: "var(--primary-fixed)", color: "var(--on-primary-fixed)" },
+  { icon: "local_pharmacy",   label: "Lékárny",     href: "/kontakty?k=lékárna",                bg: "var(--surface-container)", color: "var(--on-surface)" },
+  { icon: "campaign",         label: "Podněty",     href: "/mesto",                             bg: "var(--error-container)", color: "var(--on-error-container)" },
 ];
 
 const eventCatColor: Record<string, { bg: string; text: string }> = {
@@ -82,7 +82,7 @@ export default function HomePage() {
               </div>
 
               <div
-                className="max-w-[20rem] rounded-[1.6rem] px-4 py-3.5 backdrop-blur-md md:max-w-[22rem]"
+                className="max-w-[20rem] rounded-[1.6rem] px-4 py-3 backdrop-blur-md md:max-w-[22rem]"
                 style={{ background: "rgba(58,38,35,0.38)", border: "1px solid rgba(255,255,255,0.18)" }}
               >
                 <div className="flex items-center gap-3">
