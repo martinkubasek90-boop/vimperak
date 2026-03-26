@@ -158,6 +158,22 @@ export function getTopRelevantPages(query: string, topK = 3): KBPage[] {
     .map(({ page }) => page);
 }
 
+function findPageByMatcher(
+  predicate: (page: KBPage, normalizedTitle: string, normalizedUrl: string, normalizedContent: string) => boolean,
+): KBPage | null {
+  const kb = loadKB();
+  if (!kb) return null;
+
+  for (const page of kb.pages) {
+    const normalizedTitle = normalize(page.title);
+    const normalizedUrl = normalize(page.url);
+    const normalizedContent = normalize(page.content);
+    if (predicate(page, normalizedTitle, normalizedUrl, normalizedContent)) return page;
+  }
+
+  return null;
+}
+
 export function answerFromKnowledgeBase(query: string): { reply: string; sourceUrl?: string } | null {
   const pages = getTopRelevantPages(query, 2);
   if (pages.length === 0) return null;
@@ -165,7 +181,30 @@ export function answerFromKnowledgeBase(query: string): { reply: string; sourceU
   const [first, second] = pages;
   const q = normalize(query);
 
+  if (/(rezervac|objednat|objednani|prepazk)/.test(q)) {
+    const reservationPage = findPageByMatcher((page, title, url, content) =>
+      (title.includes("on-line rezervace na prepazky") || url.includes("on-line-rezervace-na-prepazky")) &&
+      (title.includes("osobni doklady") || title.includes("matrika") || content.includes("obcanskych prukazu")),
+    );
+
+    if (reservationPage) {
+      return {
+        reply: [
+          "On-line rezervaci si uděláte přes rezervační stránku města pro přepážky.",
+          "Platí pro občanské průkazy, cestovní pasy a matriku.",
+          "Po rezervaci dostanete PIN, který na úřadě zadáte v sekci „Klienti objednaní přes internet“.",
+          `Odkaz: ${reservationPage.url}`,
+        ].join("\n"),
+        sourceUrl: reservationPage.url,
+      };
+    }
+  }
+
   if (/(obcank|obcansk|osobni doklad|pas|cestovni doklad|ridicsk)/.test(q)) {
+    const documentPage = findPageByMatcher((page, title, url) =>
+      (title.includes("osobni doklady") || url.includes("p1=9487")) && !title.includes("on-line rezervace"),
+    );
+
     return {
       reply: [
         "K osobním dokladům ve Vimperku jsem našel toto:",
@@ -174,9 +213,9 @@ export function answerFromKnowledgeBase(query: string): { reply: string; sourceU
         "Kontakt: 388 402 231, urad@mesto.vimperk.cz.",
         "Úřední hodiny: pondělí a středa 7:30-11:30 a 12:30-17:00, pátek 7:30-11:30.",
         "Město také uvádí možnost on-line rezervace na přepážky.",
-        `Zdroj: ${first.url}`,
+        `Zdroj: ${(documentPage ?? first).url}`,
       ].join("\n"),
-      sourceUrl: first.url,
+      sourceUrl: (documentPage ?? first).url,
     };
   }
 

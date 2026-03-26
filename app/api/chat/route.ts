@@ -41,6 +41,16 @@ function normalize(text: string): string {
 function buildLocalFallbackReply(query: string): string {
   const q = normalize(query);
 
+  if (q.includes("rezervac") || q.includes("objednat") || q.includes("prepazk")) {
+    const reservationUrl = "https://vimperk.cz/on%2Dline%2Drezervace%2Dna%2Dprepazky/d-21021/p1=9487";
+    return [
+      "On-line rezervaci pro občanku, cestovní pas nebo matriku uděláte přes rezervační stránku města.",
+      `Odkaz: ${reservationUrl}`,
+      "Po vytvoření rezervace dostanete PIN, který zadáte na úřadě v sekci „Klienti objednaní přes internet“.",
+      "Agenda osobních dokladů je na adrese Steinbrenerova 6, 385 17 Vimperk.",
+    ].join("\n");
+  }
+
   if (q.includes("prachat") || q.includes("autobus") || q.includes("jizdni rad")) {
     const line = busLines.find((item) => normalize(item.to).includes("prachat")) ?? busLines[0];
     return [
