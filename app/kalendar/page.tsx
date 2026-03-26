@@ -72,7 +72,11 @@ export default function KalendarPage() {
                   </p>
                 </div>
                 <div className="rounded-[1.4rem] p-4" style={{ background: "var(--tertiary-fixed)" }}>
-                  <p className="text-xs font-semibold" style={{ color: "var(--on-tertiary-fixed)" }}>Tento týden</p>
+                  <p className="text-xs font-semibold leading-tight" style={{ color: "var(--on-tertiary-fixed)" }}>
+                    Tento
+                    <br />
+                    týden
+                  </p>
                   <p className="mt-2 font-headline text-2xl font-black" style={{ color: "var(--on-tertiary-fixed)" }}>
                     {Math.min(filtered.length, 4)}
                   </p>

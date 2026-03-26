@@ -73,14 +73,14 @@ export default function MestoPage() {
               <div className="mt-auto pt-16 md:pt-20">
                 <span
                   className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase mb-3"
-                  style={{ background: "rgba(53,110,92,0.18)", color: "#8ee3b6", border: "1px solid rgba(142,227,182,0.26)" }}
+                  style={{ background: "rgba(53,110,92,0.24)", color: "#7bf0af", border: "1px solid rgba(123,240,175,0.32)" }}
                 >
                   Občanská sekce
                 </span>
                 <h1 className="font-headline font-extrabold text-3xl tracking-tight text-white md:text-[2.8rem]">
                   Město
                 </h1>
-                <p className="mt-2 text-sm leading-relaxed max-w-md text-white/82">
+                <p className="mt-2 text-sm font-medium leading-relaxed max-w-md" style={{ color: "#7bf0af" }}>
                   Podněty, ankety, kontakt s radnicí a důležité městské informace na jednom místě.
                 </p>
               </div>
@@ -98,8 +98,8 @@ export default function MestoPage() {
                   </span>
                   {action.title === "Hlasování a ankety" && (
                     <span
-                      className="mt-4 inline-flex w-fit rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em]"
-                      style={{ background: "rgba(255,255,255,0.7)", color: "var(--secondary)" }}
+                      className="absolute right-4 top-4 inline-flex w-fit rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em]"
+                      style={{ background: "rgba(255,255,255,0.78)", color: "var(--secondary)" }}
                     >
                       {polls.length} aktivní ankety
                     </span>
@@ -126,7 +126,7 @@ export default function MestoPage() {
                 <Link
                   key={action.title}
                   href={action.href}
-                  className="rounded-[1.8rem] p-5 block transition-transform active:scale-[0.98]"
+                  className="relative rounded-[1.8rem] p-5 block transition-transform active:scale-[0.98]"
                   style={{ background: action.tone, boxShadow: "0 10px 22px rgba(67,17,24,0.06)" }}
                 >
                   {content}
