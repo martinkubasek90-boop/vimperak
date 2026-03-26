@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
 import { events, type Event } from "@/lib/data";
@@ -166,6 +167,27 @@ export default function KalendarPage() {
               </article>
             );
           })}
+        </section>
+
+        <section className="px-4 pt-8 pb-4">
+          <Link
+            href="/napsat-mestu"
+            className="editorial-shell rounded-[2rem] p-5 block"
+            style={{ boxShadow: "0 14px 30px rgba(67,17,24,0.08)" }}
+          >
+            <span
+              className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase"
+              style={{ background: "rgba(53, 110, 92, 0.14)", color: "var(--secondary)" }}
+            >
+              Přímý kontakt
+            </span>
+            <h2 className="mt-4 font-headline text-3xl font-extrabold" style={{ color: "var(--primary)" }}>
+              Napsat městu
+            </h2>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
+              Máte dotaz ke kulturním akcím, dopravě nebo městskému provozu? Pošlete ho rovnou radnici.
+            </p>
+          </Link>
         </section>
       </main>
       <BottomNav />

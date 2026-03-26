@@ -80,8 +80,10 @@ export default function MestoPage() {
                 <h1 className="font-headline font-extrabold text-3xl tracking-tight text-white md:text-[2.8rem]">
                   Město
                 </h1>
-                <p className="mt-2 text-sm font-medium leading-relaxed max-w-md" style={{ color: "#7bf0af" }}>
-                  Podněty, ankety, kontakt s radnicí a důležité městské informace na jednom místě.
+                <p className="mt-2 text-sm font-medium leading-relaxed max-w-[22rem]" style={{ color: "#7bf0af" }}>
+                  Podněty, ankety a kontakt
+                  <br />
+                  s radnicí na jednom místě.
                 </p>
               </div>
             </div>
@@ -226,32 +228,52 @@ export default function MestoPage() {
               Celý seznam
             </Link>
           </div>
-          <div className="space-y-3">
-            {cityContacts.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-[1.8rem] p-5"
-                style={{ background: "var(--secondary-container)", border: "1px solid rgba(53, 110, 92, 0.10)" }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="font-headline text-base font-extrabold" style={{ color: "var(--on-secondary-container)" }}>
-                      {item.name}
-                    </h3>
-                    <p className="mt-2 text-sm" style={{ color: "var(--on-secondary-container)" }}>{item.phone}</p>
-                    <p className="mt-1 text-sm" style={{ color: "var(--on-secondary-container)" }}>{item.address}</p>
-                  </div>
-                  <a
-                    href={`tel:${item.phone.replace(/\s/g, "")}`}
-                    className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: "rgba(255,255,255,0.65)", color: "var(--secondary)" }}
-                  >
-                    <span className="material-symbols-outlined">call</span>
-                  </a>
-                </div>
+          <Link
+            href="/kontakty?k=město"
+            className="rounded-[1.8rem] p-5 block"
+            style={{ background: "var(--secondary-container)", border: "1px solid rgba(53, 110, 92, 0.10)", boxShadow: "0 10px 22px rgba(53,110,92,0.10)" }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="inline-flex rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em]" style={{ background: "rgba(255,255,255,0.72)", color: "var(--secondary)" }}>
+                  Kontakty města
+                </span>
+                <h3 className="mt-4 font-headline text-xl font-extrabold" style={{ color: "var(--on-secondary-container)" }}>
+                  Otevřít městské kontakty a odbory
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--on-secondary-container)" }}>
+                  Radnice, odbory, online objednání i úřední hodiny přehledně na jednom místě.
+                </p>
               </div>
-            ))}
-          </div>
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+                style={{ background: "rgba(255,255,255,0.65)", color: "var(--secondary)" }}
+              >
+                <span className="material-symbols-outlined">arrow_forward</span>
+              </div>
+            </div>
+          </Link>
+        </section>
+
+        <section className="px-4 pt-8 pb-4">
+          <Link
+            href="/napsat-mestu"
+            className="editorial-shell rounded-[2rem] p-5 block"
+            style={{ boxShadow: "0 14px 30px rgba(67,17,24,0.08)" }}
+          >
+            <span
+              className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase"
+              style={{ background: "rgba(53, 110, 92, 0.14)", color: "var(--secondary)" }}
+            >
+              Přímý kontakt
+            </span>
+            <h2 className="mt-4 font-headline text-3xl font-extrabold" style={{ color: "var(--primary)" }}>
+              Napsat městu
+            </h2>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
+              Krátký formulář pro dotazy, připomínky nebo podněty na radnici a městské odbory.
+            </p>
+          </Link>
         </section>
       </main>
       <BottomNav />
