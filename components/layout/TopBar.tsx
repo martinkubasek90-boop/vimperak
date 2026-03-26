@@ -20,7 +20,7 @@ export default function TopBar() {
               className="object-contain"
             />
           </div>
-          <div className="flex items-end gap-3">
+          <div className="flex items-baseline gap-2.5">
             <Link
               href="/"
               className="font-headline font-black text-[2rem] leading-none tracking-[-0.04em]"
@@ -28,7 +28,10 @@ export default function TopBar() {
             >
               Vimperk.
             </Link>
-            <span className="text-[0.92rem] font-black uppercase tracking-[0.22em] leading-none pb-0.5" style={{ color: "var(--secondary)" }}>
+            <span
+              className="text-[0.56rem] font-black uppercase tracking-[0.16em] leading-none"
+              style={{ color: "var(--secondary)" }}
+            >
               Město online
             </span>
           </div>
