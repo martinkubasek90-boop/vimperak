@@ -48,23 +48,30 @@ export default function HomePage() {
               alt="Stylizovaná ilustrace zámku ve Vimperku"
               fill
               priority
-              className="object-cover object-[72%_center] md:object-[center_center]"
+              className="object-cover object-[64%_center] md:object-[center_38%]"
             />
             <div
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(90deg, rgba(48,24,24,0.88) 0%, rgba(48,24,24,0.64) 42%, rgba(48,24,24,0.22) 100%), linear-gradient(180deg, rgba(24,12,10,0.16) 0%, rgba(24,12,10,0.48) 100%)",
+                  "linear-gradient(180deg, rgba(34,18,16,0.08) 0%, rgba(34,18,16,0.22) 100%)",
               }}
             />
             <div
-              className="absolute inset-x-0 top-0 h-28"
-              style={{ background: "linear-gradient(180deg, rgba(47,91,79,0.20) 0%, transparent 100%)" }}
+              className="absolute left-0 top-0 bottom-0 w-[72%] md:w-[52%]"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(37,20,18,0.60) 0%, rgba(37,20,18,0.36) 62%, rgba(37,20,18,0.00) 100%)",
+              }}
+            />
+            <div
+              className="absolute left-0 top-0 h-28 w-full"
+              style={{ background: "linear-gradient(180deg, rgba(47,91,79,0.14) 0%, transparent 100%)" }}
             />
 
             <div className="relative z-10 flex min-h-[25rem] flex-col justify-between p-5 md:min-h-[27rem] md:p-6">
               <div className="max-w-[16rem] md:max-w-[20rem]">
-                <p className="text-sm font-semibold mb-2 text-white/78">
+                <p className="text-sm font-semibold mb-2 text-white/82">
                   Čtvrtek, 26. března 2026
                 </p>
                 <h1 className="font-headline font-extrabold text-[2.7rem] leading-[0.94] tracking-tight mb-3 text-white md:text-[3.4rem]">
@@ -72,14 +79,14 @@ export default function HomePage() {
                   <br />
                   <span style={{ color: "#f2b08f" }}>Vimperku!</span>
                 </h1>
-                <p className="text-sm leading-relaxed text-white/78">
+                <p className="text-sm leading-relaxed text-white/82">
                   Místní servis, zprávy a rychlé odkazy v jednom čistém ranním přehledu.
                 </p>
               </div>
 
               <div
                 className="max-w-[20rem] rounded-[1.75rem] p-4 backdrop-blur-md md:max-w-[23rem]"
-                style={{ background: "rgba(255,250,246,0.14)", border: "1px solid rgba(255,255,255,0.14)" }}
+                style={{ background: "rgba(58,38,35,0.38)", border: "1px solid rgba(255,255,255,0.18)" }}
               >
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2.5 text-white">
