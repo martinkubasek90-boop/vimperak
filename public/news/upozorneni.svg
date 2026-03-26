@@ -1,0 +1,19 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="1200" height="800" fill="#FFF7F4"/>
+<rect width="1200" height="800" fill="url(#paint0_linear_1_2)"/>
+<circle cx="952" cy="148" r="112" fill="#FFD8D1" fill-opacity="0.85"/>
+<path d="M0 628L104 576L208 594L312 528L416 558L520 506L624 548L728 494L832 548L936 520L1040 564L1144 534L1200 554V800H0V628Z" fill="#FF8B7B"/>
+<path d="M0 682L104 642L208 656L312 602L416 632L520 590L624 624L728 586L832 632L936 608L1040 650L1144 622L1200 638V800H0V682Z" fill="#D4492D"/>
+<path d="M600 188L804 542H396L600 188Z" fill="#8F2C15"/>
+<path d="M600 246L752 512H448L600 246Z" fill="#FFF4F1"/>
+<rect x="576" y="322" width="48" height="118" rx="24" fill="#D4492D"/>
+<rect x="576" y="452" width="48" height="48" rx="24" fill="#D4492D"/>
+<rect x="88" y="660" width="262" height="64" rx="32" fill="#FFF4F1" fill-opacity="0.22"/>
+<text x="122" y="700" fill="#FFF4F1" font-family="Arial, sans-serif" font-size="34" font-weight="700">Dulezite zpravy</text>
+<defs>
+<linearGradient id="paint0_linear_1_2" x1="600" y1="0" x2="600" y2="800" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFF9F7"/>
+<stop offset="1" stop-color="#FFF0EC"/>
+</linearGradient>
+</defs>
+</svg>

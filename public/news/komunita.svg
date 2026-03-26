@@ -1,0 +1,24 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="1200" height="800" fill="#F7FBF4"/>
+<rect width="1200" height="800" fill="url(#paint0_linear_1_5)"/>
+<circle cx="956" cy="154" r="108" fill="#DDF4C8"/>
+<path d="M0 628L124 574L248 600L372 534L496 576L620 514L744 566L868 522L992 578L1116 542L1200 562V800H0V628Z" fill="#5E9A49"/>
+<path d="M0 686L124 646L248 666L372 614L496 648L620 596L744 644L868 602L992 652L1116 624L1200 640V800H0V686Z" fill="#3E6D31"/>
+<circle cx="452" cy="368" r="82" fill="#F7FBF4"/>
+<circle cx="600" cy="332" r="92" fill="#F7FBF4"/>
+<circle cx="750" cy="374" r="82" fill="#F7FBF4"/>
+<circle cx="452" cy="342" r="34" fill="#7CC35E"/>
+<circle cx="600" cy="300" r="38" fill="#7CC35E"/>
+<circle cx="750" cy="346" r="34" fill="#7CC35E"/>
+<path d="M372 494C372 436 419 388 476 388H428C485 388 532 436 532 494V500H372V494Z" fill="#7CC35E"/>
+<path d="M494 494C494 424 551 368 620 368H580C649 368 706 424 706 494V508H494V494Z" fill="#5E9A49"/>
+<path d="M670 494C670 436 717 388 774 388H726C783 388 830 436 830 494V500H670V494Z" fill="#7CC35E"/>
+<rect x="88" y="662" width="246" height="64" rx="32" fill="#F7FBF4" fill-opacity="0.22"/>
+<text x="122" y="702" fill="#F7FBF4" font-family="Arial, sans-serif" font-size="34" font-weight="700">Komunita</text>
+<defs>
+<linearGradient id="paint0_linear_1_5" x1="600" y1="0" x2="600" y2="800" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FBFFF8"/>
+<stop offset="1" stop-color="#EDF8E1"/>
+</linearGradient>
+</defs>
+</svg>

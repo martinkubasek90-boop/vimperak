@@ -355,6 +355,7 @@ export type NewsItem = {
   date: string;
   category: "radnice" | "sport" | "kultura" | "upozornění" | "komunita";
   urgent?: boolean;
+  image: string;
 };
 
 export const news: NewsItem[] = [
@@ -365,6 +366,7 @@ export const news: NewsItem[] = [
     date: "2026-03-25",
     category: "upozornění",
     urgent: true,
+    image: "/news/upozorneni.svg",
   },
   {
     id: 2,
@@ -372,6 +374,7 @@ export const news: NewsItem[] = [
     summary: "Radnice spustila hlasování o podobě nových dětských hřišť v parku Blanice. Vyberte ze tří variant — hlasování trvá do 10. dubna.",
     date: "2026-03-24",
     category: "radnice",
+    image: "/news/radnice.svg",
   },
   {
     id: 3,
@@ -379,6 +382,7 @@ export const news: NewsItem[] = [
     summary: "Hokejisté Vimperka porazili v neděli Klatovy 4:2 a zajistili si postup do vyšší soutěže. Gratulujeme!",
     date: "2026-03-23",
     category: "sport",
+    image: "/news/sport.svg",
   },
   {
     id: 4,
@@ -386,6 +390,7 @@ export const news: NewsItem[] = [
     summary: "Město Vimperk organizuje svoz nebezpečného odpadu. Přistavení kontejnerů proběhne 5. dubna na náměstí Svobody od 9:00 do 13:00.",
     date: "2026-03-22",
     category: "radnice",
+    image: "/news/radnice.svg",
   },
   {
     id: 5,
@@ -393,6 +398,7 @@ export const news: NewsItem[] = [
     summary: "NP Šumava hlásí, že od 1. dubna budou otevřeny všechny pěší trasy v okolí Vimperka. Připravte si boty!",
     date: "2026-03-20",
     category: "kultura",
+    image: "/news/kultura.svg",
   },
 ];
 

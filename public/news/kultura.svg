@@ -1,0 +1,24 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="1200" height="800" fill="#FBF7FF"/>
+<rect width="1200" height="800" fill="url(#paint0_linear_1_4)"/>
+<circle cx="950" cy="158" r="110" fill="#E4D7FF"/>
+<path d="M0 628L116 576L232 600L348 540L464 578L580 522L696 572L812 520L928 576L1044 544L1160 588L1200 578V800H0V628Z" fill="#7A4BD2"/>
+<path d="M0 684L116 648L232 668L348 618L464 648L580 604L696 646L812 602L928 652L1044 624L1160 654L1200 648V800H0V684Z" fill="#4F2898"/>
+<rect x="330" y="238" width="540" height="336" rx="34" fill="#FFF8FE"/>
+<rect x="370" y="278" width="460" height="224" rx="24" fill="#F1E6FF"/>
+<rect x="420" y="530" width="360" height="18" rx="9" fill="#B894F5"/>
+<circle cx="468" cy="390" r="42" fill="#7A4BD2"/>
+<circle cx="600" cy="390" r="42" fill="#7A4BD2"/>
+<circle cx="732" cy="390" r="42" fill="#7A4BD2"/>
+<path d="M462 332C486 318 514 318 538 332" stroke="#7A4BD2" stroke-width="18" stroke-linecap="round"/>
+<path d="M594 332C618 318 646 318 670 332" stroke="#7A4BD2" stroke-width="18" stroke-linecap="round"/>
+<path d="M726 332C750 318 778 318 802 332" stroke="#7A4BD2" stroke-width="18" stroke-linecap="round"/>
+<rect x="88" y="662" width="246" height="64" rx="32" fill="#FFF8FE" fill-opacity="0.22"/>
+<text x="122" y="702" fill="#FFF8FE" font-family="Arial, sans-serif" font-size="34" font-weight="700">Kultura</text>
+<defs>
+<linearGradient id="paint0_linear_1_4" x1="600" y1="0" x2="600" y2="800" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FEFBFF"/>
+<stop offset="1" stop-color="#F3ECFF"/>
+</linearGradient>
+</defs>
+</svg>

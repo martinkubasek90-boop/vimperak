@@ -7,15 +7,6 @@ import { news, events } from "@/lib/data";
 import Link from "next/link";
 import Image from "next/image";
 
-// Obrázky pro různé kategorie zpráv
-const newsImages: Record<string, string> = {
-  upozornění: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Vimperk_zamek.jpg/800px-Vimperk_zamek.jpg",
-  radnice:    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Vimperk_zamek.jpg/800px-Vimperk_zamek.jpg",
-  sport:      "https://images.unsplash.com/photo-1515703407324-5f753afd8be8?w=800&q=75",
-  kultura:    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=75",
-  komunita:   "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=75",
-};
-
 const catColor: Record<string, string> = {
   upozornění: "var(--error)",
   sport:      "var(--tertiary)",
@@ -85,11 +76,10 @@ export default function ZpravodajPage() {
                  style={{ boxShadow: "0 4px 20px rgba(24,28,32,0.08)" }}>
               <div className="relative h-56 overflow-hidden">
                 <Image
-                  src={newsImages[featured.category] ?? newsImages.radnice}
+                  src={featured.image}
                   alt={featured.title}
                   fill
                   className="object-cover"
-                  unoptimized
                 />
                 <div className="absolute inset-0"
                      style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)" }} />
@@ -119,24 +109,41 @@ export default function ZpravodajPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {rest.map((item) => (
                 <div key={item.id}
-                     className="rounded-[1.5rem] p-5 flex flex-col justify-between transition-colors"
+                     className="rounded-[1.5rem] overflow-hidden flex flex-col justify-between transition-colors"
                      style={{ background: "var(--surface-container-low)" }}>
-                  <div>
-                    <div className="flex justify-between items-start mb-3">
+                  <div className="relative h-40">
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0"
+                         style={{ background: "linear-gradient(to top, rgba(24,28,32,0.52) 0%, transparent 65%)" }} />
+                    <div className="absolute top-4 left-4 right-4 flex justify-between items-start gap-3">
                       <span className="text-[10px] font-bold tracking-widest uppercase"
-                            style={{ color: catColor[item.category] ?? "var(--on-surface-variant)" }}>
+                            style={{
+                              color: "#fff",
+                              background: catColor[item.category] ?? "var(--on-surface-variant)",
+                              padding: "6px 10px",
+                              borderRadius: "999px"
+                            }}>
                         {item.category}
                       </span>
-                      <span className="text-[11px] text-on-surface-variant">{formatRelative(item.date)}</span>
+                      <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.86)" }}>{formatRelative(item.date)}</span>
                     </div>
-                    <h3 className="font-headline font-bold text-base leading-snug text-on-surface">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-on-surface-variant mt-2 line-clamp-2 leading-relaxed">
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <h3 className="font-headline font-bold text-base leading-snug text-white">
+                        {item.title}
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    <p className="text-sm text-on-surface-variant mt-2 line-clamp-3 leading-relaxed">
                       {item.summary}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 mt-4 text-sm font-semibold text-primary">
+                  <div className="flex items-center gap-1 px-5 pb-5 text-sm font-semibold text-primary">
                     Více informací
                     <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>info</span>
                   </div>

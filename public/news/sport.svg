@@ -1,0 +1,22 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="1200" height="800" fill="#F3F8FF"/>
+<rect width="1200" height="800" fill="url(#paint0_linear_1_3)"/>
+<circle cx="958" cy="154" r="104" fill="#D7EAFF"/>
+<path d="M0 618L120 580L240 604L360 548L480 586L600 532L720 586L840 536L960 590L1080 556L1200 592V800H0V618Z" fill="#0F5AC6"/>
+<path d="M0 678L120 646L240 664L360 616L480 646L600 602L720 646L840 606L960 652L1080 626L1200 650V800H0V678Z" fill="#0A387B"/>
+<rect x="186" y="554" width="828" height="112" rx="28" fill="#2D7BEA"/>
+<rect x="214" y="582" width="772" height="56" rx="18" fill="#6FB0FF"/>
+<circle cx="600" cy="402" r="160" fill="#F6FAFF"/>
+<path d="M600 284L676 330L676 420L600 466L524 420V330L600 284Z" fill="#0F5AC6"/>
+<path d="M524 420L470 498L526 590L600 546V466L524 420Z" fill="#2D7BEA"/>
+<path d="M676 420L730 498L674 590L600 546V466L676 420Z" fill="#2D7BEA"/>
+<path d="M600 546L526 590L556 664H644L674 590L600 546Z" fill="#0A387B"/>
+<rect x="88" y="662" width="208" height="64" rx="32" fill="#F6FAFF" fill-opacity="0.2"/>
+<text x="122" y="702" fill="#F6FAFF" font-family="Arial, sans-serif" font-size="34" font-weight="700">Sport</text>
+<defs>
+<linearGradient id="paint0_linear_1_3" x1="600" y1="0" x2="600" y2="800" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F8FBFF"/>
+<stop offset="1" stop-color="#E5F0FF"/>
+</linearGradient>
+</defs>
+</svg>

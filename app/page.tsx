@@ -2,7 +2,7 @@ import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
 import Link from "next/link";
 import Image from "next/image";
-import { events } from "@/lib/data";
+import { events, news } from "@/lib/data";
 
 const quickActions = [
   { icon: "local_taxi",       label: "Taxi",        href: "/adresar?k=taxi",       bg: "#baecbb", color: "#002109" },
@@ -31,6 +31,7 @@ export default function HomePage() {
   const upcoming = [...events]
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 4);
+  const [featuredNews] = [...news].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <>
@@ -163,11 +164,10 @@ export default function HomePage() {
             {/* Image container — position relative aby se overlay scoped */}
             <div className="relative h-52 w-full overflow-hidden">
               <Image
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Vimperk_zamek.jpg/800px-Vimperk_zamek.jpg"
-                alt="Zámek Vimperk"
+                src={featuredNews.image}
+                alt={featuredNews.title}
                 fill
                 className="object-cover"
-                unoptimized
               />
               <div className="absolute inset-0"
                    style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)" }} />
@@ -179,14 +179,13 @@ export default function HomePage() {
               </div>
               <div className="absolute bottom-4 left-5 right-5">
                 <h3 className="font-headline font-bold text-xl text-white leading-tight">
-                  Nová hřiště v parku Blanice — hlasujte!
+                  {featuredNews.title}
                 </h3>
               </div>
             </div>
             <div className="px-5 py-4" style={{ background: "var(--surface-container-lowest)" }}>
               <p className="text-sm leading-relaxed line-clamp-2" style={{ color: "var(--on-surface-variant)" }}>
-                Radnice spustila hlasování o podobě nových dětských hřišť v parku Blanice.
-                Hlasování trvá do 10. dubna.
+                {featuredNews.summary}
               </p>
               <button className="mt-3 font-bold text-sm flex items-center gap-1 group"
                       style={{ color: "var(--primary)" }}>

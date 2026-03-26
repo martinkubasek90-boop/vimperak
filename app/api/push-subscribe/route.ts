@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import webpush from "web-push";
 
+export const dynamic = "force-dynamic";
+
 // In production store subscriptions in Supabase/DB.
 const subscriptions: webpush.PushSubscription[] = [];
 

@@ -1,8 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { getKBSystemContext, getKBStatus } from "@/lib/knowledge";
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const BASE_SYSTEM = `Jsi Vimperák — přátelský a chytrý AI asistent komunitního portálu města Vimperk v jihočeském kraji.
 
@@ -30,13 +27,16 @@ Odpovídáš vždy v češtině, přátelsky, stručně a věcně.
 - Při dotazech na záchranku nebo hasiče vždy uveď číslo 112
 - Neodpovídej na témata nesouvisející s Vimperkem a Šumavou`;
 
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_MODEL = process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile";
+
 export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json() as {
       messages: { role: "user" | "assistant"; content: string }[];
     };
 
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.GROQ_API_KEY) {
       return NextResponse.json({
         reply: "Chatbot není momentálně dostupný. Kontaktujte radnici na tel. **388 402 111**.",
         kb: null,
@@ -55,14 +55,38 @@ export async function POST(req: NextRequest) {
       ? BASE_SYSTEM + kbContext
       : BASE_SYSTEM;
 
-    const response = await client.messages.create({
-      model:      "claude-haiku-4-5-20251001",
-      max_tokens: 600,
-      system:     systemPrompt,
-      messages:   messages.slice(-12),
+    const response = await fetch(GROQ_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        temperature: 0.3,
+        max_tokens: 600,
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages.slice(-12),
+        ],
+      }),
     });
 
-    const reply = response.content[0].type === "text" ? response.content[0].text : "";
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("[chat] Groq API error:", response.status, errorBody);
+      throw new Error(`Groq API error ${response.status}`);
+    }
+
+    const data = await response.json() as {
+      choices?: Array<{
+        message?: {
+          content?: string;
+        };
+      }>;
+    };
+
+    const reply = data.choices?.[0]?.message?.content?.trim() ?? "";
 
     return NextResponse.json({
       reply,
