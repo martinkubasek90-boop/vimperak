@@ -5,12 +5,12 @@ import Image from "next/image";
 import { events, news } from "@/lib/data";
 
 const quickActions = [
-  { icon: "local_taxi",       label: "Taxi",        href: "/adresar?k=taxi",       bg: "var(--secondary-fixed)", color: "var(--on-secondary-fixed)" },
-  { icon: "directions_bus",   label: "Autobusy",    href: "/jizdy",                bg: "var(--tertiary-fixed)", color: "var(--on-tertiary-fixed)" },
-  { icon: "medical_services", label: "Lékaři",      href: "/adresar?k=lékař",      bg: "var(--primary-fixed)", color: "var(--on-primary-fixed)" },
-  { icon: "local_pharmacy",   label: "Lékárny",     href: "/adresar?k=lékárna",    bg: "var(--surface-container)", color: "var(--on-surface)" },
-  { icon: "restaurant",       label: "Restaurace",  href: "/adresar?k=restaurace", bg: "var(--secondary-container)", color: "var(--on-secondary-container)" },
-  { icon: "campaign",         label: "Závady",      href: "/zhlasit",              bg: "var(--error-container)", color: "var(--on-error-container)" },
+  { icon: "calendar_month",   label: "Kalendář",    href: "/kalendar",             bg: "var(--secondary-fixed)", color: "var(--on-secondary-fixed)" },
+  { icon: "apartment",        label: "Radnice",     href: "/kontakty?k=město",     bg: "var(--secondary-container)", color: "var(--on-secondary-container)" },
+  { icon: "medical_services", label: "Lékaři",      href: "/kontakty?k=lékař",     bg: "var(--primary-fixed)", color: "var(--on-primary-fixed)" },
+  { icon: "local_pharmacy",   label: "Lékárny",     href: "/kontakty?k=lékárna",   bg: "var(--surface-container)", color: "var(--on-surface)" },
+  { icon: "local_taxi",       label: "Taxi",        href: "/kontakty?k=taxi",      bg: "var(--tertiary-fixed)", color: "var(--on-tertiary-fixed)" },
+  { icon: "campaign",         label: "Podněty",     href: "/mesto",                bg: "var(--error-container)", color: "var(--on-error-container)" },
 ];
 
 const eventCatColor: Record<string, { bg: string; text: string }> = {
@@ -70,7 +70,7 @@ export default function HomePage() {
             />
 
             <div className="relative z-10 flex min-h-[25rem] flex-col justify-end p-5 md:min-h-[27rem] md:p-6">
-              <div className="max-w-[16rem] md:max-w-[20rem] mb-5">
+              <div className="max-w-[16rem] md:max-w-[20rem] mb-2">
                 <p className="text-sm font-semibold mb-3" style={{ color: "#d7e8df" }}>
                   Čtvrtek, 26. března 2026
                 </p>
@@ -125,18 +125,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── Kulturní program (místo odjezdů) ──────────── */}
+        {/* ── Kalendář akcí ─────────────────────────────── */}
         <section className="px-4 pt-8">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="font-headline font-bold text-lg" style={{ color: "var(--on-surface)" }}>
-                Kulturní program
+                Kalendář akcí
               </h2>
               <p className="text-xs mt-0.5" style={{ color: "var(--on-surface-variant)" }}>
-                Co se děje v Vimperku
+                Co se děje ve Vimperku
               </p>
             </div>
-            <Link href="/zpravodaj" className="text-sm font-bold" style={{ color: "var(--primary)" }}>
+            <Link href="/kalendar" className="text-sm font-bold" style={{ color: "var(--primary)" }}>
               Vše →
             </Link>
           </div>
@@ -188,7 +188,7 @@ export default function HomePage() {
             <h2 className="font-headline font-bold text-lg" style={{ color: "var(--on-surface)" }}>
               Zprávy z radnice
             </h2>
-            <Link href="/zpravodaj" className="text-sm font-bold" style={{ color: "var(--primary)" }}>
+            <Link href="/mesto" className="text-sm font-bold" style={{ color: "var(--primary)" }}>
               Vše →
             </Link>
           </div>
@@ -222,13 +222,13 @@ export default function HomePage() {
               <p className="text-sm leading-relaxed line-clamp-2" style={{ color: "var(--on-surface-variant)" }}>
                 {featuredNews.summary}
               </p>
-              <button className="mt-3 font-bold text-sm flex items-center gap-1 group"
-                      style={{ color: "var(--primary)" }}>
+              <Link href="/zpravodaj" className="mt-3 font-bold text-sm flex items-center gap-1 group"
+                    style={{ color: "var(--primary)" }}>
                 Číst více
                 <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">
                   arrow_forward
                 </span>
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -253,14 +253,14 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── Active poll ───────────────────────────────── */}
+        {/* ── Zapojení obyvatel ─────────────────────────── */}
         <section className="px-4 pt-8">
           <div className="rounded-[2rem] p-5"
                style={{ background: "var(--surface-container-lowest)", boxShadow: "0 2px 16px rgba(24,28,32,0.06)" }}>
             <div className="flex items-center gap-2 mb-1">
               <span className="material-symbols-outlined" style={{ color: "var(--secondary)" }}>how_to_vote</span>
               <span className="text-[10px] font-black tracking-widest uppercase" style={{ color: "var(--secondary)" }}>
-                Hlasování
+                Město
               </span>
             </div>
             <p className="font-headline font-bold text-base leading-snug mb-4" style={{ color: "var(--on-surface)" }}>
@@ -280,11 +280,11 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            <Link href="/hlasovani"
+            <Link href="/mesto"
                   className="flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all active:scale-[0.98]"
                   style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}>
               <span className="material-symbols-outlined text-sm">how_to_vote</span>
-              Hlasovat nyní
+              Otevřít sekci Město
             </Link>
           </div>
         </section>

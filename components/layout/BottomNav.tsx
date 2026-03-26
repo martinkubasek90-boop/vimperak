@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const items = [
-  { href: "/",          icon: "home",         label: "Domů" },
-  { href: "/zpravodaj", icon: "newspaper",     label: "Zprávy" },
-  { href: "/adresar",   icon: "local_library", label: "Služby" },
-  { href: "/zhlasit",   icon: "campaign",      label: "Podněty" },
-  { href: "/ai",        icon: "smart_toy",     label: "AI" },
+  { href: "/",          icon: "home",           label: "Domů",     aliases: ["/"] },
+  { href: "/kalendar",  icon: "calendar_month", label: "Kalendář", aliases: ["/kalendar", "/akce"] },
+  { href: "/kontakty",  icon: "call",           label: "Kontakty", aliases: ["/kontakty", "/adresar"] },
+  { href: "/mesto",     icon: "location_city",  label: "Město",    aliases: ["/mesto", "/zhlasit", "/hlasovani", "/zpravodaj"] },
+  { href: "/ai",        icon: "smart_toy",      label: "AI",       aliases: ["/ai"] },
 ];
 
 export default function BottomNav() {
@@ -20,8 +20,10 @@ export default function BottomNav() {
       style={{ boxShadow: "0 -8px 28px rgba(67,17,24,0.10)", borderTop: "1px solid rgba(159,29,47,0.08)" }}
     >
       <div className="max-w-2xl mx-auto flex justify-around items-center px-3 pb-6 pt-2">
-        {items.map(({ href, icon, label }) => {
-          const active = pathname === href;
+        {items.map(({ href, icon, label, aliases }) => {
+          const active = aliases.some((candidate) =>
+            candidate === "/" ? pathname === "/" : pathname === candidate || pathname.startsWith(`${candidate}/`)
+          );
           return (
             <Link
               key={href}
