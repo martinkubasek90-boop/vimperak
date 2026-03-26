@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   title: "Vimperk — Tvoje město online",
   description: "Komunitní portál pro obyvatele Vimperka. Akce, jízdní řády, adresář a hlasování.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/branding/vimperk-mark.png",
+    apple: "/branding/vimperk-shield.png",
+    shortcut: "/branding/vimperk-mark.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -34,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
           rel="stylesheet"
         />
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="apple-touch-icon" href="/branding/vimperk-shield.png" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="pb-32" style={{ background: "var(--surface)", color: "var(--on-surface)", fontFamily: "Inter, sans-serif" }}>

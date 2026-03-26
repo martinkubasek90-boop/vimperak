@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 export default function TopBar() {
   return (
@@ -8,15 +9,29 @@ export default function TopBar() {
       <div className="max-w-2xl mx-auto flex justify-between items-center px-5 h-[72px]">
         <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
-            style={{ background: "linear-gradient(135deg, var(--surface-container-low), var(--surface-container-high))" }}
+            className="w-11 h-11 rounded-[1rem] flex items-center justify-center overflow-hidden shrink-0"
+            style={{ background: "linear-gradient(135deg, rgba(255,250,246,0.96), rgba(240,230,219,0.92))", boxShadow: "0 10px 24px rgba(67,17,24,0.08)" }}
           >
-            <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: "20px" }}>person</span>
+            <Image
+              src="/branding/vimperk-shield.png"
+              alt="Znak města Vimperk"
+              width={26}
+              height={32}
+              className="object-contain"
+            />
           </div>
-          <Link href="/" className="font-headline font-black text-2xl tracking-tight"
-                style={{ color: "var(--primary)" }}>
-            Vimperk
-          </Link>
+          <div className="flex flex-col justify-center">
+            <Link
+              href="/"
+              className="font-headline font-black text-[2rem] leading-none tracking-[-0.04em]"
+              style={{ color: "#181312" }}
+            >
+              Vimperk.
+            </Link>
+            <span className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: "var(--secondary)" }}>
+              Město online
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-1">
           <button

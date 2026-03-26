@@ -82,20 +82,20 @@ export default function HomePage() {
               </div>
 
               <div
-                className="max-w-[20rem] rounded-[1.75rem] p-4 backdrop-blur-md md:max-w-[23rem]"
+                className="max-w-[20rem] rounded-[1.6rem] px-4 py-3.5 backdrop-blur-md md:max-w-[22rem]"
                 style={{ background: "rgba(58,38,35,0.38)", border: "1px solid rgba(255,255,255,0.18)" }}
               >
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2.5 text-white">
-                    <span className="material-symbols-outlined text-[1.65rem]" style={{ color: "#d7e8df" }}>wb_sunny</span>
+                    <span className="material-symbols-outlined text-[1.45rem]" style={{ color: "#d7e8df" }}>wb_sunny</span>
                     <div>
-                      <p className="font-headline font-bold text-xl leading-none">8°C</p>
+                      <p className="font-headline font-bold text-[1.15rem] leading-none">8°C</p>
                       <p className="text-xs text-white/70">Slunečno · 12° max</p>
                     </div>
                   </div>
-                  <div className="h-8 w-px bg-white/18" />
+                  <div className="h-7 w-px bg-white/18" />
                   <div className="flex items-center gap-2.5 text-white/90">
-                    <span className="material-symbols-outlined text-xl" style={{ color: "#d7e8df" }}>warning</span>
+                    <span className="material-symbols-outlined text-[1.1rem]" style={{ color: "#d7e8df" }}>warning</span>
                     <p className="text-sm font-medium leading-tight">
                       Uzavírka Pivovarské
                       <br />
