@@ -70,7 +70,7 @@ export default function HomePage() {
             />
 
             <div className="relative z-10 flex min-h-[25rem] flex-col justify-end p-5 md:min-h-[27rem] md:p-6">
-              <div className="max-w-[16rem] md:max-w-[20rem] mb-0.5">
+              <div className="max-w-[16rem] md:max-w-[20rem] mb-2">
                 <p className="text-sm font-semibold mb-2" style={{ color: "#d7e8df" }}>
                   Čtvrtek, 26. března 2026
                 </p>
@@ -82,7 +82,7 @@ export default function HomePage() {
               </div>
 
               <div
-                className="max-w-[20rem] rounded-[1.6rem] px-4 py-3 backdrop-blur-md md:max-w-[22rem]"
+                className="max-w-[20rem] rounded-[1.6rem] px-4 py-[0.85rem] backdrop-blur-md md:max-w-[22rem]"
                 style={{ background: "rgba(58,38,35,0.38)", border: "1px solid rgba(255,255,255,0.18)" }}
               >
                 <div className="flex items-center gap-3">
