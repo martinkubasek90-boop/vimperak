@@ -22,10 +22,10 @@ const cityActions = [
     tone: "var(--secondary-container)",
   },
   {
-    href: "mailto:urad@mesto.vimperk.cz",
+    href: "/napsat-mestu",
     icon: "mail",
     title: "Napsat městu",
-    text: "Rychlý kontakt na radnici a odbory.",
+    text: "Jednoduchý formulář pro dotazy a podněty.",
     tone: "var(--tertiary-fixed)",
   },
   {
@@ -118,6 +118,51 @@ export default function MestoPage() {
           </div>
         </section>
 
+        <section className="px-4 pt-6">
+          <div
+            className="rounded-[2rem] p-6 block"
+            style={{ background: "linear-gradient(135deg, #8f2030 0%, #c83846 52%, #d77b53 100%)", boxShadow: "0 16px 34px rgba(67,17,24,0.18)" }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.16em]" style={{ color: "rgba(255,255,255,0.8)" }}>
+                  Zprávy z radnice
+                </p>
+                <h2 className="mt-3 font-headline text-2xl font-extrabold leading-tight text-white">
+                  Důležité novinky města hned po ruce
+                </h2>
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-white/85">
+                  Uzavírky, upozornění, změny v provozu úřadu i důležité termíny na jednom místě.
+                </p>
+              </div>
+              <span className="material-symbols-outlined text-3xl text-white/90">newspaper</span>
+            </div>
+            <div className="mt-5 space-y-3">
+              {latestNews.map((item) => (
+                <Link
+                  key={item.id}
+                  href="/zpravodaj"
+                  className="block rounded-[1.4rem] px-4 py-3"
+                  style={{ background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.14)" }}
+                >
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em]" style={{ color: "rgba(255,255,255,0.76)" }}>
+                    {new Date(item.date).toLocaleDateString("cs-CZ", { day: "numeric", month: "long" })}
+                  </p>
+                  <h3 className="mt-2 text-base font-extrabold leading-snug text-white">{item.title}</h3>
+                </Link>
+              ))}
+            </div>
+            <Link
+              href="/zpravodaj"
+              className="mt-5 inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold"
+              style={{ background: "rgba(255,255,255,0.92)", color: "var(--primary)" }}
+            >
+              Otevřít zpravodaj
+              <span className="material-symbols-outlined text-base">arrow_forward</span>
+            </Link>
+          </div>
+        </section>
+
         <section className="px-4 pt-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-headline text-lg font-bold" style={{ color: "var(--on-surface)" }}>
@@ -184,37 +229,6 @@ export default function MestoPage() {
                   </a>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="px-4 pt-8 pb-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-headline text-lg font-bold" style={{ color: "var(--on-surface)" }}>
-              Důležité zprávy
-            </h2>
-            <Link href="/zpravodaj" className="text-sm font-bold" style={{ color: "var(--secondary)" }}>
-              Otevřít zpravodaj
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {latestNews.map((item) => (
-              <Link
-                key={item.id}
-                href="/zpravodaj"
-                className="rounded-[1.8rem] p-5 block"
-                style={{ background: "var(--surface-container-lowest)", boxShadow: "0 10px 24px rgba(67,17,24,0.06)", border: "1px solid rgba(159,29,47,0.05)" }}
-              >
-                <p className="text-[10px] font-black uppercase tracking-[0.16em]" style={{ color: "var(--secondary)" }}>
-                  {new Date(item.date).toLocaleDateString("cs-CZ", { day: "numeric", month: "long" })}
-                </p>
-                <h3 className="mt-3 font-headline text-base font-extrabold leading-snug" style={{ color: "var(--on-surface)" }}>
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
-                  {item.summary}
-                </p>
-              </Link>
             ))}
           </div>
         </section>

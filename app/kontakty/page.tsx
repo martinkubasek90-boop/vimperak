@@ -18,6 +18,17 @@ const filters: { value: Cat; label: string }[] = [
   { value: "obchod", label: "Obchody" },
 ];
 
+const heroFilters: { value: Cat; label: string; icon: string }[] = [
+  { value: "město", label: "Město", icon: "apartment" },
+  { value: "lékař", label: "Lékaři", icon: "health_and_safety" },
+  { value: "lékárna", label: "Lékárny", icon: "medical_services" },
+  { value: "taxi", label: "Taxi", icon: "local_taxi" },
+  { value: "restaurace", label: "Gastro", icon: "restaurant" },
+  { value: "sport", label: "Sport", icon: "fitness_center" },
+  { value: "obchod", label: "Obchody", icon: "storefront" },
+  { value: "opravna", label: "Opravny", icon: "build" },
+];
+
 const catIcon: Record<string, string> = {
   město: "apartment",
   taxi: "local_taxi",
@@ -47,6 +58,7 @@ export default function KontaktyPage() {
   const municipalContacts = municipalIds
     .map((id) => directory.find((item) => item.id === id))
     .filter((item): item is DirectoryItem => Boolean(item));
+  const showMunicipalSection = cat === "vše" && search.trim() === "";
 
   const filtered = directory.filter((item) => {
     const matchCat = cat === "vše" || item.category === cat;
@@ -80,20 +92,26 @@ export default function KontaktyPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                {municipalContacts.slice(0, 4).map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-[1.4rem] p-4"
-                    style={{ background: item.category === "město" ? "var(--secondary-container)" : "var(--surface-container-lowest)" }}
+              <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
+                {heroFilters.map((item) => (
+                  <button
+                    key={item.value}
+                    onClick={() => setCat(item.value)}
+                    className="rounded-[1.25rem] p-3 text-left transition-all active:scale-95"
+                    style={cat === item.value ? {
+                      background: "var(--secondary-container)",
+                      boxShadow: "0 10px 18px rgba(53,110,92,0.12)",
+                    } : {
+                      background: "var(--surface-container-lowest)",
+                    }}
                   >
-                    <span className="material-symbols-outlined text-2xl" style={{ color: "var(--secondary)" }}>
-                      {catIcon[item.category] ?? "call"}
+                    <span className="material-symbols-outlined text-[1.3rem]" style={{ color: "var(--secondary)" }}>
+                      {item.icon}
                     </span>
-                    <p className="mt-3 text-sm font-semibold leading-snug" style={{ color: "var(--on-surface)" }}>
-                      {item.name}
+                    <p className="mt-2 text-[11px] font-semibold leading-tight" style={{ color: "var(--on-surface)" }}>
+                      {item.label}
                     </p>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -136,6 +154,7 @@ export default function KontaktyPage() {
           ))}
         </div>
 
+        {showMunicipalSection && (
         <section className="px-4 pt-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-headline text-lg font-bold" style={{ color: "var(--on-surface)" }}>
@@ -174,6 +193,7 @@ export default function KontaktyPage() {
             ))}
           </div>
         </section>
+        )}
 
         <section className="px-4 pt-6 space-y-3">
           {featured && (
