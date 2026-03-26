@@ -36,11 +36,13 @@ export async function POST(req: NextRequest) {
       messages: { role: "user" | "assistant"; content: string }[];
     };
 
-    if (!process.env.GROQ_API_KEY) {
+    const apiKey = process.env.GROQ_API_KEY?.trim();
+
+    if (!apiKey) {
       return NextResponse.json({
         reply: "Chatbot není momentálně dostupný. Kontaktujte radnici na tel. **388 402 111**.",
         kb: null,
-      });
+      }, { status: 503 });
     }
 
     // Vezmi poslední uživatelský dotaz pro retrieval
@@ -59,12 +61,13 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
       },
+      cache: "no-store",
       body: JSON.stringify({
         model: GROQ_MODEL,
         temperature: 0.3,
-        max_tokens: 600,
+        max_completion_tokens: 600,
         messages: [
           { role: "system", content: systemPrompt },
           ...messages.slice(-12),
@@ -75,7 +78,10 @@ export async function POST(req: NextRequest) {
     if (!response.ok) {
       const errorBody = await response.text();
       console.error("[chat] Groq API error:", response.status, errorBody);
-      throw new Error(`Groq API error ${response.status}`);
+      return NextResponse.json({
+        reply: "AI asistent je dočasně nedostupný. Zkuste to prosím za chvíli.",
+        kb: null,
+      }, { status: 502 });
     }
 
     const data = await response.json() as {
