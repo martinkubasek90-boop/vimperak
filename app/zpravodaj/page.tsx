@@ -50,7 +50,7 @@ export default function ZpravodajPage() {
               src="/editorial/news-hero.svg"
               alt="Stylizovaná ilustrace městské budovy"
               fill
-              className="object-contain object-[74%_56%] md:object-[78%_52%]"
+              className="object-cover object-[62%_28%] md:object-[60%_24%]"
             />
             <div
               className="absolute inset-0"
@@ -60,10 +60,10 @@ export default function ZpravodajPage() {
               }}
             />
             <div
-              className="absolute left-0 top-0 bottom-0 w-[74%] md:w-[46%]"
+              className="absolute left-0 top-0 bottom-0 w-[72%] md:w-[42%]"
               style={{
                 background:
-                  "linear-gradient(90deg, rgba(44,24,22,0.58) 0%, rgba(44,24,22,0.26) 64%, rgba(44,24,22,0.00) 100%)",
+                  "linear-gradient(90deg, rgba(44,24,22,0.54) 0%, rgba(44,24,22,0.20) 64%, rgba(44,24,22,0.00) 100%)",
               }}
             />
 

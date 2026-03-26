@@ -69,8 +69,8 @@ export default function HomePage() {
               style={{ background: "linear-gradient(180deg, rgba(47,91,79,0.14) 0%, transparent 100%)" }}
             />
 
-            <div className="relative z-10 flex min-h-[25rem] flex-col justify-between p-5 md:min-h-[27rem] md:p-6">
-              <div className="max-w-[16rem] md:max-w-[20rem] pt-24 md:pt-28">
+            <div className="relative z-10 flex min-h-[25rem] flex-col justify-end p-5 md:min-h-[27rem] md:p-6">
+              <div className="max-w-[16rem] md:max-w-[20rem] mb-5">
                 <p className="text-sm font-semibold mb-3" style={{ color: "#d7e8df" }}>
                   Čtvrtek, 26. března 2026
                 </p>

@@ -143,6 +143,11 @@ function truncateSentence(text: string, max = 260): string {
   return compact.slice(0, max - 1).trimEnd() + "…";
 }
 
+function extractPresaleUrl(text: string): string | null {
+  const match = text.match(/predprodej:\s*(https?:\/\/\S+)/i);
+  return match?.[1] ?? null;
+}
+
 export function getTopRelevantPages(query: string, topK = 3): KBPage[] {
   const kb = loadKB();
   if (!kb || kb.pages.length === 0) return [];
@@ -204,6 +209,10 @@ export function answerFromKnowledgeBase(query: string): { reply: string; sourceU
     const documentPage = findPageByMatcher((page, title, url) =>
       (title.includes("osobni doklady") || url.includes("p1=9487")) && !title.includes("on-line rezervace"),
     );
+    const reservationPage = findPageByMatcher((page, title, url, content) =>
+      (title.includes("on-line rezervace na prepazky") || url.includes("on-line-rezervace-na-prepazky")) &&
+      (title.includes("osobni doklady") || content.includes("obcanskych prukazu")),
+    );
 
     return {
       reply: [
@@ -212,11 +221,32 @@ export function answerFromKnowledgeBase(query: string): { reply: string; sourceU
         "Adresa: Steinbrenerova 6, 385 17 Vimperk.",
         "Kontakt: 388 402 231, urad@mesto.vimperk.cz.",
         "Úřední hodiny: pondělí a středa 7:30-11:30 a 12:30-17:00, pátek 7:30-11:30.",
-        "Město také uvádí možnost on-line rezervace na přepážky.",
+        reservationPage
+          ? `On-line rezervace na přepážky: ${reservationPage.url}`
+          : "Město také uvádí možnost on-line rezervace na přepážky.",
         `Zdroj: ${(documentPage ?? first).url}`,
       ].join("\n"),
       sourceUrl: (documentPage ?? first).url,
     };
+  }
+
+  if (/(kino|vstupenk|listek|listky|predprodej)/.test(q)) {
+    const ticketPage = findPageByMatcher((page, title, _url, content) =>
+      (title.includes("kino") || content.includes("predprodej:") || content.includes("vstupne:")) &&
+      (content.includes("predprodej:") || content.includes("meks vimperk")),
+    );
+
+    const presaleUrl = ticketPage ? extractPresaleUrl(ticketPage.content) : null;
+    if (ticketPage && presaleUrl) {
+      return {
+        reply: [
+          "Našel jsem akci s přímým předprodejem.",
+          `Odkaz: ${presaleUrl}`,
+          `Zdroj akce: ${ticketPage.url}`,
+        ].join("\n"),
+        sourceUrl: presaleUrl,
+      };
+    }
   }
 
   const summary = truncateSentence(first.content);
