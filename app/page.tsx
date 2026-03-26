@@ -54,14 +54,14 @@ export default function HomePage() {
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(180deg, rgba(34,18,16,0.08) 0%, rgba(34,18,16,0.22) 100%)",
+                  "linear-gradient(180deg, rgba(34,18,16,0.02) 0%, rgba(34,18,16,0.08) 100%)",
               }}
             />
             <div
-              className="absolute left-0 top-0 bottom-0 w-[72%] md:w-[52%]"
+              className="absolute left-0 bottom-0 h-[58%] w-[78%] md:h-[52%] md:w-[48%]"
               style={{
                 background:
-                  "linear-gradient(90deg, rgba(37,20,18,0.60) 0%, rgba(37,20,18,0.36) 62%, rgba(37,20,18,0.00) 100%)",
+                  "radial-gradient(circle at left bottom, rgba(37,20,18,0.64) 0%, rgba(37,20,18,0.42) 36%, rgba(37,20,18,0.18) 62%, rgba(37,20,18,0.00) 100%)",
               }}
             />
             <div
