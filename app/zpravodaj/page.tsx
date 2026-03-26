@@ -50,24 +50,24 @@ export default function ZpravodajPage() {
               src="/editorial/news-hero.svg"
               alt="Stylizovaná ilustrace městské budovy"
               fill
-              className="object-cover object-[58%_30%] md:object-[center_26%]"
+              className="object-contain object-[74%_56%] md:object-[78%_52%]"
             />
             <div
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(180deg, rgba(34,18,16,0.08) 0%, rgba(34,18,16,0.18) 100%)",
+                  "linear-gradient(180deg, rgba(34,18,16,0.06) 0%, rgba(34,18,16,0.12) 100%)",
               }}
             />
             <div
-              className="absolute left-0 top-0 bottom-0 w-[74%] md:w-[50%]"
+              className="absolute left-0 top-0 bottom-0 w-[74%] md:w-[46%]"
               style={{
                 background:
-                  "linear-gradient(90deg, rgba(44,24,22,0.62) 0%, rgba(44,24,22,0.34) 64%, rgba(44,24,22,0.00) 100%)",
+                  "linear-gradient(90deg, rgba(44,24,22,0.58) 0%, rgba(44,24,22,0.26) 64%, rgba(44,24,22,0.00) 100%)",
               }}
             />
 
-            <div className="relative z-10 flex min-h-[15.5rem] flex-col justify-end p-5 md:min-h-[17rem] md:p-6">
+            <div className="relative z-10 flex min-h-[15.5rem] flex-col justify-end p-5 pt-12 md:min-h-[17rem] md:p-6 md:pt-16">
               <span
                 className="mb-3 inline-flex w-fit items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase"
                 style={{ background: "rgba(215,232,223,0.16)", color: "#d7e8df", border: "1px solid rgba(215,232,223,0.18)" }}
@@ -79,9 +79,6 @@ export default function ZpravodajPage() {
                 <br />
                 z města
               </h1>
-              <p className="mt-3 max-w-[17rem] text-sm leading-relaxed text-white/82 md:max-w-[22rem]">
-                Novinky z radnice, upozornění a kulturní program v kompaktním přehledu.
-              </p>
             </div>
           </div>
         </section>

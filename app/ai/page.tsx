@@ -14,6 +14,40 @@ const QUICK = [
   "Jak nahlásit závadu?",
 ];
 
+function renderMessageContent(content: string, isUser: boolean) {
+  if (isUser) return content;
+
+  const lines = content.split("\n").map((line) => line.trim()).filter(Boolean);
+  const elements: React.ReactNode[] = [];
+  const urlPattern = /^((odkaz|zdroj):\s*)?(https?:\/\/\S+)$/i;
+
+  lines.forEach((line, index) => {
+    const match = line.match(urlPattern);
+    if (match) {
+      const url = match[3];
+      const label = /^zdroj:/i.test(line) ? "Otevřít zdroj" : "Otevřít odkaz";
+      elements.push(
+        <a
+          key={`cta-${index}`}
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-1 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-transform active:scale-[0.98]"
+          style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>open_in_new</span>
+          {label}
+        </a>,
+      );
+      return;
+    }
+
+    elements.push(<p key={`p-${index}`}>{line}</p>);
+  });
+
+  return <div className="space-y-2">{elements}</div>;
+}
+
 export default function AiPage() {
   const [mode, setMode] = useState<"ai" | "fallback" | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([
@@ -105,7 +139,7 @@ export default function AiPage() {
                      boxShadow: "0 10px 22px rgba(67,17,24,0.06)",
                      border: "1px solid rgba(159,29,47,0.05)"
                    }}>
-                {msg.content}
+                {renderMessageContent(msg.content, msg.role === "user")}
               </div>
             </div>
           ))}
