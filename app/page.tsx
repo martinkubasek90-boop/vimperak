@@ -70,18 +70,15 @@ export default function HomePage() {
             />
 
             <div className="relative z-10 flex min-h-[25rem] flex-col justify-between p-5 md:min-h-[27rem] md:p-6">
-              <div className="max-w-[16rem] md:max-w-[20rem]">
-                <p className="text-sm font-semibold mb-2 text-white/82">
+              <div className="max-w-[16rem] md:max-w-[20rem] pt-14 md:pt-20">
+                <p className="text-sm font-semibold mb-3" style={{ color: "#d7e8df" }}>
                   Čtvrtek, 26. března 2026
                 </p>
                 <h1 className="font-headline font-extrabold text-[2.7rem] leading-[0.94] tracking-tight mb-3 text-white md:text-[3.4rem]">
                   Dobré ráno,
                   <br />
-                  <span style={{ color: "#f2b08f" }}>Vimperku!</span>
+                  <span style={{ color: "#d7e8df" }}>Vimperku!</span>
                 </h1>
-                <p className="text-sm leading-relaxed text-white/82">
-                  Místní servis, zprávy a rychlé odkazy v jednom čistém ranním přehledu.
-                </p>
               </div>
 
               <div
