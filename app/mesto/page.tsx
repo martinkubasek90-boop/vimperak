@@ -81,7 +81,7 @@ export default function MestoPage() {
                   Město
                 </h1>
                 <p className="mt-2 text-sm font-medium leading-relaxed max-w-[22rem]" style={{ color: "#7bf0af" }}>
-                  Podněty, ankety a kontakt
+                  Podněty, ankety, novinky a kontakt
                   <br />
                   s radnicí na jednom místě.
                 </p>
@@ -100,7 +100,7 @@ export default function MestoPage() {
                   </span>
                   {action.title === "Hlasování a ankety" && (
                     <span
-                      className="absolute right-4 top-4 inline-flex w-fit rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em]"
+                      className="absolute right-4 top-4 inline-flex w-fit rounded-full px-2 py-[0.35rem] text-[8px] font-black uppercase tracking-[0.12em]"
                       style={{ background: "rgba(255,255,255,0.78)", color: "var(--secondary)" }}
                     >
                       {polls.length} aktivní ankety
