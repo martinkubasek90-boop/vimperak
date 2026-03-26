@@ -70,10 +70,10 @@ export default function MestoPage() {
             />
 
             <div className="relative z-10 flex min-h-[17rem] flex-col justify-end p-5 md:min-h-[18rem] md:p-6">
-              <div className="mt-auto">
+              <div className="mt-auto pt-16 md:pt-20">
                 <span
                   className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase mb-3"
-                  style={{ background: "rgba(215,232,223,0.16)", color: "#d7e8df", border: "1px solid rgba(215,232,223,0.18)" }}
+                  style={{ background: "rgba(53,110,92,0.18)", color: "#8ee3b6", border: "1px solid rgba(142,227,182,0.26)" }}
                 >
                   Občanská sekce
                 </span>
@@ -83,21 +83,6 @@ export default function MestoPage() {
                 <p className="mt-2 text-sm leading-relaxed max-w-md text-white/82">
                   Podněty, ankety, kontakt s radnicí a důležité městské informace na jednom místě.
                 </p>
-              </div>
-
-              <div className="mt-3 grid grid-cols-3 gap-2.5">
-                <div className="rounded-[1.15rem] px-4 py-3 backdrop-blur-sm" style={{ background: "rgba(255,250,246,0.82)" }}>
-                  <p className="text-[11px] font-semibold" style={{ color: "var(--on-surface-variant)" }}>Aktivní ankety</p>
-                  <p className="mt-1.5 font-headline text-[1.7rem] font-black leading-none" style={{ color: "var(--primary)" }}>{polls.length}</p>
-                </div>
-                <div className="rounded-[1.15rem] px-4 py-3 backdrop-blur-sm" style={{ background: "rgba(215,232,223,0.92)" }}>
-                  <p className="text-[11px] font-semibold" style={{ color: "var(--on-secondary-container)" }}>Top kontakty</p>
-                  <p className="mt-1.5 font-headline text-[1.7rem] font-black leading-none" style={{ color: "var(--secondary)" }}>{cityContacts.length}</p>
-                </div>
-                <div className="rounded-[1.15rem] px-4 py-3 backdrop-blur-sm" style={{ background: "rgba(239,220,207,0.90)" }}>
-                  <p className="text-[11px] font-semibold" style={{ color: "var(--on-surface-variant)" }}>Novinky</p>
-                  <p className="mt-1.5 font-headline text-[1.7rem] font-black leading-none" style={{ color: "var(--primary)" }}>{latestNews.length}</p>
-                </div>
               </div>
             </div>
           </div>
@@ -111,6 +96,14 @@ export default function MestoPage() {
                   <span className="material-symbols-outlined text-2xl" style={{ color: "var(--primary)" }}>
                     {action.icon}
                   </span>
+                  {action.title === "Hlasování a ankety" && (
+                    <span
+                      className="mt-4 inline-flex w-fit rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em]"
+                      style={{ background: "rgba(255,255,255,0.7)", color: "var(--secondary)" }}
+                    >
+                      {polls.length} aktivní ankety
+                    </span>
+                  )}
                   <h2 className="mt-4 font-headline text-base font-extrabold leading-snug" style={{ color: "var(--on-surface)" }}>
                     {action.title}
                   </h2>
