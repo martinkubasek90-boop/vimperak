@@ -41,15 +41,45 @@ export default function ZpravodajPage() {
     <>
       <TopBar />
       <main className="pt-20 pb-4 max-w-2xl mx-auto">
+        <section className="px-4 pt-5">
+          <div className="editorial-shell rounded-[2rem] p-5 md:p-6">
+            <div className="relative z-10 grid gap-5 md:grid-cols-[1.1fr_0.9fr] md:items-center">
+              <div>
+                <span
+                  className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase mb-3"
+                  style={{ background: "rgba(159,29,47,0.08)", color: "var(--primary)" }}
+                >
+                  Městský zpravodaj
+                </span>
+                <h1 className="font-headline font-extrabold text-3xl leading-tight tracking-tight md:text-[2.6rem]"
+                    style={{ color: "var(--primary)" }}>
+                  Zprávy a události
+                  <br />
+                  v klidnějším rytmu města
+                </h1>
+                <p className="mt-3 max-w-md text-sm leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
+                  Přehled novinek z radnice, důležitých upozornění a kulturního programu. Hero drží kompaktní výšku,
+                  takže obsah nezačne až pod zlomem.
+                </p>
+              </div>
+
+              <div className="relative h-36 md:h-44">
+                <Image
+                  src="/editorial/news-hero.svg"
+                  alt="Stylizovaná ilustrace městské budovy"
+                  fill
+                  className="object-contain object-right-center drop-shadow-[0_18px_32px_rgba(67,17,24,0.14)]"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Header */}
         <div className="px-5 pt-7 pb-5">
-          <h1 className="font-headline font-extrabold text-3xl tracking-tight text-on-surface mb-5">
-            Zprávy a Události
-          </h1>
           {/* Toggle */}
           <div className="p-1.5 rounded-2xl flex gap-1"
-               style={{ background: "var(--surface-container-low)" }}>
+               style={{ background: "rgba(237,225,214,0.92)", border: "1px solid rgba(159,29,47,0.08)" }}>
             {[{ id: "zpravy", label: "Zprávy z radnice" }, { id: "akce", label: "Kulturní program" }].map((t) => (
               <button
                 key={t.id}
@@ -58,7 +88,7 @@ export default function ZpravodajPage() {
                 style={tab === t.id ? {
                   background: "var(--surface-container-lowest)",
                   color: "var(--primary)",
-                  boxShadow: "0 1px 6px rgba(24,28,32,0.1)"
+                  boxShadow: "0 8px 18px rgba(67,17,24,0.08)"
                 } : {
                   color: "var(--on-surface-variant)"
                 }}

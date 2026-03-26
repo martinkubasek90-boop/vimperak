@@ -17,7 +17,7 @@ export default function BottomNav() {
   return (
     <nav
       className="fixed bottom-0 left-0 w-full z-50 glass-header rounded-t-3xl"
-      style={{ boxShadow: "0 -4px 24px rgba(24,28,32,0.08)" }}
+      style={{ boxShadow: "0 -8px 28px rgba(67,17,24,0.10)", borderTop: "1px solid rgba(159,29,47,0.08)" }}
     >
       <div className="max-w-2xl mx-auto flex justify-around items-center px-3 pb-6 pt-2">
         {items.map(({ href, icon, label }) => {
@@ -28,10 +28,10 @@ export default function BottomNav() {
               href={href}
               className="flex flex-col items-center justify-center px-4 py-2 rounded-2xl transition-all active:scale-90"
               style={active ? {
-                background: "var(--primary-container)",
+                background: "linear-gradient(135deg, var(--primary), var(--primary-container))",
                 color: "var(--on-primary)"
               } : {
-                color: "#44474e"
+                color: "var(--on-surface-variant)"
               }}
             >
               <span

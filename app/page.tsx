@@ -5,12 +5,12 @@ import Image from "next/image";
 import { events, news } from "@/lib/data";
 
 const quickActions = [
-  { icon: "local_taxi",       label: "Taxi",        href: "/adresar?k=taxi",       bg: "#baecbb", color: "#002109" },
-  { icon: "directions_bus",   label: "Autobusy",    href: "/jizdy",                bg: "#d2e4ff", color: "#001c37" },
-  { icon: "medical_services", label: "Lékaři",      href: "/adresar?k=lékař",      bg: "#ffdad7", color: "#410004" },
-  { icon: "local_pharmacy",   label: "Lékárny",     href: "/adresar?k=lékárna",    bg: "#e5e8ee", color: "#181c20" },
-  { icon: "restaurant",       label: "Restaurace",  href: "/adresar?k=restaurace", bg: "#bdefbe", color: "#002109" },
-  { icon: "campaign",         label: "Závady",      href: "/zhlasit",              bg: "#ffdad6", color: "#93000a" },
+  { icon: "local_taxi",       label: "Taxi",        href: "/adresar?k=taxi",       bg: "var(--secondary-fixed)", color: "var(--on-secondary-fixed)" },
+  { icon: "directions_bus",   label: "Autobusy",    href: "/jizdy",                bg: "var(--tertiary-fixed)", color: "var(--on-tertiary-fixed)" },
+  { icon: "medical_services", label: "Lékaři",      href: "/adresar?k=lékař",      bg: "var(--primary-fixed)", color: "var(--on-primary-fixed)" },
+  { icon: "local_pharmacy",   label: "Lékárny",     href: "/adresar?k=lékárna",    bg: "var(--surface-container)", color: "var(--on-surface)" },
+  { icon: "restaurant",       label: "Restaurace",  href: "/adresar?k=restaurace", bg: "var(--secondary-container)", color: "var(--on-secondary-container)" },
+  { icon: "campaign",         label: "Závady",      href: "/zhlasit",              bg: "var(--error-container)", color: "var(--on-error-container)" },
 ];
 
 const eventCatColor: Record<string, { bg: string; text: string }> = {
@@ -38,36 +38,57 @@ export default function HomePage() {
       <TopBar />
       <main className="pt-20 pb-4 max-w-2xl mx-auto">
 
-        {/* ── Hero gradient ──────────────────────────────── */}
-        <section
-          className="relative px-5 pt-8 pb-10 overflow-hidden"
-          style={{ background: "linear-gradient(145deg, #b2001c 0%, #da1e2d 55%, #e8402e 100%)" }}
-        >
-          <div className="absolute top-0 right-0 w-56 h-56 rounded-full opacity-10 -mt-16 -mr-16"
-               style={{ background: "radial-gradient(circle, #fff 0%, transparent 70%)" }} />
-          <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full opacity-10 -mb-10 -ml-10"
-               style={{ background: "radial-gradient(circle, #fff 0%, transparent 70%)" }} />
-          <div className="relative z-10">
-            <p className="text-white/70 text-sm font-medium mb-1 font-label">Čtvrtek, 26. března 2026</p>
-            <h1 className="font-headline font-extrabold text-4xl text-white leading-none tracking-tight mb-1">
-              Dobré ráno,
-            </h1>
-            <h2 className="font-headline font-extrabold text-4xl leading-tight tracking-tight mb-6"
-                style={{ color: "rgba(255,218,215,0.9)" }}>
-              Vimperku! ☀️
-            </h2>
-            <div className="flex items-center gap-4 bg-white/15 backdrop-blur rounded-2xl px-4 py-3">
-              <div className="flex items-center gap-2 text-white">
-                <span className="material-symbols-outlined text-2xl">wb_sunny</span>
-                <div>
-                  <p className="font-headline font-bold text-lg leading-none">8°C</p>
-                  <p className="text-white/70 text-xs">Slunečno · 12° max</p>
+        <section className="px-4 pt-5">
+          <div className="editorial-shell rounded-[2rem] p-5 md:p-6">
+            <div className="relative z-10 grid gap-5 md:grid-cols-[1.2fr_0.9fr] md:items-center">
+              <div>
+                <p className="text-sm font-semibold mb-2" style={{ color: "var(--secondary)" }}>
+                  Čtvrtek, 26. března 2026
+                </p>
+                <h1 className="font-headline font-extrabold text-[2.35rem] leading-[0.98] tracking-tight mb-3 md:text-[3.15rem]"
+                    style={{ color: "var(--primary)" }}>
+                  Dobré ráno,
+                  <br />
+                  <span style={{ color: "var(--tertiary)" }}>Vimperku!</span>
+                </h1>
+                <p className="text-sm leading-relaxed max-w-sm mb-5" style={{ color: "var(--on-surface-variant)" }}>
+                  Místní servis, zprávy a rychlé odkazy v teplejším redakčním kabátu inspirovaném městem a Šumavou.
+                </p>
+                <div
+                  className="flex flex-wrap items-center gap-4 rounded-[1.6rem] px-4 py-3"
+                  style={{ background: "rgba(159,29,47,0.08)", border: "1px solid rgba(159,29,47,0.10)" }}
+                >
+                  <div className="flex items-center gap-2.5" style={{ color: "var(--primary)" }}>
+                    <span className="material-symbols-outlined text-2xl">wb_sunny</span>
+                    <div>
+                      <p className="font-headline font-bold text-lg leading-none">8°C</p>
+                      <p className="text-xs" style={{ color: "var(--on-surface-variant)" }}>Slunečno · 12° max</p>
+                    </div>
+                  </div>
+                  <div className="hidden sm:block w-px h-8" style={{ background: "rgba(159,29,47,0.16)" }} />
+                  <div className="flex items-center gap-2.5" style={{ color: "var(--secondary)" }}>
+                    <span className="material-symbols-outlined text-xl">warning</span>
+                    <p className="text-sm font-medium leading-tight">
+                      Uzavírka Pivovarské
+                      <br />
+                      od 28. 3.
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className="w-px h-8 bg-white/20 mx-1" />
-              <div className="flex items-center gap-2 text-white/80">
-                <span className="material-symbols-outlined text-sm">warning</span>
-                <p className="text-xs font-medium leading-tight">Uzavírka Pivovarské<br/>od 28. 3.</p>
+
+              <div className="relative h-44 md:h-56">
+                <div
+                  className="absolute inset-0 rounded-[1.8rem]"
+                  style={{ background: "linear-gradient(180deg, rgba(255,250,246,0.2), rgba(255,250,246,0.65))" }}
+                />
+                <Image
+                  src="/editorial/castle-hero.svg"
+                  alt="Stylizovaná ilustrace zámku ve Vimperku"
+                  fill
+                  priority
+                  className="object-contain object-right-bottom drop-shadow-[0_20px_36px_rgba(67,17,24,0.16)]"
+                />
               </div>
             </div>
           </div>
@@ -81,8 +102,8 @@ export default function HomePage() {
           <div className="grid grid-cols-3 gap-3">
             {quickActions.map(({ icon, label, href, bg, color }) => (
               <Link key={label} href={href}
-                className="flex flex-col items-center gap-2.5 p-4 rounded-3xl transition-all active:scale-95 hover:brightness-95"
-                style={{ backgroundColor: bg }}>
+                className="flex flex-col items-center gap-2.5 p-4 rounded-3xl transition-all active:scale-95 hover:brightness-95 border"
+                style={{ backgroundColor: bg, borderColor: "rgba(159,29,47,0.06)" }}>
                 <span className="material-symbols-outlined text-2xl" style={{ color }}>{icon}</span>
                 <span className="text-xs font-semibold text-center leading-tight" style={{ color }}>{label}</span>
               </Link>

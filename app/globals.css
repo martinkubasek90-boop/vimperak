@@ -4,48 +4,48 @@
 
 /* ── MD3 Design Tokens ────────────────────────────────────────── */
 :root {
-  --primary:                #b2001c;
-  --primary-container:      #da1e2d;
+  --primary:                #9f1d2f;
+  --primary-container:      #c83846;
   --on-primary:             #ffffff;
-  --on-primary-container:   #fff2f0;
-  --primary-fixed:          #ffdad7;
-  --on-primary-fixed:       #410004;
+  --on-primary-container:   #fff4f0;
+  --primary-fixed:          #f7d4cc;
+  --on-primary-fixed:       #431118;
 
-  --secondary:              #3c6842;
-  --secondary-container:    #baecbb;
+  --secondary:              #6c5140;
+  --secondary-container:    #ead8c7;
   --on-secondary:           #ffffff;
-  --on-secondary-container: #406c46;
-  --secondary-fixed:        #bdefbe;
-  --on-secondary-fixed:     #002109;
+  --on-secondary-container: #4e392c;
+  --secondary-fixed:        #f3e6d9;
+  --on-secondary-fixed:     #2d1c12;
 
-  --tertiary:               #095999;
-  --tertiary-container:     #3372b4;
+  --tertiary:               #b96542;
+  --tertiary-container:     #efc4ad;
   --on-tertiary:            #ffffff;
-  --on-tertiary-container:  #f0f4ff;
-  --tertiary-fixed:         #d2e4ff;
-  --on-tertiary-fixed:      #001c37;
+  --on-tertiary-container:  #552b18;
+  --tertiary-fixed:         #f6ddd0;
+  --on-tertiary-fixed:      #4b1d10;
 
-  --error:                  #ba1a1a;
-  --error-container:        #ffdad6;
+  --error:                  #b43b32;
+  --error-container:        #f7d6d1;
   --on-error:               #ffffff;
-  --on-error-container:     #93000a;
+  --on-error-container:     #6a1814;
 
-  --surface:                #f7f9ff;
-  --surface-container-lowest: #ffffff;
-  --surface-container-low:  #f1f4fa;
-  --surface-container:      #ebeef4;
-  --surface-container-high: #e5e8ee;
-  --surface-container-highest: #dfe3e8;
-  --surface-dim:            #d7dae0;
-  --surface-bright:         #f7f9ff;
+  --surface:                #f7f1eb;
+  --surface-container-lowest: #fffaf6;
+  --surface-container-low:  #f4ece4;
+  --surface-container:      #ede1d6;
+  --surface-container-high: #e4d5c8;
+  --surface-container-highest: #dbc9bb;
+  --surface-dim:            #d8c8bc;
+  --surface-bright:         #fffaf6;
 
-  --on-surface:             #181c20;
-  --on-surface-variant:     #5b403d;
-  --outline:                #8f6f6c;
-  --outline-variant:        #e4beba;
+  --on-surface:             #241914;
+  --on-surface-variant:     #73584b;
+  --outline:                #9c7865;
+  --outline-variant:        #e7cbb9;
 
-  --inverse-surface:        #2d3135;
-  --inverse-on-surface:     #eef1f7;
+  --inverse-surface:        #32231d;
+  --inverse-on-surface:     #fff5ef;
 }
 
 /* ── Material Symbols ─────────────────────────────────────────── */
@@ -69,7 +69,7 @@
 
 /* ── Glass effect ─────────────────────────────────────────────── */
 .glass-header {
-  background: rgba(247, 249, 255, 0.88);
+  background: rgba(255, 250, 246, 0.84);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
 }
@@ -84,13 +84,37 @@
   body {
     background: var(--surface);
     color: var(--on-surface);
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: "Manrope", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
+    background-image:
+      radial-gradient(circle at top left, rgba(200, 56, 70, 0.12), transparent 26%),
+      radial-gradient(circle at top right, rgba(185, 101, 66, 0.12), transparent 22%),
+      linear-gradient(180deg, #fbf6f1 0%, #f7f1eb 100%);
   }
   ::selection {
     background: var(--primary-container);
     color: var(--on-primary-container);
+  }
+}
+
+@layer components {
+  .editorial-shell {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(159, 29, 47, 0.08);
+    background: linear-gradient(180deg, rgba(255, 250, 246, 0.96), rgba(244, 236, 228, 0.95));
+    box-shadow: 0 14px 36px rgba(67, 17, 24, 0.08);
+  }
+
+  .editorial-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 85% 15%, rgba(200, 56, 70, 0.16), transparent 24%),
+      radial-gradient(circle at 10% 100%, rgba(185, 101, 66, 0.14), transparent 20%);
+    pointer-events: none;
   }
 }
 
