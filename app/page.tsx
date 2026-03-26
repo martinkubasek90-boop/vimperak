@@ -39,35 +39,59 @@ export default function HomePage() {
       <main className="pt-20 pb-4 max-w-2xl mx-auto">
 
         <section className="px-4 pt-5">
-          <div className="editorial-shell rounded-[2rem] p-5 md:p-6">
-            <div className="relative z-10 grid gap-5 md:grid-cols-[1.2fr_0.9fr] md:items-center">
-              <div>
-                <p className="text-sm font-semibold mb-2" style={{ color: "var(--secondary)" }}>
+          <div
+            className="relative overflow-hidden rounded-[2rem] min-h-[25rem] md:min-h-[27rem]"
+            style={{ boxShadow: "0 18px 40px rgba(50,24,18,0.18)", background: "#45211d" }}
+          >
+            <Image
+              src="/editorial/castle-hero.svg"
+              alt="Stylizovaná ilustrace zámku ve Vimperku"
+              fill
+              priority
+              className="object-cover object-[72%_center] md:object-[center_center]"
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(48,24,24,0.88) 0%, rgba(48,24,24,0.64) 42%, rgba(48,24,24,0.22) 100%), linear-gradient(180deg, rgba(24,12,10,0.16) 0%, rgba(24,12,10,0.48) 100%)",
+              }}
+            />
+            <div
+              className="absolute inset-x-0 top-0 h-28"
+              style={{ background: "linear-gradient(180deg, rgba(47,91,79,0.20) 0%, transparent 100%)" }}
+            />
+
+            <div className="relative z-10 flex min-h-[25rem] flex-col justify-between p-5 md:min-h-[27rem] md:p-6">
+              <div className="max-w-[16rem] md:max-w-[20rem]">
+                <p className="text-sm font-semibold mb-2 text-white/78">
                   Čtvrtek, 26. března 2026
                 </p>
-                <h1 className="font-headline font-extrabold text-[2.35rem] leading-[0.98] tracking-tight mb-3 md:text-[3.15rem]"
-                    style={{ color: "var(--primary)" }}>
+                <h1 className="font-headline font-extrabold text-[2.7rem] leading-[0.94] tracking-tight mb-3 text-white md:text-[3.4rem]">
                   Dobré ráno,
                   <br />
-                  <span style={{ color: "var(--tertiary)" }}>Vimperku!</span>
+                  <span style={{ color: "#f2b08f" }}>Vimperku!</span>
                 </h1>
-                <p className="text-sm leading-relaxed max-w-sm mb-5" style={{ color: "var(--on-surface-variant)" }}>
-                  Místní servis, zprávy a rychlé odkazy v teplejším redakčním kabátu inspirovaném městem a Šumavou.
+                <p className="text-sm leading-relaxed text-white/78">
+                  Místní servis, zprávy a rychlé odkazy v jednom čistém ranním přehledu.
                 </p>
-                <div
-                  className="flex flex-wrap items-center gap-4 rounded-[1.6rem] px-4 py-3"
-                  style={{ background: "rgba(159,29,47,0.08)", border: "1px solid rgba(159,29,47,0.10)" }}
-                >
-                  <div className="flex items-center gap-2.5" style={{ color: "var(--primary)" }}>
-                    <span className="material-symbols-outlined text-2xl">wb_sunny</span>
+              </div>
+
+              <div
+                className="max-w-[20rem] rounded-[1.75rem] p-4 backdrop-blur-md md:max-w-[23rem]"
+                style={{ background: "rgba(255,250,246,0.14)", border: "1px solid rgba(255,255,255,0.14)" }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5 text-white">
+                    <span className="material-symbols-outlined text-[1.65rem]" style={{ color: "#d7e8df" }}>wb_sunny</span>
                     <div>
-                      <p className="font-headline font-bold text-lg leading-none">8°C</p>
-                      <p className="text-xs" style={{ color: "var(--on-surface-variant)" }}>Slunečno · 12° max</p>
+                      <p className="font-headline font-bold text-xl leading-none">8°C</p>
+                      <p className="text-xs text-white/70">Slunečno · 12° max</p>
                     </div>
                   </div>
-                  <div className="hidden sm:block w-px h-8" style={{ background: "rgba(159,29,47,0.16)" }} />
-                  <div className="flex items-center gap-2.5" style={{ color: "var(--secondary)" }}>
-                    <span className="material-symbols-outlined text-xl">warning</span>
+                  <div className="h-8 w-px bg-white/18" />
+                  <div className="flex items-center gap-2.5 text-white/90">
+                    <span className="material-symbols-outlined text-xl" style={{ color: "#d7e8df" }}>warning</span>
                     <p className="text-sm font-medium leading-tight">
                       Uzavírka Pivovarské
                       <br />
@@ -75,20 +99,6 @@ export default function HomePage() {
                     </p>
                   </div>
                 </div>
-              </div>
-
-              <div className="relative h-44 md:h-56">
-                <div
-                  className="absolute inset-0 rounded-[1.8rem]"
-                  style={{ background: "linear-gradient(180deg, rgba(255,250,246,0.2), rgba(255,250,246,0.65))" }}
-                />
-                <Image
-                  src="/editorial/castle-hero.svg"
-                  alt="Stylizovaná ilustrace zámku ve Vimperku"
-                  fill
-                  priority
-                  className="object-contain object-right-bottom drop-shadow-[0_20px_36px_rgba(67,17,24,0.16)]"
-                />
               </div>
             </div>
           </div>

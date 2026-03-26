@@ -11,12 +11,12 @@
   --primary-fixed:          #f7d4cc;
   --on-primary-fixed:       #431118;
 
-  --secondary:              #6c5140;
-  --secondary-container:    #ead8c7;
+  --secondary:              #2f5b4f;
+  --secondary-container:    #d7e8df;
   --on-secondary:           #ffffff;
-  --on-secondary-container: #4e392c;
-  --secondary-fixed:        #f3e6d9;
-  --on-secondary-fixed:     #2d1c12;
+  --on-secondary-container: #17362d;
+  --secondary-fixed:        #e4efe9;
+  --on-secondary-fixed:     #10271f;
 
   --tertiary:               #b96542;
   --tertiary-container:     #efc4ad;
@@ -88,9 +88,9 @@
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
     background-image:
-      radial-gradient(circle at top left, rgba(200, 56, 70, 0.12), transparent 26%),
-      radial-gradient(circle at top right, rgba(185, 101, 66, 0.12), transparent 22%),
-      linear-gradient(180deg, #fbf6f1 0%, #f7f1eb 100%);
+      radial-gradient(circle at top left, rgba(200, 56, 70, 0.10), transparent 26%),
+      radial-gradient(circle at top right, rgba(47, 91, 79, 0.10), transparent 24%),
+      linear-gradient(180deg, #faf4ef 0%, #f4ede6 100%);
   }
   ::selection {
     background: var(--primary-container);
@@ -103,8 +103,8 @@
     position: relative;
     overflow: hidden;
     border: 1px solid rgba(159, 29, 47, 0.08);
-    background: linear-gradient(180deg, rgba(255, 250, 246, 0.96), rgba(244, 236, 228, 0.95));
-    box-shadow: 0 14px 36px rgba(67, 17, 24, 0.08);
+    background: linear-gradient(180deg, rgba(255, 248, 243, 0.96), rgba(242, 232, 222, 0.95));
+    box-shadow: 0 14px 36px rgba(50, 24, 18, 0.10);
   }
 
   .editorial-shell::before {
@@ -112,8 +112,8 @@
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(circle at 85% 15%, rgba(200, 56, 70, 0.16), transparent 24%),
-      radial-gradient(circle at 10% 100%, rgba(185, 101, 66, 0.14), transparent 20%);
+      radial-gradient(circle at 85% 15%, rgba(200, 56, 70, 0.14), transparent 24%),
+      radial-gradient(circle at 10% 100%, rgba(47, 91, 79, 0.12), transparent 20%);
     pointer-events: none;
   }
 }

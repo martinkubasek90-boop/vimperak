@@ -42,35 +42,39 @@ export default function ZpravodajPage() {
       <TopBar />
       <main className="pt-20 pb-4 max-w-2xl mx-auto">
         <section className="px-4 pt-5">
-          <div className="editorial-shell rounded-[2rem] p-5 md:p-6">
-            <div className="relative z-10 grid gap-5 md:grid-cols-[1.1fr_0.9fr] md:items-center">
-              <div>
-                <span
-                  className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase mb-3"
-                  style={{ background: "rgba(159,29,47,0.08)", color: "var(--primary)" }}
-                >
-                  Městský zpravodaj
-                </span>
-                <h1 className="font-headline font-extrabold text-3xl leading-tight tracking-tight md:text-[2.6rem]"
-                    style={{ color: "var(--primary)" }}>
-                  Zprávy a události
-                  <br />
-                  v klidnějším rytmu města
-                </h1>
-                <p className="mt-3 max-w-md text-sm leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
-                  Přehled novinek z radnice, důležitých upozornění a kulturního programu. Hero drží kompaktní výšku,
-                  takže obsah nezačne až pod zlomem.
-                </p>
-              </div>
+          <div
+            className="relative overflow-hidden rounded-[2rem] min-h-[15.5rem] md:min-h-[17rem]"
+            style={{ boxShadow: "0 18px 40px rgba(50,24,18,0.18)", background: "#3e2421" }}
+          >
+            <Image
+              src="/editorial/news-hero.svg"
+              alt="Stylizovaná ilustrace městské budovy"
+              fill
+              className="object-cover object-[74%_center] md:object-center"
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(50,26,24,0.90) 0%, rgba(50,26,24,0.66) 46%, rgba(50,26,24,0.24) 100%), linear-gradient(180deg, rgba(47,91,79,0.16) 0%, rgba(24,12,10,0.32) 100%)",
+              }}
+            />
 
-              <div className="relative h-36 md:h-44">
-                <Image
-                  src="/editorial/news-hero.svg"
-                  alt="Stylizovaná ilustrace městské budovy"
-                  fill
-                  className="object-contain object-right-center drop-shadow-[0_18px_32px_rgba(67,17,24,0.14)]"
-                />
-              </div>
+            <div className="relative z-10 flex min-h-[15.5rem] flex-col justify-end p-5 md:min-h-[17rem] md:p-6">
+              <span
+                className="mb-3 inline-flex w-fit items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase"
+                style={{ background: "rgba(215,232,223,0.16)", color: "#d7e8df", border: "1px solid rgba(215,232,223,0.18)" }}
+              >
+                Městský zpravodaj
+              </span>
+              <h1 className="max-w-[16rem] font-headline font-extrabold text-3xl leading-tight tracking-tight text-white md:max-w-[22rem] md:text-[2.7rem]">
+                Zprávy a události
+                <br />
+                z města
+              </h1>
+              <p className="mt-3 max-w-[17rem] text-sm leading-relaxed text-white/76 md:max-w-[22rem]">
+                Novinky z radnice, upozornění a kulturní program v kompaktním přehledu.
+              </p>
             </div>
           </div>
         </section>
@@ -86,8 +90,8 @@ export default function ZpravodajPage() {
                 onClick={() => setTab(t.id as "zpravy" | "akce")}
                 className="flex-1 py-2.5 px-4 rounded-xl font-semibold text-sm transition-all"
                 style={tab === t.id ? {
-                  background: "var(--surface-container-lowest)",
-                  color: "var(--primary)",
+                  background: "linear-gradient(135deg, var(--secondary), #3b6a5c)",
+                  color: "var(--on-secondary)",
                   boxShadow: "0 8px 18px rgba(67,17,24,0.08)"
                 } : {
                   color: "var(--on-surface-variant)"
