@@ -58,14 +58,14 @@ export default function MestoPage() {
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(180deg, rgba(34,18,16,0.10) 0%, rgba(34,18,16,0.20) 100%)",
+                  "linear-gradient(180deg, rgba(34,18,16,0.02) 0%, rgba(34,18,16,0.08) 100%)",
               }}
             />
             <div
-              className="absolute left-0 top-0 bottom-0 w-[64%] md:w-[42%]"
+              className="absolute left-0 bottom-0 h-[56%] w-[68%] md:h-[48%] md:w-[40%]"
               style={{
                 background:
-                  "linear-gradient(90deg, rgba(44,24,22,0.54) 0%, rgba(44,24,22,0.18) 64%, rgba(44,24,22,0.00) 100%)",
+                  "radial-gradient(circle at left bottom, rgba(44,24,22,0.58) 0%, rgba(44,24,22,0.34) 38%, rgba(44,24,22,0.14) 62%, rgba(44,24,22,0.00) 100%)",
               }}
             />
 
