@@ -52,7 +52,7 @@ export default function ZhlasitPage() {
       <TopBar />
       <main className="pt-20 max-w-2xl mx-auto flex flex-col items-center justify-center min-h-[70vh] px-5 text-center">
         <div className="w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-lg"
-             style={{ background: "var(--secondary-container)", boxShadow: "0 8px 32px rgba(60,104,66,0.25)" }}>
+             style={{ background: "var(--secondary-container)", boxShadow: "0 14px 30px rgba(78,57,44,0.18)" }}>
           <span className="material-symbols-outlined text-5xl text-on-secondary-container"
                 style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
         </div>
@@ -74,14 +74,37 @@ export default function ZhlasitPage() {
       <TopBar />
       <main className="pt-20 pb-4 max-w-2xl mx-auto">
 
-        {/* Hero */}
-        <div className="px-5 pt-7 pb-6">
-          <h1 className="font-headline font-bold text-3xl text-on-surface tracking-tight mb-2">
-            Hlášení Závad
-          </h1>
-          <p className="text-on-surface-variant text-base leading-relaxed mb-5">
-            Pomozte nám udržovat Vimperk krásný a bezpečný.
-          </p>
+        <section className="px-4 pt-5">
+          <div className="editorial-shell rounded-[2rem] p-5 md:p-6">
+            <div className="relative z-10 grid gap-5 md:grid-cols-[1.12fr_0.88fr] md:items-center">
+              <div>
+                <span
+                  className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase mb-3"
+                  style={{ background: "rgba(159,29,47,0.08)", color: "var(--primary)" }}
+                >
+                  Podněty městu
+                </span>
+                <h1 className="font-headline font-extrabold text-3xl tracking-tight md:text-[2.6rem]"
+                    style={{ color: "var(--primary)" }}>
+                  Hlášení závad
+                </h1>
+                <p className="mt-2 text-sm leading-relaxed max-w-md" style={{ color: "var(--on-surface-variant)" }}>
+                  Krátký formulář pro výtluky, osvětlení, odpad nebo zeleň. Přidáte místo, popis a volitelně fotku.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {categories.map((cat) => (
+                  <div key={cat.value} className="rounded-[1.35rem] p-4" style={{ background: cat.bg }}>
+                    <span className="material-symbols-outlined text-2xl" style={{ color: cat.color }}>{cat.icon}</span>
+                    <p className="mt-3 text-sm font-semibold" style={{ color: "var(--on-surface)" }}>{cat.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="px-5 pt-5 pb-6">
 
           {/* Big CTA */}
           <button
@@ -91,9 +114,9 @@ export default function ZhlasitPage() {
             style={{
               background: (!selCat || !desc || loading)
                 ? "var(--surface-container-high)"
-                : "linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)",
+                : "linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 62%, var(--tertiary) 100%)",
               color: (!selCat || !desc || loading) ? "var(--on-surface-variant)" : "var(--on-primary)",
-              boxShadow: (!selCat || !desc || loading) ? "none" : "0 8px 24px rgba(178,0,28,0.3)"
+              boxShadow: (!selCat || !desc || loading) ? "none" : "0 16px 28px rgba(67,17,24,0.16)"
             }}
           >
             {loading ? (
@@ -112,8 +135,9 @@ export default function ZhlasitPage() {
               <button key={cat.value} onClick={() => setSelCat(cat.value)}
                       className="p-4 rounded-2xl flex flex-col gap-3 items-start transition-all active:scale-95"
                       style={{
-                        background: selCat === cat.value ? cat.bg : "var(--surface-container-low)",
+                        background: selCat === cat.value ? cat.bg : "var(--surface-container-lowest)",
                         outline: selCat === cat.value ? `2px solid ${cat.color}` : "2px solid transparent",
+                        boxShadow: selCat === cat.value ? "0 10px 18px rgba(67,17,24,0.08)" : "0 6px 16px rgba(67,17,24,0.04)",
                       }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform"
                      style={{ background: "var(--surface-container-lowest)" }}>
@@ -128,7 +152,7 @@ export default function ZhlasitPage() {
         {/* Form */}
         <div className="px-4 pb-6">
           <div className="rounded-3xl p-5 space-y-5"
-               style={{ background: "var(--surface-container-low)" }}>
+               style={{ background: "var(--surface-container-low)", border: "1px solid rgba(159,29,47,0.06)" }}>
 
             {/* Map */}
             <div>
@@ -158,7 +182,7 @@ export default function ZhlasitPage() {
                 )}
                 <div className="absolute top-3 right-3 z-20">
                   <div className="px-3 py-1.5 rounded-full text-xs font-bold"
-                       style={{ background: "rgba(247,249,255,0.9)", color: "var(--on-surface)" }}>
+                       style={{ background: "rgba(255,250,246,0.92)", color: "var(--on-surface)" }}>
                     Klikněte pro označení
                   </div>
                 </div>
@@ -199,7 +223,7 @@ export default function ZhlasitPage() {
                 </div>
               ) : (
                 <label className="flex flex-col items-center justify-center py-8 rounded-2xl cursor-pointer transition-colors gap-2"
-                       style={{ border: "2px dashed var(--outline-variant)", background: "transparent" }}>
+                       style={{ border: "2px dashed var(--outline-variant)", background: "rgba(255,250,246,0.45)" }}>
                   <span className="material-symbols-outlined text-4xl text-on-surface-variant">add_a_photo</span>
                   <span className="font-semibold text-sm text-on-surface-variant">Nahrát fotku</span>
                   <span className="text-xs text-on-surface-variant opacity-60">Max. 3 soubory · JPG, PNG</span>
@@ -222,7 +246,7 @@ export default function ZhlasitPage() {
               return (
                 <div key={r.id}
                      className="rounded-2xl p-4 flex items-center gap-4"
-                     style={{ background: "var(--surface-container-lowest)", boxShadow: "0 1px 8px rgba(24,28,32,0.06)" }}>
+                     style={{ background: "var(--surface-container-lowest)", boxShadow: "0 10px 24px rgba(67,17,24,0.06)", border: "1px solid rgba(159,29,47,0.05)" }}>
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
                        style={{ background: "var(--surface-container-low)" }}>
                     <span className="material-symbols-outlined text-on-surface-variant">{r.icon}</span>

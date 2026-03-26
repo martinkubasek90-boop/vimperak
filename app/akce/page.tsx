@@ -36,26 +36,60 @@ export default function AkcePage() {
   return (
     <>
       <Navbar />
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Calendar className="w-6 h-6 text-brand-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Akce ve Vimperku</h1>
-        </div>
-        <p className="text-gray-500 text-sm mb-6">Kulturní akce, kino, sport, trhy a veřejná zasedání.</p>
+      <main className="max-w-5xl mx-auto px-4 py-8" style={{ color: "var(--on-surface)" }}>
+        <section className="mb-8">
+          <div className="editorial-shell rounded-[2rem] p-5 md:p-6">
+            <div className="relative z-10 grid gap-5 md:grid-cols-[1.15fr_0.85fr] md:items-center">
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <Calendar className="w-6 h-6" style={{ color: "var(--primary)" }} />
+                  <span className="text-[11px] font-black tracking-[0.18em] uppercase" style={{ color: "var(--primary)" }}>
+                    Kulturní program
+                  </span>
+                </div>
+                <h1 className="text-3xl font-black tracking-tight md:text-[2.6rem]" style={{ color: "var(--primary)" }}>
+                  Akce ve Vimperku
+                </h1>
+                <p className="mt-2 text-sm leading-relaxed max-w-md" style={{ color: "var(--on-surface-variant)" }}>
+                  Kino, kultura, sport, trhy i městská setkání v jednom přehledu. Filtr i seznam zůstávají rychlé a čitelné.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Kino", bg: "var(--primary-fixed)" },
+                  { label: "Sport", bg: "var(--tertiary-fixed)" },
+                  { label: "Kultura", bg: "var(--secondary-fixed)" },
+                  { label: "Trhy", bg: "var(--surface-container)" },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-[1.35rem] p-4" style={{ background: item.bg }}>
+                    <p className="text-sm font-semibold" style={{ color: "var(--on-surface)" }}>{item.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Filters */}
         <div className="flex items-center gap-2 flex-wrap mb-8">
-          <Filter className="w-4 h-4 text-gray-400" />
+          <Filter className="w-4 h-4" style={{ color: "var(--outline)" }} />
           {categories.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => setActiveCategory(value)}
-              className={cn(
-                "text-sm px-3 py-1.5 rounded-full border transition-colors",
-                activeCategory === value
-                  ? "bg-brand-600 text-white border-brand-600"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-brand-300"
-              )}
+              className="text-sm px-3 py-1.5 rounded-full border transition-colors"
+              style={activeCategory === value
+                ? {
+                    background: "linear-gradient(135deg, var(--primary), var(--primary-container))",
+                    color: "var(--on-primary)",
+                    borderColor: "transparent",
+                    boxShadow: "0 10px 20px rgba(67,17,24,0.14)",
+                  }
+                : {
+                    background: "var(--surface-container-lowest)",
+                    color: "var(--on-surface-variant)",
+                    borderColor: "rgba(159,29,47,0.10)",
+                  }}
             >
               {label}
             </button>
@@ -65,13 +99,20 @@ export default function AkcePage() {
         {/* Events list */}
         <div className="flex flex-col gap-3">
           {filtered.map((event) => (
-            <article key={event.id} className="bg-white border border-gray-200 rounded-xl p-4 md:p-5 flex flex-col md:flex-row gap-4 hover:shadow-sm transition-shadow">
+            <article
+              key={event.id}
+              className="rounded-[1.6rem] p-4 md:p-5 flex flex-col md:flex-row gap-4 transition-shadow"
+              style={{ background: "var(--surface-container-lowest)", border: "1px solid rgba(159,29,47,0.06)", boxShadow: "0 12px 24px rgba(67,17,24,0.06)" }}
+            >
               {/* Date block */}
-              <div className="flex md:flex-col items-center md:items-center justify-start md:justify-center bg-brand-50 border border-brand-100 rounded-lg px-4 py-2 md:py-3 md:w-16 shrink-0 gap-3 md:gap-0">
-                <div className="text-2xl font-black text-brand-700 leading-none">
+              <div
+                className="flex md:flex-col items-center md:items-center justify-start md:justify-center rounded-[1.1rem] px-4 py-2 md:py-3 md:w-16 shrink-0 gap-3 md:gap-0"
+                style={{ background: "var(--primary-fixed)", border: "1px solid rgba(159,29,47,0.10)" }}
+              >
+                <div className="text-2xl font-black leading-none" style={{ color: "var(--primary)" }}>
                   {new Date(event.date).getDate()}
                 </div>
-                <div className="text-xs text-brand-500 uppercase tracking-wide md:text-center">
+                <div className="text-xs uppercase tracking-wide md:text-center" style={{ color: "var(--on-primary-fixed)" }}>
                   {new Date(event.date).toLocaleDateString("cs-CZ", { month: "short" })}
                 </div>
               </div>
@@ -79,26 +120,26 @@ export default function AkcePage() {
               {/* Content */}
               <div className="flex-1">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h3 className="font-semibold text-gray-900">{event.title}</h3>
+                  <h3 className="font-semibold" style={{ color: "var(--on-surface)" }}>{event.title}</h3>
                   <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full shrink-0 capitalize", categoryColor[event.category])}>
                     {event.category}
                   </span>
                 </div>
-                <p className="text-sm text-gray-500 mb-3">{event.description}</p>
-                <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+                <p className="text-sm mb-3" style={{ color: "var(--on-surface-variant)" }}>{event.description}</p>
+                <div className="flex flex-wrap gap-3 text-xs" style={{ color: "var(--on-surface-variant)" }}>
                   <span className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5 text-brand-400" />
+                    <Clock className="w-3.5 h-3.5" style={{ color: "var(--primary)" }} />
                     {event.time}
                   </span>
                   <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-brand-400" />
+                    <MapPin className="w-3.5 h-3.5" style={{ color: "var(--primary)" }} />
                     {event.place}
                   </span>
                   {event.free ? (
-                    <span className="text-brand-600 font-semibold">Vstup zdarma</span>
+                    <span className="font-semibold" style={{ color: "var(--primary)" }}>Vstup zdarma</span>
                   ) : (
                     <span className="flex items-center gap-1">
-                      <Ticket className="w-3.5 h-3.5 text-brand-400" />
+                      <Ticket className="w-3.5 h-3.5" style={{ color: "var(--primary)" }} />
                       {event.price}
                     </span>
                   )}

@@ -51,26 +51,29 @@ export default function AiPage() {
 
         {/* AI hero */}
         <div className="shrink-0 px-4 pt-4 pb-2">
-          <div className="rounded-[2rem] p-5 flex items-center gap-4"
-               style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)", boxShadow: "0 8px 32px rgba(178,0,28,0.2)" }}>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
-                 style={{ background: "rgba(255,255,255,0.15)" }}>
-              <span className="material-symbols-outlined text-white text-3xl"
-                    style={{ fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
-            </div>
-            <div className="flex-1">
-              <h1 className="font-headline font-extrabold text-xl text-white">Vimperák AI</h1>
-              <p className="text-sm" style={{ color: "rgba(255,218,215,0.85)" }}>Váš průvodce po Vimperku</p>
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-                 style={{ background: "rgba(255,255,255,0.2)" }}>
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ background: mode === "fallback" ? "#fbbf24" : "#86efac" }}
-              />
-              <span className="text-xs font-semibold text-white">
-                {mode === "fallback" ? "Omezený režim" : "AI online"}
-              </span>
+          <div className="editorial-shell rounded-[2rem] p-5">
+            <div className="relative z-10 flex items-start gap-4">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
+                   style={{ background: "linear-gradient(135deg, var(--primary), var(--primary-container))" }}>
+                <span className="material-symbols-outlined text-white text-3xl"
+                      style={{ fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="font-headline font-extrabold text-xl" style={{ color: "var(--primary)" }}>Vimperák AI</h1>
+                <p className="text-sm mt-1" style={{ color: "var(--on-surface-variant)" }}>
+                  Průvodce městem v redakčním stylu, ale pořád stručně a použitelné.
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0"
+                   style={{ background: "rgba(159,29,47,0.08)", color: "var(--primary)" }}>
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ background: mode === "fallback" ? "#d97706" : "#5c8a54" }}
+                />
+                <span className="text-xs font-semibold">
+                  {mode === "fallback" ? "Omezený režim" : "AI online"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -91,15 +94,16 @@ export default function AiPage() {
               {/* Bubble */}
               <div className="max-w-[78%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap"
                    style={msg.role === "user" ? {
-                     background: "var(--primary)",
+                     background: "linear-gradient(135deg, var(--primary), var(--primary-container))",
                      color: "var(--on-primary)",
                      borderBottomRightRadius: "6px",
-                     boxShadow: "0 2px 8px rgba(178,0,28,0.15)"
+                     boxShadow: "0 10px 20px rgba(67,17,24,0.12)"
                    } : {
                      background: "var(--surface-container-lowest)",
                      color: "var(--on-surface)",
                      borderBottomLeftRadius: "6px",
-                     boxShadow: "0 1px 8px rgba(24,28,32,0.08)"
+                     boxShadow: "0 10px 22px rgba(67,17,24,0.06)",
+                     border: "1px solid rgba(159,29,47,0.05)"
                    }}>
                 {msg.content}
               </div>
@@ -113,7 +117,7 @@ export default function AiPage() {
                    style={{ background: "var(--primary)", color: "var(--on-primary)" }}>
                 <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: "16px" }}>smart_toy</span>
               </div>
-              <div className="px-4 py-3 rounded-2xl" style={{ background: "var(--surface-container-lowest)", borderBottomLeftRadius: "6px" }}>
+              <div className="px-4 py-3 rounded-2xl" style={{ background: "var(--surface-container-lowest)", borderBottomLeftRadius: "6px", border: "1px solid rgba(159,29,47,0.05)" }}>
                 <div className="flex gap-1 items-center">
                   {[0,1,2].map(n => (
                     <span key={n} className="w-2 h-2 rounded-full animate-bounce"
@@ -145,7 +149,7 @@ export default function AiPage() {
         {/* Input */}
         <div className="shrink-0 px-4 pt-2 pb-28">
           <div className="flex gap-2.5 p-2 rounded-2xl"
-               style={{ background: "var(--surface-container-lowest)", boxShadow: "0 2px 16px rgba(24,28,32,0.08)", border: "1.5px solid var(--outline-variant)" }}>
+               style={{ background: "var(--surface-container-lowest)", boxShadow: "0 14px 28px rgba(67,17,24,0.08)", border: "1px solid rgba(159,29,47,0.08)" }}>
             <input ref={inputRef} type="text" value={input}
                    onChange={e => setInput(e.target.value)}
                    onKeyDown={e => e.key === "Enter" && send(input)}
@@ -155,9 +159,9 @@ export default function AiPage() {
             <button onClick={() => send(input)} disabled={!input.trim() || loading}
                     className="w-11 h-11 rounded-xl flex items-center justify-center transition-all active:scale-90 shrink-0"
                     style={input.trim() && !loading ? {
-                      background: "var(--primary)",
+                      background: "linear-gradient(135deg, var(--primary), var(--primary-container))",
                       color: "var(--on-primary)",
-                      boxShadow: "0 4px 12px rgba(178,0,28,0.25)"
+                      boxShadow: "0 10px 18px rgba(67,17,24,0.14)"
                     } : {
                       background: "var(--surface-container-high)",
                       color: "var(--on-surface-variant)"

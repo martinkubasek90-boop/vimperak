@@ -63,18 +63,48 @@ export default function AdresarPage() {
     <>
       <TopBar />
       <main className="pt-20 pb-4 max-w-2xl mx-auto">
-
-        {/* Header */}
-        <div className="px-5 pt-7 pb-2">
-          <h1 className="font-headline font-extrabold text-3xl tracking-tight text-on-surface">
-            Adresář a Služby
-          </h1>
-          <p className="text-on-surface-variant text-base mt-1">Najděte vše potřebné ve Vimperku</p>
-        </div>
+        <section className="px-4 pt-5">
+          <div className="editorial-shell rounded-[2rem] p-5 md:p-6">
+            <div className="relative z-10 grid gap-5 md:grid-cols-[1.12fr_0.88fr] md:items-center">
+              <div>
+                <span
+                  className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase mb-3"
+                  style={{ background: "rgba(159,29,47,0.08)", color: "var(--primary)" }}
+                >
+                  Místní služby
+                </span>
+                <h1 className="font-headline font-extrabold text-3xl tracking-tight md:text-[2.6rem]"
+                    style={{ color: "var(--primary)" }}>
+                  Adresář a služby
+                </h1>
+                <p className="mt-2 text-sm leading-relaxed max-w-md" style={{ color: "var(--on-surface-variant)" }}>
+                  Praktické kontakty, ověřené podniky a rychlé spojení na místa, která ve Vimperku potřebujete nejčastěji.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { icon: "apartment", label: "Město", tone: "var(--primary-fixed)" },
+                  { icon: "local_taxi", label: "Taxi", tone: "var(--secondary-fixed)" },
+                  { icon: "medical_services", label: "Zdraví", tone: "var(--tertiary-fixed)" },
+                  { icon: "restaurant", label: "Gastro", tone: "var(--surface-container)" },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-[1.4rem] p-4"
+                    style={{ background: item.tone, border: "1px solid rgba(159,29,47,0.06)" }}
+                  >
+                    <span className="material-symbols-outlined text-2xl" style={{ color: "var(--primary)" }}>{item.icon}</span>
+                    <p className="mt-3 text-sm font-semibold" style={{ color: "var(--on-surface)" }}>{item.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Search */}
         <div className="px-4 pt-4 pb-2">
-          <div className="relative">
+          <div className="relative editorial-shell rounded-[1.8rem] p-3">
             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
               <span className="material-symbols-outlined text-outline" style={{ fontSize: "20px" }}>search</span>
             </div>
@@ -85,12 +115,12 @@ export default function AdresarPage() {
               placeholder="Hledat firmy, taxi, opravny..."
               className="w-full h-14 pl-12 pr-28 rounded-2xl text-sm outline-none transition-all"
               style={{
-                background: "var(--surface-container-low)",
-                border: "2px solid transparent",
+                background: "var(--surface-container-lowest)",
+                border: "1px solid rgba(159,29,47,0.08)",
                 color: "var(--on-surface)",
               }}
               onFocus={e => (e.currentTarget.style.border = "2px solid var(--primary)")}
-              onBlur={e => (e.currentTarget.style.border = "2px solid transparent")}
+              onBlur={e => (e.currentTarget.style.border = "1px solid rgba(159,29,47,0.08)")}
             />
             <div className="absolute right-2 inset-y-2">
               <button className="h-full px-4 rounded-xl font-semibold text-sm text-on-primary transition-opacity hover:opacity-90"
@@ -109,9 +139,9 @@ export default function AdresarPage() {
               onClick={() => setCat(value)}
               className="flex-shrink-0 px-5 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95"
               style={cat === value ? {
-                background: "var(--primary-container)",
+                background: "linear-gradient(135deg, var(--primary), var(--primary-container))",
                 color: "var(--on-primary)",
-                boxShadow: "0 2px 8px rgba(178,0,28,0.25)"
+                boxShadow: "0 10px 18px rgba(67,17,24,0.14)"
               } : {
                 background: "var(--surface-container-low)",
                 color: "var(--on-surface)"
@@ -135,8 +165,8 @@ export default function AdresarPage() {
           {featured && (
             <div className="relative rounded-[2.5rem] p-6 overflow-hidden"
                  style={{
-                   background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%)",
-                   boxShadow: "0 8px 32px rgba(178,0,28,0.25)"
+                   background: "linear-gradient(135deg, #8f2030 0%, #c83846 52%, #d77b53 100%)",
+                   boxShadow: "0 16px 34px rgba(67,17,24,0.18)"
                  }}>
               <div className="absolute top-0 right-0 w-36 h-36 rounded-full -mr-16 -mt-16 opacity-15"
                    style={{ background: "radial-gradient(circle, #fff 0%, transparent 70%)" }} />
@@ -199,7 +229,7 @@ export default function AdresarPage() {
             return (
               <div key={item.id}
                    className="rounded-[2rem] p-5 flex items-center gap-4 active:scale-[0.98] transition-all"
-                   style={{ background: "var(--surface-container-lowest)", boxShadow: "0 1px 8px rgba(24,28,32,0.06)" }}>
+                   style={{ background: "var(--surface-container-lowest)", boxShadow: "0 10px 24px rgba(67,17,24,0.06)", border: "1px solid rgba(159,29,47,0.05)" }}>
                 {/* Icon */}
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0"
                      style={{ background: style.bg }}>
@@ -268,9 +298,9 @@ export default function AdresarPage() {
                 <a href={`tel:${item.phone.replace(/\s/g,"")}`}
                    className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-transform hover:scale-110 active:scale-95"
                    style={isOpen ? {
-                     background: "var(--primary-container)",
+                     background: "linear-gradient(135deg, var(--primary), var(--primary-container))",
                      color: "var(--on-primary)",
-                     boxShadow: "0 4px 12px rgba(178,0,28,0.2)"
+                     boxShadow: "0 8px 18px rgba(67,17,24,0.14)"
                    } : {
                      background: "var(--surface-container-low)",
                      color: "var(--on-surface-variant)"

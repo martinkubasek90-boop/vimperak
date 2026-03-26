@@ -32,17 +32,39 @@ export default function HlasovaniPage() {
       <TopBar />
 
       <main className="pt-24 pb-32 px-4 max-w-2xl mx-auto">
-
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-headline font-extrabold text-3xl tracking-tight mb-1"
-              style={{ color: "var(--on-surface)" }}>
-            Hlasování
-          </h1>
-          <p className="text-sm" style={{ color: "var(--on-surface-variant)" }}>
-            Zapojte se do rozhodování o Vimperku
-          </p>
-        </div>
+        <section className="mb-6">
+          <div className="editorial-shell rounded-[2rem] p-5 md:p-6">
+            <div className="relative z-10 grid gap-5 md:grid-cols-[1.08fr_0.92fr] md:items-center">
+              <div>
+                <span
+                  className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase mb-3"
+                  style={{ background: "rgba(159,29,47,0.08)", color: "var(--primary)" }}
+                >
+                  Participace
+                </span>
+                <h1 className="font-headline font-extrabold text-3xl tracking-tight md:text-[2.6rem]"
+                    style={{ color: "var(--primary)" }}>
+                  Hlasování
+                </h1>
+                <p className="mt-2 text-sm leading-relaxed max-w-md" style={{ color: "var(--on-surface-variant)" }}>
+                  Jednoduché ankety k městským tématům, které drží přehled výsledků i zbývající čas bez zbytečného šumu.
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { icon: "how_to_vote", label: "Ankety" },
+                  { icon: "groups", label: "Komunita" },
+                  { icon: "campaign", label: "Rozhodnutí" },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-[1.3rem] p-4 text-center" style={{ background: "var(--surface-container-lowest)", border: "1px solid rgba(159,29,47,0.06)" }}>
+                    <span className="material-symbols-outlined" style={{ color: "var(--primary)" }}>{item.icon}</span>
+                    <p className="mt-2 text-xs font-semibold" style={{ color: "var(--on-surface)" }}>{item.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Hero stat bar */}
         <div className="grid grid-cols-3 gap-3 mb-8">
@@ -52,7 +74,7 @@ export default function HlasovaniPage() {
             { icon: "check_circle",label: "Vyřešeno",       value: "12" },
           ].map(({ icon, label, value }) => (
             <div key={label} className="rounded-2xl p-4 flex flex-col items-center text-center"
-                 style={{ background: "var(--surface-container-lowest)", boxShadow: "0 1px 8px rgba(24,28,32,0.05)" }}>
+                 style={{ background: "var(--surface-container-lowest)", boxShadow: "0 10px 22px rgba(67,17,24,0.06)", border: "1px solid rgba(159,29,47,0.05)" }}>
               <span className="material-symbols-outlined mb-1" style={{ color: "var(--primary)" }}>{icon}</span>
               <p className="font-headline font-black text-xl" style={{ color: "var(--on-surface)" }}>{value}</p>
               <p className="text-xs leading-tight mt-0.5" style={{ color: "var(--on-surface-variant)" }}>{label}</p>
@@ -73,8 +95,8 @@ export default function HlasovaniPage() {
             const left     = daysLeft(poll.endsAt);
 
             return (
-              <div key={poll.id} className="rounded-[2rem] overflow-hidden"
-                   style={{ background: "var(--surface-container-lowest)", boxShadow: "0 2px 16px rgba(24,28,32,0.07)" }}>
+            <div key={poll.id} className="rounded-[2rem] overflow-hidden"
+                   style={{ background: "var(--surface-container-lowest)", boxShadow: "0 14px 28px rgba(67,17,24,0.07)", border: "1px solid rgba(159,29,47,0.05)" }}>
 
                 {/* Card header */}
                 <div className="px-6 pt-6 pb-4">
@@ -115,9 +137,9 @@ export default function HlasovaniPage() {
                           <button
                             onClick={() => setSelected((p) => ({ ...p, [poll.id]: opt.id }))}
                             className="w-full text-left rounded-2xl px-4 py-3.5 flex items-center gap-3 transition-all active:scale-[0.98]"
-                            style={
+                        style={
                               isSelected
-                                ? { background: "var(--primary-fixed)", border: "2px solid var(--primary)", color: "var(--on-primary-fixed)" }
+                                ? { background: "var(--primary-fixed)", border: "2px solid var(--primary)", color: "var(--on-primary-fixed)", boxShadow: "0 8px 18px rgba(67,17,24,0.08)" }
                                 : { background: "var(--surface-container-low)", border: "2px solid transparent", color: "var(--on-surface)" }
                             }
                           >
@@ -174,8 +196,9 @@ export default function HlasovaniPage() {
                       onClick={() => handleVote(poll.id)}
                       className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.97] mt-2 disabled:opacity-40"
                       style={{
-                        background: selected[poll.id] != null ? "var(--primary)" : "var(--surface-container-high)",
+                        background: selected[poll.id] != null ? "linear-gradient(135deg, var(--primary), var(--primary-container))" : "var(--surface-container-high)",
                         color: selected[poll.id] != null ? "var(--on-primary)" : "var(--on-surface-variant)",
+                        boxShadow: selected[poll.id] != null ? "0 12px 22px rgba(67,17,24,0.14)" : "none",
                       }}
                     >
                       <span className="material-symbols-outlined text-base">how_to_vote</span>
@@ -199,7 +222,7 @@ export default function HlasovaniPage() {
 
         {/* CTA — participatory budgeting teaser */}
         <div className="mt-8 rounded-[2rem] p-6 relative overflow-hidden"
-             style={{ background: "var(--secondary)" }}>
+             style={{ background: "linear-gradient(135deg, var(--secondary) 0%, #8b644e 100%)", boxShadow: "0 16px 28px rgba(67,17,24,0.14)" }}>
           <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full"
                style={{ background: "rgba(255,255,255,0.06)" }} />
           <div className="relative">
