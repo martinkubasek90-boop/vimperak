@@ -15,6 +15,7 @@ const QUICK = [
 ];
 
 export default function AiPage() {
+  const [mode, setMode] = useState<"ai" | "fallback" | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([
     { role: "assistant", content: "Ahoj! Jsem Vimperák, váš AI průvodce po Vimperku 🏔️\n\nMůžu vám pomoci s jízdními řády, adresářem služeb, akcemi ve městě nebo informacemi z radnice. Na co se chcete zeptat?" }
   ]);
@@ -35,8 +36,10 @@ export default function AiPage() {
         body: JSON.stringify({ messages: updated }),
       });
       const data = await res.json();
+      setMode(data.mode === "ai" ? "ai" : "fallback");
       setMsgs([...updated, { role: "assistant", content: data.reply }]);
     } catch {
+      setMode("fallback");
       setMsgs([...updated, { role: "assistant", content: "Omlouvám se, nastala chyba. Zkuste to znovu." }]);
     } finally { setLoading(false); }
   }
@@ -61,8 +64,13 @@ export default function AiPage() {
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
                  style={{ background: "rgba(255,255,255,0.2)" }}>
-              <span className="w-2 h-2 rounded-full bg-green-300" />
-              <span className="text-xs font-semibold text-white">Online</span>
+              <span
+                className="w-2 h-2 rounded-full"
+                style={{ background: mode === "fallback" ? "#fbbf24" : "#86efac" }}
+              />
+              <span className="text-xs font-semibold text-white">
+                {mode === "fallback" ? "Omezený režim" : "AI online"}
+              </span>
             </div>
           </div>
         </div>

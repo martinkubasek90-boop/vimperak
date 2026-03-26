@@ -18,6 +18,7 @@ const QUICK_QUESTIONS = [
 ];
 
 export default function ChatBot() {
+  const [mode, setMode] = useState<"ai" | "fallback" | null>(null);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -53,8 +54,10 @@ export default function ChatBot() {
         body: JSON.stringify({ messages: updated }),
       });
       const data = await res.json();
+      setMode(data.mode === "ai" ? "ai" : "fallback");
       setMessages([...updated, { role: "assistant", content: data.reply }]);
     } catch {
+      setMode("fallback");
       setMessages([...updated, { role: "assistant", content: "Omlouvám se, nastala chyba. Zkuste to prosím znovu." }]);
     } finally {
       setLoading(false);
@@ -90,9 +93,15 @@ export default function ChatBot() {
             </div>
             <div>
               <div className="font-semibold text-sm">Vimperák</div>
-              <div className="text-xs text-brand-300">AI asistent města Vimperk</div>
+              <div className="text-xs text-brand-300">
+                {mode === "fallback" ? "Omezený režim odpovědí" : "AI asistent města Vimperk"}
+              </div>
             </div>
-            <div className="ml-auto w-2 h-2 bg-green-400 rounded-full" title="Online" />
+            <div
+              className="ml-auto w-2 h-2 rounded-full"
+              title={mode === "fallback" ? "Omezený režim" : "AI online"}
+              style={{ background: mode === "fallback" ? "#fbbf24" : "#4ade80" }}
+            />
           </div>
 
           {/* Messages */}

@@ -129,3 +129,62 @@ export function getKBSystemContext(query: string): string {
 
   return `\n\n## Relevantní informace z webu vimperk.cz (aktualizováno ${kb.scraped_at.slice(0,10)})\n\n${chunks}\n\n---\n`;
 }
+
+function normalize(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function truncateSentence(text: string, max = 260): string {
+  const compact = text.replace(/\s+/g, " ").trim();
+  if (compact.length <= max) return compact;
+  return compact.slice(0, max - 1).trimEnd() + "…";
+}
+
+export function getTopRelevantPages(query: string, topK = 3): KBPage[] {
+  const kb = loadKB();
+  if (!kb || kb.pages.length === 0) return [];
+
+  const queryTokens = tokenize(query);
+  if (queryTokens.length === 0) return [];
+
+  return kb.pages
+    .map((page) => ({ page, score: scoreChunk(page, queryTokens) }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topK)
+    .map(({ page }) => page);
+}
+
+export function answerFromKnowledgeBase(query: string): { reply: string; sourceUrl?: string } | null {
+  const pages = getTopRelevantPages(query, 2);
+  if (pages.length === 0) return null;
+
+  const [first, second] = pages;
+  const q = normalize(query);
+
+  if (/(obcank|obcansk|osobni doklad|pas|cestovni doklad|ridicsk)/.test(q)) {
+    return {
+      reply: [
+        "K osobním dokladům ve Vimperku jsem našel toto:",
+        "Agendy občanských průkazů, cestovních pasů a matriky řeší odbor vnitřních věcí.",
+        "Adresa: Steinbrenerova 6, 385 17 Vimperk.",
+        "Kontakt: 388 402 231, urad@mesto.vimperk.cz.",
+        "Úřední hodiny: pondělí a středa 7:30-11:30 a 12:30-17:00, pátek 7:30-11:30.",
+        "Město také uvádí možnost on-line rezervace na přepážky.",
+        `Zdroj: ${first.url}`,
+      ].join("\n"),
+      sourceUrl: first.url,
+    };
+  }
+
+  const summary = truncateSentence(first.content);
+  const extra = second ? `\nDalší relevantní zdroj: ${second.url}` : "";
+
+  return {
+    reply: `Našel jsem k tomu informace na webu města:\n${summary}\nZdroj: ${first.url}${extra}`,
+    sourceUrl: first.url,
+  };
+}

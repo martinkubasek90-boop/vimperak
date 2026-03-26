@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getKBSystemContext, getKBStatus } from "@/lib/knowledge";
+import { answerFromKnowledgeBase, getKBSystemContext, getKBStatus } from "@/lib/knowledge";
+import { busLines, directory, events } from "@/lib/data";
 
 const BASE_SYSTEM = `Jsi Vimperák — přátelský a chytrý AI asistent komunitního portálu města Vimperk v jihočeském kraji.
 
@@ -30,23 +31,81 @@ Odpovídáš vždy v češtině, přátelsky, stručně a věcně.
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MODEL = process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile";
 
+function normalize(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function buildLocalFallbackReply(query: string): string {
+  const q = normalize(query);
+
+  if (q.includes("prachat") || q.includes("autobus") || q.includes("jizdni rad")) {
+    const line = busLines.find((item) => normalize(item.to).includes("prachat")) ?? busLines[0];
+    return [
+      `Nejbližší lokální odpověď k autobusům: linka ${line.number} ${line.from} -> ${line.to}.`,
+      `Odjezdy: ${line.departures.slice(0, 6).join(", ")}${line.departures.length > 6 ? "..." : ""}.`,
+      line.note ? `Poznámka: ${line.note}.` : null,
+      "Pro přesný aktuální spoj doporučuji ověřit oficiální jízdní řád.",
+    ].filter(Boolean).join("\n");
+  }
+
+  if (q.includes("lekar") || q.includes("lekar") || q.includes("lekarn")) {
+    const results = directory.filter((item) => ["lékař", "lékárna"].includes(item.category)).slice(0, 3);
+    return [
+      "Našel jsem tyto kontakty ve Vimperku:",
+      ...results.map((item) => `- ${item.name}, ${item.address}, tel. ${item.phone}${item.hours ? `, ordinační doba: ${item.hours}` : ""}`),
+    ].join("\n");
+  }
+
+  if (q.includes("taxi")) {
+    const taxis = directory.filter((item) => item.category === "taxi").slice(0, 2);
+    return [
+      "Taxi ve Vimperku:",
+      ...taxis.map((item) => `- ${item.name}, tel. ${item.phone}${item.hours ? `, provoz: ${item.hours}` : ""}`),
+    ].join("\n");
+  }
+
+  if (q.includes("vikend") || q.includes("akce") || q.includes("deje")) {
+    const upcoming = [...events].sort((a, b) => a.date.localeCompare(b.date)).slice(0, 3);
+    return [
+      "Nejbližší akce ve Vimperku:",
+      ...upcoming.map((event) => `- ${event.title} (${event.date} v ${event.time}, ${event.place})`),
+    ].join("\n");
+  }
+
+  if (q.includes("zavad") || q.includes("nahlasit")) {
+    return [
+      "Závadu můžete nahlásit v sekci Hlášení závad.",
+      "Připravte stručný popis, místo a ideálně fotku.",
+      "V akutním případě kontaktujte městskou policii na 388 402 110 nebo linku 112.",
+    ].join("\n");
+  }
+
+  const kbAnswer = answerFromKnowledgeBase(query);
+  if (kbAnswer) return kbAnswer.reply;
+
+  return "Teď běžím v omezeném režimu. Zkuste dotaz upřesnit, nebo kontaktujte radnici na 388 402 231 a urad@mesto.vimperk.cz.";
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json() as {
       messages: { role: "user" | "assistant"; content: string }[];
     };
 
+    // Vezmi poslední uživatelský dotaz pro retrieval a fallback
+    const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
     const apiKey = process.env.GROQ_API_KEY?.trim();
 
     if (!apiKey) {
       return NextResponse.json({
-        reply: "Chatbot není momentálně dostupný. Kontaktujte radnici na tel. **388 402 111**.",
+        reply: buildLocalFallbackReply(lastUserMessage),
         kb: null,
+        mode: "fallback",
       }, { status: 503 });
     }
-
-    // Vezmi poslední uživatelský dotaz pro retrieval
-    const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
 
     // Získej relevantní chunks z KB
     const kbContext  = getKBSystemContext(lastUserMessage);
@@ -79,8 +138,11 @@ export async function POST(req: NextRequest) {
       const errorBody = await response.text();
       console.error("[chat] Groq API error:", response.status, errorBody);
       return NextResponse.json({
-        reply: "AI asistent je dočasně nedostupný. Zkuste to prosím za chvíli.",
-        kb: null,
+        reply: buildLocalFallbackReply(lastUserMessage),
+        kb: kbStatus.available
+          ? { chunks_used: kbContext ? kbContext.split("---").length : 0, scraped_at: kbStatus.scraped_at }
+          : null,
+        mode: "fallback",
       }, { status: 502 });
     }
 
@@ -94,17 +156,29 @@ export async function POST(req: NextRequest) {
 
     const reply = data.choices?.[0]?.message?.content?.trim() ?? "";
 
+    if (!reply) {
+      return NextResponse.json({
+        reply: buildLocalFallbackReply(lastUserMessage),
+        kb: kbStatus.available
+          ? { chunks_used: kbContext ? kbContext.split("---").length : 0, scraped_at: kbStatus.scraped_at }
+          : null,
+        mode: "fallback",
+      }, { status: 200 });
+    }
+
     return NextResponse.json({
       reply,
       kb: kbStatus.available
         ? { chunks_used: kbContext ? kbContext.split("---").length : 0, scraped_at: kbStatus.scraped_at }
         : null,
+      mode: "ai",
     });
   } catch (err) {
     console.error("[chat]", err);
     return NextResponse.json({
-      reply: "Omlouvám se, momentálně nemohu odpovědět. Zkuste to prosím za chvíli.",
+      reply: buildLocalFallbackReply(""),
       kb: null,
+      mode: "fallback",
     });
   }
 }
