@@ -58,7 +58,7 @@ export default function HomePage() {
                 <h1 className="hero-text-shadow font-headline font-extrabold text-[2.45rem] leading-[0.94] tracking-tight mb-0 text-white md:text-[3.1rem]">
                   Dobrý den,
                   <br />
-                  <span className="text-[0.9em]" style={{ color: "#7bf0af" }}>Vimperáci.</span>
+                  <span className="text-[0.9em]" style={{ color: "#388A84" }}>Vimperáci.</span>
                 </h1>
               </div>
 
