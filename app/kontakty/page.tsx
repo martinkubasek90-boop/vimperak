@@ -252,6 +252,43 @@ export default function KontaktyPage() {
                 {featured.email && <div>{featured.email}</div>}
               </div>
               {featured.note && <p className="mt-3 text-sm text-white/85">{featured.note}</p>}
+              {(featured.appointmentUrl || featured.website || featured.sourceUrl) && (
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {featured.appointmentUrl && (
+                    <a
+                      href={featured.appointmentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full px-4 py-3 text-sm font-bold"
+                      style={{ background: "rgba(255,255,255,0.92)", color: "var(--primary)" }}
+                    >
+                      {featured.appointmentLabel ?? "Objednat termín online"}
+                    </a>
+                  )}
+                  {featured.website && (
+                    <a
+                      href={featured.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full px-4 py-3 text-sm font-bold"
+                      style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
+                    >
+                      Web pracoviště
+                    </a>
+                  )}
+                  {!featured.website && featured.sourceUrl && featured.category === "město" && (
+                    <a
+                      href={featured.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full px-4 py-3 text-sm font-bold"
+                      style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
+                    >
+                      Detail odboru
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
