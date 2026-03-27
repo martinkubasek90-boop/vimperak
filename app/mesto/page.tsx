@@ -67,7 +67,7 @@ export default function MestoPage() {
                 <h1 className="hero-text-shadow font-headline font-extrabold text-3xl tracking-tight text-white md:text-[2.8rem]">
                   Město
                 </h1>
-                <p className="hero-text-shadow mt-2 text-sm font-medium leading-relaxed max-w-[22rem]" style={{ color: "#388A84" }}>
+                <p className="hero-text-shadow mt-2 text-sm font-medium leading-relaxed max-w-[22rem]" style={{ color: "rgba(255,255,255,0.9)" }}>
                   Podněty, ankety, novinky a kontakt
                   <br />
                   s radnicí na jednom místě.
