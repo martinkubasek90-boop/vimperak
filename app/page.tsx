@@ -41,7 +41,7 @@ export default function HomePage() {
         <section className="px-4 pt-5">
           <div
             className="relative overflow-hidden rounded-[2rem] min-h-[25rem] md:min-h-[27rem]"
-            style={{ boxShadow: "0 18px 40px rgba(50,24,18,0.18)", background: "#45211d" }}
+            style={{ boxShadow: "0 18px 40px rgba(50,24,18,0.18)", background: "#f1e8df" }}
           >
             <Image
               src="/editorial/castle-hero.svg"
@@ -52,10 +52,10 @@ export default function HomePage() {
             />
             <div className="relative z-10 flex min-h-[25rem] flex-col justify-end p-5 md:min-h-[27rem] md:p-6">
               <div className="max-w-[15rem] md:max-w-[18rem] mb-2">
-                <p className="text-sm font-semibold mb-2" style={{ color: "#d7e8df" }}>
+                <p className="hero-text-shadow text-sm font-semibold mb-2" style={{ color: "#d7e8df" }}>
                   Čtvrtek, 26. března 2026
                 </p>
-                <h1 className="font-headline font-extrabold text-[2.45rem] leading-[0.94] tracking-tight mb-0 text-white md:text-[3.1rem]">
+                <h1 className="hero-text-shadow font-headline font-extrabold text-[2.45rem] leading-[0.94] tracking-tight mb-0 text-white md:text-[3.1rem]">
                   Dobrý den,
                   <br />
                   <span style={{ color: "#d7e8df" }}>Vimperku!</span>

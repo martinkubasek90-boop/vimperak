@@ -46,7 +46,7 @@ export default function MestoPage() {
         <section className="px-4 pt-5">
           <div
             className="relative overflow-hidden rounded-[2rem] min-h-[17rem] md:min-h-[18rem]"
-            style={{ boxShadow: "0 18px 40px rgba(50,24,18,0.18)", background: "#3e2421" }}
+            style={{ boxShadow: "0 18px 40px rgba(50,24,18,0.18)", background: "#f1e8df" }}
           >
             <Image
               src="/editorial/news-hero.svg"
@@ -56,10 +56,10 @@ export default function MestoPage() {
             />
             <div className="relative z-10 flex min-h-[17rem] flex-col justify-end p-5 md:min-h-[18rem] md:p-6">
               <div className="mt-auto pt-16 md:pt-20">
-                <h1 className="font-headline font-extrabold text-3xl tracking-tight text-white md:text-[2.8rem]">
+                <h1 className="hero-text-shadow font-headline font-extrabold text-3xl tracking-tight text-white md:text-[2.8rem]">
                   Město
                 </h1>
-                <p className="mt-2 text-sm font-medium leading-relaxed max-w-[22rem]" style={{ color: "#7bf0af" }}>
+                <p className="hero-text-shadow mt-2 text-sm font-medium leading-relaxed max-w-[22rem]" style={{ color: "#7bf0af" }}>
                   Podněty, ankety, novinky a kontakt
                   <br />
                   s radnicí na jednom místě.
