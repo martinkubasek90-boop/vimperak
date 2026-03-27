@@ -50,6 +50,14 @@ export default function HomePage() {
               priority
               className="object-cover object-[64%_center] md:object-[center_38%]"
             />
+            <div
+              aria-hidden="true"
+              className="absolute inset-y-0 left-0 z-[1] w-[58%] md:w-[48%]"
+              style={{
+                background:
+                  "radial-gradient(circle at 26% 60%, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.10) 34%, rgba(0, 0, 0, 0.00) 72%)",
+              }}
+            />
             <div className="relative z-10 flex min-h-[25rem] flex-col justify-end p-5 md:min-h-[27rem] md:p-6">
               <div className="max-w-[15rem] md:max-w-[18rem] mb-2">
                 <p className="text-sm font-semibold mb-2" style={{ color: "#d7e8df" }}>
