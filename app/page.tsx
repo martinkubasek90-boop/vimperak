@@ -13,8 +13,7 @@ const quickActionRows = [
   [
     { icon: "newspaper", label: "Zprávy", href: "/zpravodaj", bg: "var(--primary-fixed)", color: "var(--on-primary-fixed)" },
     { icon: "sports_soccer", label: "Sport", href: "/sport", bg: "var(--surface-container)", color: "var(--on-surface)" },
-    { icon: "medical_services", label: "Lékaři", href: "/kontakty?k=lékař", bg: "var(--error-container)", color: "var(--on-error-container)" },
-    { icon: "restaurant", label: "Restaurace", href: "/kontakty?k=restaurace", bg: "var(--surface-container-high)", color: "var(--on-surface)" },
+    { icon: "edit_square", label: "Napsat městu", href: "/napsat-mestu", bg: "var(--error-container)", color: "var(--on-error-container)" },
   ],
 ];
 
@@ -109,7 +108,7 @@ export default function HomePage() {
           </h2>
           <div className="space-y-3">
             {quickActionRows.map((row, index) => (
-              <div key={index} className={`grid gap-3 ${row.length === 3 ? "grid-cols-3" : "grid-cols-4"}`}>
+              <div key={index} className="grid grid-cols-3 gap-3">
                 {row.map(({ icon, label, href, bg, color }) => (
                   <Link key={label} href={href}
                     className="flex flex-col items-center gap-2.5 rounded-3xl border px-3 py-4 text-center transition-all active:scale-95 hover:brightness-95"
