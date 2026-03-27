@@ -54,6 +54,14 @@ export default function MestoPage() {
               fill
               className="object-cover object-[56%_18%] md:object-[54%_16%]"
             />
+            <div
+              aria-hidden="true"
+              className="absolute inset-y-0 left-0 z-[1] w-[58%] md:w-[46%]"
+              style={{
+                background:
+                  "radial-gradient(circle at 24% 64%, rgba(0, 0, 0, 0.24) 0%, rgba(0, 0, 0, 0.14) 36%, rgba(0, 0, 0, 0.00) 74%)",
+              }}
+            />
             <div className="relative z-10 flex min-h-[17rem] flex-col justify-end p-5 md:min-h-[18rem] md:p-6">
               <div className="mt-auto pt-16 md:pt-20">
                 <h1 className="hero-text-shadow font-headline font-extrabold text-3xl tracking-tight text-white md:text-[2.8rem]">
