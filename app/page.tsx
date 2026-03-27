@@ -4,13 +4,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { events, news } from "@/lib/data";
 
-const quickActions = [
-  { icon: "badge",            label: "Doklady",     href: "/kontakty?k=město&u=vnitrni-veci", bg: "var(--secondary-container)", color: "var(--on-secondary-container)" },
-  { icon: "calendar_month",   label: "Kalendář",    href: "/kalendar",                         bg: "var(--secondary-fixed)", color: "var(--on-secondary-fixed)" },
-  { icon: "directions_bus",   label: "Autobusy",    href: "/jizdy",                             bg: "var(--tertiary-fixed)", color: "var(--on-tertiary-fixed)" },
-  { icon: "medical_services", label: "Lékaři",      href: "/kontakty?k=lékař",                  bg: "var(--primary-fixed)", color: "var(--on-primary-fixed)" },
-  { icon: "local_pharmacy",   label: "Lékárny",     href: "/kontakty?k=lékárna",                bg: "var(--surface-container)", color: "var(--on-surface)" },
-  { icon: "campaign",         label: "Podněty",     href: "/mesto",                             bg: "var(--error-container)", color: "var(--on-error-container)" },
+const quickActionRows = [
+  [
+    { icon: "calendar_month", label: "Kalendář", href: "/kalendar", bg: "var(--secondary-fixed)", color: "var(--on-secondary-fixed)" },
+    { icon: "contacts", label: "Kontakty", href: "/kontakty", bg: "var(--secondary-container)", color: "var(--on-secondary-container)" },
+    { icon: "location_city", label: "Město", href: "/mesto", bg: "var(--tertiary-fixed)", color: "var(--on-tertiary-fixed)" },
+  ],
+  [
+    { icon: "newspaper", label: "Zprávy", href: "/zpravodaj", bg: "var(--primary-fixed)", color: "var(--on-primary-fixed)" },
+    { icon: "sports_soccer", label: "Sport", href: "/sport", bg: "var(--surface-container)", color: "var(--on-surface)" },
+    { icon: "medical_services", label: "Lékaři", href: "/kontakty?k=lékař", bg: "var(--error-container)", color: "var(--on-error-container)" },
+    { icon: "restaurant", label: "Restaurace", href: "/kontakty?k=restaurace", bg: "var(--surface-container-high)", color: "var(--on-surface)" },
+  ],
 ];
 
 const eventCatColor: Record<string, { bg: string; text: string }> = {
@@ -102,14 +107,18 @@ export default function HomePage() {
           <h2 className="font-headline font-bold text-lg mb-4" style={{ color: "var(--on-surface)" }}>
             Rychlý přístup
           </h2>
-          <div className="grid grid-cols-3 gap-3">
-            {quickActions.map(({ icon, label, href, bg, color }) => (
-              <Link key={label} href={href}
-                className="flex flex-col items-center gap-2.5 p-4 rounded-3xl transition-all active:scale-95 hover:brightness-95 border"
-                style={{ backgroundColor: bg, borderColor: "rgba(159,29,47,0.06)" }}>
-                <span className="material-symbols-outlined text-2xl" style={{ color }}>{icon}</span>
-                <span className="text-xs font-semibold text-center leading-tight" style={{ color }}>{label}</span>
-              </Link>
+          <div className="space-y-3">
+            {quickActionRows.map((row, index) => (
+              <div key={index} className={`grid gap-3 ${row.length === 3 ? "grid-cols-3" : "grid-cols-4"}`}>
+                {row.map(({ icon, label, href, bg, color }) => (
+                  <Link key={label} href={href}
+                    className="flex flex-col items-center gap-2.5 rounded-3xl border px-3 py-4 text-center transition-all active:scale-95 hover:brightness-95"
+                    style={{ backgroundColor: bg, borderColor: "rgba(159,29,47,0.06)" }}>
+                    <span className="material-symbols-outlined text-2xl" style={{ color }}>{icon}</span>
+                    <span className="text-xs font-semibold leading-tight" style={{ color }}>{label}</span>
+                  </Link>
+                ))}
+              </div>
             ))}
           </div>
         </section>

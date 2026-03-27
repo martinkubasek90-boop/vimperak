@@ -138,6 +138,28 @@ export type DirectoryItem = {
   appointmentLabel?: string;
 };
 
+export type SportClub = {
+  id: number;
+  name: string;
+  address?: string;
+  contact?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  sourceUrl: string;
+};
+
+export type SportVenue = {
+  id: number;
+  name: string;
+  address: string;
+  contact?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  sourceUrl: string;
+};
+
 export const directory: DirectoryItem[] = [
   // Taxi
   {
@@ -511,6 +533,117 @@ export const directory: DirectoryItem[] = [
     email: "urad@mesto.vimperk.cz",
     website: "https://portal.vimperk.cz",
     sourceUrl: "https://www.vimperk.cz",
+  },
+];
+
+export const sportVenues: SportVenue[] = [
+  {
+    id: 1,
+    name: "Městské služby Vimperk, s.r.o.",
+    address: "Steinbrenerova 6/2, Vimperk",
+    email: "sport-vimperk@seznam.cz",
+    website: "https://sport-vimperk.cz",
+    sourceUrl: "https://www.vimperk.cz/sport/d-20105",
+  },
+  {
+    id: 2,
+    name: "Zimní stadion Vimperk",
+    address: "1. máje 321/25, 385 01 Vimperk",
+    contact: "Ing. Michal Gabauer",
+    phone: "722 783 586",
+    email: "zsvimperk@gmail.com",
+    website: "https://sport-vimperk.cz/zimnistadion",
+    sourceUrl: "https://www.vimperk.cz/sport/d-20105",
+  },
+];
+
+export const sportClubs: SportClub[] = [
+  {
+    id: 1,
+    name: "Basketbalový klub Vimperk",
+    address: "Mírová 434, Vimperk",
+    phone: "723 138 157",
+    email: "hertaj@centrum.cz, bkvimperk@gmail.com",
+    website: "https://bkvimperk.webnode.cz",
+    sourceUrl: "https://www.vimperk.cz/sport/d-20105",
+  },
+  {
+    id: 2,
+    name: "Bike klub Vimperk",
+    address: "Pivovarská 68, Vimperk",
+    contact: "Jiří Lutovský",
+    phone: "388 411 051 / 602 422 754",
+    email: "jiri@lutovsky.cz, info@bike-klub.cz",
+    website: "https://www.cs-mtb.cz",
+    sourceUrl: "https://www.vimperk.cz/sport/d-20105",
+  },
+  {
+    id: 3,
+    name: "Ski klub ŠUMAVA Vimperk",
+    address: "1. máje 182, Vimperk",
+    contact: "Karel Hudeček",
+    phone: "388 413 917 / 721 141 081",
+    email: "hudecek@skisumava.cz, info@skisumava.cz",
+    website: "https://www.skisumava.cz",
+    sourceUrl: "https://www.vimperk.cz/sport/d-20105",
+  },
+  {
+    id: 4,
+    name: "Sportovní klub HC Vimperk",
+    address: "1. máje 321/25, Vimperk",
+    contact: "Pavel Předota",
+    phone: "727 927 108",
+    email: "predota@vkbstavby.cz, info@hcvimperk.cz, HCVimperk@email.cz",
+    website: "https://www.hcvimperk.cz",
+    sourceUrl: "https://www.vimperk.cz/sport/d-20105",
+  },
+  {
+    id: 5,
+    name: "TJ Šumavan Vimperk - oddíl kopané",
+    address: "1. máje 123, Vimperk",
+    contact: "Jaroslav Uhlík · správce hřiště Jiří Formánek",
+    phone: "602 461 303 / 728 153 926",
+    email: "jaroslav.uhlik@centrum.cz, sumavan.vimperk@centrum.cz",
+    website: "https://www.fotbal-vimperk.cz",
+    sourceUrl: "https://www.vimperk.cz/sport/d-20105",
+  },
+  {
+    id: 6,
+    name: "TJ Šumavan Vimperk - oddíl sportovní gymnastiky",
+    contact: "Marie Kotlíková",
+    phone: "723 238 973",
+    email: "mkvimperk@seznam.cz",
+    sourceUrl: "https://www.vimperk.cz/sport/d-20105",
+  },
+  {
+    id: 7,
+    name: "TJ Šumavan Vimperk - oddíl volejbalu",
+    contact: "Lubomír Dvořák",
+    email: "gisportal@seznam.cz",
+    sourceUrl: "https://www.vimperk.cz/sport/d-20105",
+  },
+  {
+    id: 8,
+    name: "Box club Vimperk",
+    contact: "Filip Černý",
+    phone: "775 271 003 / 733 790 049",
+    website: "https://www.facebook.com",
+    sourceUrl: "https://www.vimperk.cz/sport/d-20105",
+  },
+  {
+    id: 9,
+    name: "Tenisový klub Vimperk",
+    contact: "Karel Hudeček",
+    phone: "606 884 962",
+    sourceUrl: "https://www.vimperk.cz/sport/d-20105",
+  },
+  {
+    id: 10,
+    name: "Florbalový klub Vimperk",
+    contact: "Vladimír Pešl",
+    phone: "723 407 725",
+    website: "https://www.fbcvimperk.cz",
+    sourceUrl: "https://www.vimperk.cz/sport/d-20105",
   },
 ];
 
