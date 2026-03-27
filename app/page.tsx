@@ -1,5 +1,6 @@
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
+import PwaInstallCard from "@/components/PwaInstallCard";
 import Link from "next/link";
 import Image from "next/image";
 import { events, news } from "@/lib/data";
@@ -100,6 +101,8 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <PwaInstallCard />
 
         {/* ── Quick access ──────────────────────────────── */}
         <section className="px-4 pt-6">
