@@ -41,7 +41,7 @@ export default function HomePage() {
         <section className="px-4 pt-5">
           <div
             className="relative overflow-hidden rounded-[2rem] min-h-[25rem] md:min-h-[27rem]"
-            style={{ boxShadow: "0 18px 40px rgba(50,24,18,0.18)", background: "#f1e8df" }}
+            style={{ boxShadow: "0 18px 40px rgba(50,24,18,0.18)", background: "#45211d" }}
           >
             <Image
               src="/editorial/castle-hero.svg"
@@ -51,45 +51,32 @@ export default function HomePage() {
               className="object-cover object-[64%_center] md:object-[center_38%]"
             />
             <div className="relative z-10 flex min-h-[25rem] flex-col justify-end p-5 md:min-h-[27rem] md:p-6">
-              <div
-                className="mb-3 max-w-[15.5rem] rounded-[2rem] px-4 py-5 md:max-w-[18rem] md:px-5"
-                style={{
-                  background: "linear-gradient(180deg, rgba(28, 24, 26, 0.88) 0%, rgba(45, 38, 37, 0.78) 100%)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  boxShadow: "0 18px 44px rgba(22, 14, 12, 0.26)",
-                  backdropFilter: "blur(14px)",
-                  WebkitBackdropFilter: "blur(14px)",
-                }}
-              >
-                <p className="text-sm font-semibold mb-4" style={{ color: "rgba(255,255,255,0.86)" }}>
+              <div className="max-w-[15rem] md:max-w-[18rem] mb-2">
+                <p className="text-sm font-semibold mb-2" style={{ color: "#d7e8df" }}>
                   Čtvrtek, 26. března 2026
                 </p>
-                <h1 className="hero-text-shadow font-headline font-extrabold text-[2.45rem] leading-[0.94] tracking-tight mb-0 text-white md:text-[3.1rem]">
+                <h1 className="font-headline font-extrabold text-[2.45rem] leading-[0.94] tracking-tight mb-0 text-white md:text-[3.1rem]">
                   Dobrý den,
                   <br />
-                  <span className="text-[0.9em]" style={{ color: "#F7F2EC" }}>Vimperáci.</span>
+                  <span style={{ color: "#d7e8df" }}>Vimperáci.</span>
                 </h1>
               </div>
 
               <div
                 className="max-w-[19rem] rounded-[1.6rem] px-4 py-[0.78rem] backdrop-blur-md md:max-w-[20rem]"
-                style={{
-                  background: "linear-gradient(180deg, rgba(40, 30, 32, 0.82) 0%, rgba(56, 42, 40, 0.74) 100%)",
-                  border: "1px solid rgba(255,255,255,0.09)",
-                  boxShadow: "0 16px 32px rgba(16, 10, 9, 0.2)",
-                }}
+                style={{ background: "rgba(58,38,35,0.38)", border: "1px solid rgba(255,255,255,0.18)" }}
               >
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2.5 text-white">
-                    <span className="material-symbols-outlined text-[1.45rem]" style={{ color: "#f6f1eb" }}>wb_sunny</span>
+                    <span className="material-symbols-outlined text-[1.45rem]" style={{ color: "#d7e8df" }}>wb_sunny</span>
                     <div>
                       <p className="font-headline font-bold text-[1.15rem] leading-none">8°C</p>
-                      <p className="text-xs text-white/86">Slunečno · 12° max</p>
+                      <p className="text-xs text-white/70">Slunečno · 12° max</p>
                     </div>
                   </div>
-                  <div className="h-7 w-px bg-white/20" />
-                  <div className="flex items-center gap-2.5 text-white">
-                    <span className="material-symbols-outlined text-[1.1rem]" style={{ color: "#f6f1eb" }}>warning</span>
+                  <div className="h-7 w-px bg-white/18" />
+                  <div className="flex items-center gap-2.5 text-white/90">
+                    <span className="material-symbols-outlined text-[1.1rem]" style={{ color: "#d7e8df" }}>warning</span>
                     <p className="text-sm font-medium leading-tight">
                       Uzavírka Pivovarské
                       <br />
