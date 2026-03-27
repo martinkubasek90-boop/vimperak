@@ -50,33 +50,57 @@ export default function HomePage() {
               priority
               className="object-cover object-[64%_center] md:object-[center_38%]"
             />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 z-[1]"
+              style={{
+                background: [
+                  "linear-gradient(180deg, rgba(18, 15, 14, 0.06) 0%, rgba(18, 15, 14, 0.18) 58%, rgba(18, 15, 14, 0.28) 100%)",
+                  "linear-gradient(110deg, rgba(18, 15, 14, 0.82) 0%, rgba(18, 15, 14, 0.68) 24%, rgba(18, 15, 14, 0.30) 47%, rgba(18, 15, 14, 0.00) 68%)",
+                  "radial-gradient(circle at 20% 78%, rgba(18, 15, 14, 0.28) 0%, rgba(18, 15, 14, 0.00) 52%)",
+                ].join(", "),
+              }}
+            />
             <div className="relative z-10 flex min-h-[25rem] flex-col justify-end p-5 md:min-h-[27rem] md:p-6">
-              <div className="max-w-[15rem] md:max-w-[18rem] mb-2">
-                <p className="hero-text-shadow text-sm font-semibold mb-2" style={{ color: "#d7e8df" }}>
+              <div
+                className="mb-3 max-w-[17rem] rounded-[1.75rem] px-4 py-4 md:max-w-[19rem] md:px-5"
+                style={{
+                  background: "linear-gradient(180deg, rgba(20,20,24,0.72) 0%, rgba(20,20,24,0.38) 100%)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  boxShadow: "0 18px 36px rgba(16, 10, 9, 0.28)",
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
+                }}
+              >
+                <p className="hero-text-shadow text-sm font-semibold mb-2" style={{ color: "rgba(243, 240, 235, 0.92)" }}>
                   Čtvrtek, 26. března 2026
                 </p>
                 <h1 className="hero-text-shadow font-headline font-extrabold text-[2.45rem] leading-[0.94] tracking-tight mb-0 text-white md:text-[3.1rem]">
                   Dobrý den,
                   <br />
-                  <span className="text-[0.9em]" style={{ color: "#388A84" }}>Vimperáci.</span>
+                  <span className="text-[0.9em]" style={{ color: "#F4EEE7" }}>Vimperáci.</span>
                 </h1>
               </div>
 
               <div
                 className="max-w-[19rem] rounded-[1.6rem] px-4 py-[0.78rem] backdrop-blur-md md:max-w-[20rem]"
-                style={{ background: "rgba(58,38,35,0.38)", border: "1px solid rgba(255,255,255,0.18)" }}
+                style={{
+                  background: "rgba(24,20,22,0.58)",
+                  border: "1px solid rgba(255,255,255,0.16)",
+                  boxShadow: "0 14px 32px rgba(16, 10, 9, 0.24)",
+                }}
               >
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2.5 text-white">
-                    <span className="material-symbols-outlined text-[1.45rem]" style={{ color: "#d7e8df" }}>wb_sunny</span>
+                    <span className="material-symbols-outlined text-[1.45rem]" style={{ color: "#f3efe9" }}>wb_sunny</span>
                     <div>
                       <p className="font-headline font-bold text-[1.15rem] leading-none">8°C</p>
-                      <p className="text-xs text-white/70">Slunečno · 12° max</p>
+                      <p className="text-xs text-white/78">Slunečno · 12° max</p>
                     </div>
                   </div>
-                  <div className="h-7 w-px bg-white/18" />
-                  <div className="flex items-center gap-2.5 text-white/90">
-                    <span className="material-symbols-outlined text-[1.1rem]" style={{ color: "#d7e8df" }}>warning</span>
+                  <div className="h-7 w-px bg-white/20" />
+                  <div className="flex items-center gap-2.5 text-white">
+                    <span className="material-symbols-outlined text-[1.1rem]" style={{ color: "#f3efe9" }}>warning</span>
                     <p className="text-sm font-medium leading-tight">
                       Uzavírka Pivovarské
                       <br />
