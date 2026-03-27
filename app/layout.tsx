@@ -2,10 +2,16 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://vimperk.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(appUrl),
   title: "Vimperk — Tvoje město online",
   description: "Komunitní portál pro obyvatele Vimperka. Akce, jízdní řády, adresář a hlasování.",
   manifest: "/manifest.json",
+  alternates: {
+    canonical: "/",
+  },
   icons: {
     icon: "/branding/vimperk-mark.png",
     apple: "/branding/vimperk-shield.png",
@@ -15,6 +21,28 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "Vimperk",
+  },
+  openGraph: {
+    title: "Vimperk — Tvoje město online",
+    description: "Komunitní portál pro obyvatele Vimperka. Akce, jízdní řády, adresář a hlasování.",
+    url: appUrl,
+    siteName: "Vimperk",
+    locale: "cs_CZ",
+    type: "website",
+    images: [
+      {
+        url: "/branding/vimperk-shield.png",
+        width: 512,
+        height: 512,
+        alt: "Znak města Vimperk",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "Vimperk — Tvoje město online",
+    description: "Komunitní portál pro obyvatele Vimperka. Akce, jízdní řády, adresář a hlasování.",
+    images: ["/branding/vimperk-shield.png"],
   },
 };
 

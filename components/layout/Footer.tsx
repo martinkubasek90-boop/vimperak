@@ -26,6 +26,9 @@ export default function Footer() {
               ["Jízdní řády", "/jizdy"],
               ["Adresář služeb", "/adresar"],
               ["Hlasování", "/hlasovani"],
+              ["Jak nainstalovat", "/instalace"],
+              ["Ochrana soukromi", "/ochrana-soukromi"],
+              ["Podminky pouziti", "/podminky"],
             ].map(([label, href]) => (
               <li key={href}>
                 <Link href={href} className="hover:text-white transition-colors">
