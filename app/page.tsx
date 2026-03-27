@@ -55,7 +55,7 @@ export default function HomePage() {
               className="absolute inset-y-0 left-0 z-[1] w-[58%] md:w-[48%]"
               style={{
                 background:
-                  "radial-gradient(circle at 26% 60%, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.10) 34%, rgba(0, 0, 0, 0.00) 72%)",
+                  "radial-gradient(circle at 26% 60%, rgba(0, 0, 0, 0.26) 0%, rgba(0, 0, 0, 0.16) 36%, rgba(0, 0, 0, 0.00) 74%)",
               }}
             />
             <div className="relative z-10 flex min-h-[25rem] flex-col justify-end p-5 md:min-h-[27rem] md:p-6">
