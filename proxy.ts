@@ -1,8 +1,11 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 const BASIC_AUTH_USERNAME = process.env.BASIC_AUTH_USERNAME;
 const BASIC_AUTH_PASSWORD = process.env.BASIC_AUTH_PASSWORD;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 function unauthorizedResponse() {
   return new NextResponse("Authentication required.", {
@@ -14,9 +17,17 @@ function unauthorizedResponse() {
   });
 }
 
-export function proxy(request: NextRequest) {
+function isSupabaseConfigured() {
+  return Boolean(
+    SUPABASE_URL &&
+      SUPABASE_ANON_KEY &&
+      SUPABASE_URL !== "https://YOUR_PROJECT.supabase.co",
+  );
+}
+
+export async function proxy(request: NextRequest) {
   if (!BASIC_AUTH_USERNAME || !BASIC_AUTH_PASSWORD) {
-    return NextResponse.next();
+    return updateSupabaseSession(request);
   }
 
   const authHeader = request.headers.get("authorization");
@@ -40,10 +51,42 @@ export function proxy(request: NextRequest) {
       return unauthorizedResponse();
     }
 
-    return NextResponse.next();
+    return updateSupabaseSession(request);
   } catch {
     return unauthorizedResponse();
   }
+}
+
+async function updateSupabaseSession(request: NextRequest) {
+  const response = NextResponse.next({
+    request,
+  });
+
+  const isAdminRequest =
+    request.nextUrl.pathname === "/admin" ||
+    request.nextUrl.pathname.startsWith("/admin/");
+
+  if (!isAdminRequest || !isSupabaseConfigured()) {
+    return response;
+  }
+
+  const supabase = createServerClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
+
+  await supabase.auth.getUser();
+
+  return response;
 }
 
 export const config = {
