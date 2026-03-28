@@ -25,7 +25,19 @@ export function AdminLoginForm() {
     setIsPending(false);
 
     if (signInError) {
-      setError("Přihlášení se nepodařilo. Zkontroluj e-mail, heslo a přístup v Supabase.");
+      const message = signInError.message.toLowerCase();
+
+      if (message.includes("invalid login credentials")) {
+        setError("Supabase odmítl přihlášení. Nejčastěji je špatné heslo nebo účet v Auth ještě neexistuje.");
+        return;
+      }
+
+      if (message.includes("email not confirmed")) {
+        setError("Účet v Supabase ještě nemá potvrzený e-mail. Otevři uživatele v Supabase Auth a potvrď ho.");
+        return;
+      }
+
+      setError(`Přihlášení se nepodařilo: ${signInError.message}`);
       return;
     }
 
@@ -76,7 +88,7 @@ export function AdminLoginForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isPending ? "Přihlašování..." : "Přihlásit se do adminu"}
       </button>

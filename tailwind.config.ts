@@ -11,6 +11,18 @@ const config: Config = {
     extend: {
       colors: {
         // Material Design 3 — Vimperk palette
+        brand: {
+          50: "#ffdad7",
+          100: "#ffcec9",
+          200: "#ffb3ae",
+          300: "#ff978f",
+          400: "#f56c67",
+          500: "#da1e2d",
+          600: "#c0001f",
+          700: "#b2001c",
+          800: "#930015",
+          900: "#410004",
+        },
         "secondary-fixed":           "#bdefbe",
         "surface-container-high":    "#e5e8ee",
         "surface":                   "#f7f9ff",
