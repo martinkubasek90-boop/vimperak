@@ -18,6 +18,22 @@ export type AdminEventItem = {
   price: string;
 };
 
+export type AdminDirectoryItem = {
+  id: string | number;
+  name: string;
+  category: string;
+  cityDepartment?: string;
+  phone: string;
+  address: string;
+  hours?: string;
+  note?: string;
+  email?: string;
+  website?: string;
+  sourceUrl?: string;
+  appointmentUrl?: string;
+  appointmentLabel?: string;
+};
+
 export type AdminReportStatus = "přijato" | "v řešení" | "vyřešeno" | "zamítnuto";
 
 export type AdminReportItem = {

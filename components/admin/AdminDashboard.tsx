@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import {
+  createDirectoryAction,
   createEventAction,
   createNewsAction,
   updateReportStatusAction,
@@ -10,6 +11,7 @@ import {
 import { AdminSignOutButton } from "@/components/admin/AdminSignOutButton";
 import { AdminRole, AdminSection, getRoleConfig } from "@/lib/admin-access";
 import type {
+  AdminDirectoryItem,
   AdminEventItem,
   AdminNewsItem,
   AdminReportItem,
@@ -20,6 +22,7 @@ import {
   Calendar,
   CheckCircle,
   Clock,
+  ContactRound,
   LayoutDashboard,
   Newspaper,
   Plus,
@@ -37,6 +40,7 @@ const NAV_ITEMS: Array<{
   { id: "přehled", label: "Přehled", icon: LayoutDashboard },
   { id: "zpravodaj", label: "Zpravodaj", icon: Newspaper },
   { id: "akce", label: "Akce", icon: Calendar },
+  { id: "kontakty", label: "Kontakty", icon: ContactRound },
   { id: "závady", label: "Závady", icon: Wrench },
 ];
 
@@ -52,6 +56,7 @@ type AdminDashboardProps = {
   role: AdminRole;
   initialNews: AdminNewsItem[];
   initialEvents: AdminEventItem[];
+  initialDirectory: AdminDirectoryItem[];
   initialReports: AdminReportItem[];
 };
 
@@ -60,6 +65,7 @@ export function AdminDashboard({
   role,
   initialNews,
   initialEvents,
+  initialDirectory,
   initialReports,
 }: AdminDashboardProps) {
   const permissions = getRoleConfig(role);
@@ -67,6 +73,7 @@ export function AdminDashboard({
   const [tab, setTab] = useState<AdminSection>(allowedTabs[0] ?? "přehled");
   const [newsItems, setNewsItems] = useState(initialNews);
   const [eventItems, setEventItems] = useState(initialEvents);
+  const [directoryItems, setDirectoryItems] = useState(initialDirectory);
   const [reportItems, setReportItems] = useState(initialReports);
 
   useEffect(() => {
@@ -89,6 +96,10 @@ export function AdminDashboard({
         (item) => item.date >= new Date().toISOString().split("T")[0],
       ).length,
     [eventItems],
+  );
+  const cityContacts = useMemo(
+    () => directoryItems.filter((item) => item.category === "město").length,
+    [directoryItems],
   );
 
   return (
@@ -147,6 +158,7 @@ export function AdminDashboard({
               {tab === "přehled" && "Přehled"}
               {tab === "zpravodaj" && "Zpravodaj — správa článků"}
               {tab === "akce" && "Akce — správa událostí"}
+              {tab === "kontakty" && "Kontakty — adresář a městské odbory"}
               {tab === "závady" && "Hlášení závad"}
             </h1>
             <p className="mt-1 text-sm text-gray-500">{permissions.description}</p>
@@ -160,6 +172,7 @@ export function AdminDashboard({
               urgentCount={urgentCount}
               pendingReports={pendingReports}
               upcomingEvents={upcomingEvents}
+              cityContacts={cityContacts}
               onSelectTab={(nextTab) => {
                 if (allowedTabs.includes(nextTab)) setTab(nextTab);
               }}
@@ -183,6 +196,14 @@ export function AdminDashboard({
             />
           ) : null}
 
+          {tab === "kontakty" ? (
+            <DirectoryTab
+              canEdit={permissions.canManageDirectory}
+              items={directoryItems}
+              onItemsChange={setDirectoryItems}
+            />
+          ) : null}
+
           {tab === "závady" ? (
             <ReportsTab
               canResolve={permissions.canResolveReports}
@@ -200,11 +221,13 @@ function DashboardTab({
   urgentCount,
   pendingReports,
   upcomingEvents,
+  cityContacts,
   onSelectTab,
 }: {
   urgentCount: number;
   pendingReports: number;
   upcomingEvents: number;
+  cityContacts: number;
   onSelectTab: (tab: AdminSection) => void;
 }) {
   return (
@@ -230,9 +253,9 @@ function DashboardTab({
             color: "text-blue-600 bg-blue-50 border-blue-200",
           },
           {
-            label: "Aktivní hlasování",
-            value: 2,
-            icon: Vote,
+            label: "Městské kontakty",
+            value: cityContacts,
+            icon: ContactRound,
             color: "text-brand-600 bg-brand-50 border-brand-200",
           },
         ].map(({ label, value, icon: Icon, color }) => (
@@ -263,8 +286,8 @@ function DashboardTab({
               <span className="font-semibold">{upcomingEvents}</span>
             </div>
             <div className="flex justify-between">
-              <span>Aktivní hlasování</span>
-              <span className="font-semibold">2</span>
+              <span>Městské kontakty</span>
+              <span className="font-semibold">{cityContacts}</span>
             </div>
           </div>
         </div>
@@ -277,6 +300,7 @@ function DashboardTab({
             {[
               ["Přidat zprávu do zpravodaje", "zpravodaj"],
               ["Přidat akci / událost", "akce"],
+              ["Přidat kontakt nebo odbor", "kontakty"],
               ["Zobrazit nová hlášení závad", "závady"],
             ].map(([label, nextTab]) => (
               <button
@@ -654,6 +678,261 @@ function EventsTab({
             >
               {item.free ? "Zdarma" : item.price}
             </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DirectoryTab({
+  canEdit,
+  items,
+  onItemsChange,
+}: {
+  canEdit: boolean;
+  items: AdminDirectoryItem[];
+  onItemsChange: (items: AdminDirectoryItem[]) => void;
+}) {
+  const [showForm, setShowForm] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const [form, setForm] = useState({
+    name: "",
+    category: "město",
+    cityDepartment: "central",
+    phone: "",
+    address: "",
+    hours: "",
+    note: "",
+    email: "",
+    website: "",
+    sourceUrl: "",
+    appointmentUrl: "",
+    appointmentLabel: "",
+  });
+
+  function handleSave() {
+    if (!canEdit || !form.name || !form.phone || !form.address) return;
+
+    setError("");
+    startTransition(async () => {
+      const result = await createDirectoryAction(form);
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      onItemsChange(
+        [...items, result.item].sort((left, right) => {
+          if (left.category === right.category) {
+            return left.name.localeCompare(right.name, "cs");
+          }
+          return left.category.localeCompare(right.category, "cs");
+        }),
+      );
+      setForm({
+        name: "",
+        category: "město",
+        cityDepartment: "central",
+        phone: "",
+        address: "",
+        hours: "",
+        note: "",
+        email: "",
+        website: "",
+        sourceUrl: "",
+        appointmentUrl: "",
+        appointmentLabel: "",
+      });
+      setShowForm(false);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 3000);
+    });
+  }
+
+  return (
+    <div>
+      {!canEdit ? (
+        <ReadOnlyBanner text="Tahle role vidí kontakty a adresář, ale nesmí je upravovat." />
+      ) : null}
+      {saved ? <SuccessBanner text="Kontakt byl uložený do Supabase." /> : null}
+      {error ? <ErrorBanner text={error} /> : null}
+
+      {canEdit ? (
+        <button
+          type="button"
+          onClick={() => setShowForm((current) => !current)}
+          className="mb-5 flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+        >
+          <Plus className="h-4 w-4" />
+          Přidat kontakt
+        </button>
+      ) : null}
+
+      {showForm ? (
+        <div className="mb-5 rounded-xl border border-gray-200 bg-white p-5">
+          <h3 className="mb-4 font-semibold">Nový kontakt / záznam</h3>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <input
+              placeholder="Název *"
+              value={form.name}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, name: event.target.value }))
+              }
+              className="col-span-2 rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+            <select
+              value={form.category}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, category: event.target.value }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            >
+              {["město", "taxi", "restaurace", "lékař", "lékárna", "opravna", "sport", "ubytování", "obchod"].map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+            <select
+              value={form.cityDepartment}
+              disabled={form.category !== "město"}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, cityDepartment: event.target.value }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400 disabled:bg-gray-50 disabled:text-gray-400"
+            >
+              {[
+                ["central", "Centrální kontakt"],
+                ["vnitrni-veci", "Doklady a matrika"],
+                ["doprava", "Doprava"],
+                ["zivnostensky", "Podnikání"],
+                ["vystavba", "Výstavba"],
+                ["zivotni-prostredi", "Životní prostředí"],
+                ["socialni", "Sociální oblast"],
+                ["bezpecnost", "Bezpečnost"],
+              ].map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <input
+              placeholder="Telefon *"
+              value={form.phone}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, phone: event.target.value }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+            <input
+              placeholder="Adresa *"
+              value={form.address}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, address: event.target.value }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+            <input
+              placeholder="E-mail"
+              value={form.email}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, email: event.target.value }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+            <input
+              placeholder="Provozní / úřední doba"
+              value={form.hours}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, hours: event.target.value }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+            <input
+              placeholder="Web"
+              value={form.website}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, website: event.target.value }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+            <input
+              placeholder="Zdroj URL"
+              value={form.sourceUrl}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, sourceUrl: event.target.value }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+            <input
+              placeholder="Objednání URL"
+              value={form.appointmentUrl}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, appointmentUrl: event.target.value }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+            <input
+              placeholder="Text CTA objednání"
+              value={form.appointmentLabel}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, appointmentLabel: event.target.value }))
+              }
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+            <textarea
+              placeholder="Poznámka"
+              value={form.note}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, note: event.target.value }))
+              }
+              rows={3}
+              className="col-span-2 resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+          </div>
+          <div className="mt-4 flex gap-2">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isPending}
+              className="rounded-lg bg-brand-600 px-4 py-2 text-sm text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isPending ? "Ukládám..." : "Uložit"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50"
+            >
+              Zrušit
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="flex flex-col gap-2">
+        {items.map((item) => (
+          <div key={item.id} className="rounded-xl border border-gray-200 bg-white px-4 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-gray-900">{item.name}</p>
+                <p className="text-xs text-gray-400">
+                  {item.category}
+                  {item.cityDepartment ? ` · ${item.cityDepartment}` : ""}
+                </p>
+                <p className="mt-2 text-sm text-gray-600">{item.phone}</p>
+                <p className="text-sm text-gray-500">{item.address}</p>
+                {item.hours ? <p className="mt-1 text-xs text-gray-500">{item.hours}</p> : null}
+                {item.email ? <p className="mt-1 text-xs text-gray-500">{item.email}</p> : null}
+              </div>
+              <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-700">
+                {item.category}
+              </span>
+            </div>
           </div>
         ))}
       </div>

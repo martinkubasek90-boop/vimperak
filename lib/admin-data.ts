@@ -1,5 +1,6 @@
-import { events as mockEvents, news as mockNews, reports as mockReports } from "@/lib/admin-mock";
+import { directory as mockDirectory, events as mockEvents, news as mockNews, reports as mockReports } from "@/lib/admin-mock";
 import type {
+  AdminDirectoryItem,
   AdminEventItem,
   AdminNewsItem,
   AdminReportItem,
@@ -18,6 +19,40 @@ function isSupabaseConfigured() {
 function formatDate(value?: string | null) {
   if (!value) return "";
   return value.slice(0, 10);
+}
+
+function normalizeMockDirectoryItem(item: (typeof mockDirectory)[number]): AdminDirectoryItem {
+  const candidate = item as {
+    id: number;
+    name: string;
+    category: string;
+    cityDepartment?: string;
+    phone: string;
+    address: string;
+    hours?: string;
+    note?: string;
+    email?: string;
+    website?: string;
+    sourceUrl?: string;
+    appointmentUrl?: string;
+    appointmentLabel?: string;
+  };
+
+  return {
+    id: candidate.id,
+    name: candidate.name,
+    category: candidate.category,
+    cityDepartment: candidate.cityDepartment,
+    phone: candidate.phone,
+    address: candidate.address,
+    hours: candidate.hours,
+    note: candidate.note,
+    email: candidate.email,
+    website: candidate.website,
+    sourceUrl: candidate.sourceUrl,
+    appointmentUrl: candidate.appointmentUrl,
+    appointmentLabel: candidate.appointmentLabel,
+  };
 }
 
 export async function getAdminNews(): Promise<AdminNewsItem[]> {
@@ -78,6 +113,42 @@ export async function getAdminEvents(): Promise<AdminEventItem[]> {
     category: item.category,
     free: item.free,
     price: item.price ?? "",
+  }));
+}
+
+export async function getAdminDirectory(): Promise<AdminDirectoryItem[]> {
+  if (!isSupabaseConfigured()) {
+    return mockDirectory.map(normalizeMockDirectoryItem);
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("directory")
+    .select(
+      "id, name, category, city_department, phone, address, hours, note, email, website, source_url, appointment_url, appointment_label",
+    )
+    .order("category", { ascending: true })
+    .order("name", { ascending: true });
+
+  if (error || !data) {
+    console.error("admin directory:", error);
+    return mockDirectory.map(normalizeMockDirectoryItem);
+  }
+
+  return data.map((item) => ({
+    id: item.id,
+    name: item.name,
+    category: item.category,
+    cityDepartment: item.city_department ?? undefined,
+    phone: item.phone,
+    address: item.address,
+    hours: item.hours ?? undefined,
+    note: item.note ?? undefined,
+    email: item.email ?? undefined,
+    website: item.website ?? undefined,
+    sourceUrl: item.source_url ?? undefined,
+    appointmentUrl: item.appointment_url ?? undefined,
+    appointmentLabel: item.appointment_label ?? undefined,
   }));
 }
 

@@ -1,5 +1,12 @@
 // Mock data for admin panel (will be replaced by Supabase queries)
 
+export const directory = [
+  { id: 22, name: "Městský úřad Vimperk — podatelna", category: "město", cityDepartment: "central", phone: "388 402 111", address: "Steinbrenerova 6, Vimperk", hours: "Po, St 7:30–17:00 · Út, Čt 7:30–15:00 · Pá 7:30–14:00", email: "podatelna@mesto.vimperk.cz" },
+  { id: 24, name: "Městská policie Vimperk", category: "město", cityDepartment: "bezpecnost", phone: "388 402 110", address: "Nad Stadionem 199, Vimperk", hours: "Nepřetržitý provoz", email: "mp@mesto.vimperk.cz" },
+  { id: 3, name: "Hotel a restaurace Terasa", category: "restaurace", phone: "602 323 297", address: "Pasovská 34, Vimperk 385 01", email: "info@hotelterasa.cz", website: "http://www.hotelterasa.cz", note: "Tradiční česká kuchyně, terasa, parkování na místě" },
+  { id: 6, name: "MUDr. Jana Procházková — Praktický lékař", category: "lékař", phone: "388 412 300", address: "Nemocniční 430, Vimperk", hours: "Po-Pá 7:30–12:00, Po+St 13:00–16:30" },
+];
+
 export const news = [
   { id: 1, title: "Uzavírka ulice Pivovarská — od 28. března", summary: "Objízdná trasa přes Steinbrenerovu.", category: "upozornění", urgent: true, date: "2026-03-25" },
   { id: 2, title: "Nová hřiště v parku Blanice — hlasování spuštěno", summary: "Hlasování trvá do 10. dubna.", category: "radnice", urgent: false, date: "2026-03-24" },

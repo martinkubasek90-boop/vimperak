@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getAdminAccess } from "@/lib/admin-access";
 import type {
+  AdminDirectoryItem,
   AdminEventItem,
   AdminNewsItem,
   AdminReportItem,
@@ -119,6 +120,82 @@ export async function createEventAction(input: {
       category: data.category,
       free: data.free,
       price: data.price ?? "",
+    },
+  };
+}
+
+export async function createDirectoryAction(input: {
+  name: string;
+  category: string;
+  cityDepartment: string;
+  phone: string;
+  address: string;
+  hours: string;
+  note: string;
+  email: string;
+  website: string;
+  sourceUrl: string;
+  appointmentUrl: string;
+  appointmentLabel: string;
+}): Promise<ActionResult<AdminDirectoryItem>> {
+  const { supabase, user, access } = await getAuthorizedAccess();
+
+  if (!user || !access.allowed || !access.permissions?.canManageDirectory) {
+    return { ok: false, error: "Tento účet nemá právo spravovat kontakty a adresář." };
+  }
+
+  const { data, error } = await supabase
+    .from("directory")
+    .insert([
+      {
+        name: input.name,
+        category: input.category,
+        city_department:
+          input.category === "město" && input.cityDepartment !== "vše"
+            ? input.cityDepartment
+            : null,
+        phone: input.phone,
+        address: input.address,
+        hours: input.hours || null,
+        note: input.note || null,
+        email: input.email || null,
+        website: input.website || null,
+        source_url: input.sourceUrl || null,
+        appointment_url: input.appointmentUrl || null,
+        appointment_label: input.appointmentLabel || null,
+      },
+    ])
+    .select(
+      "id, name, category, city_department, phone, address, hours, note, email, website, source_url, appointment_url, appointment_label",
+    )
+    .single();
+
+  if (error || !data) {
+    console.error("create directory:", error);
+    return { ok: false, error: "Uložení kontaktu do Supabase selhalo." };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/adresar");
+  revalidatePath("/kontakty");
+  revalidatePath("/mesto");
+
+  return {
+    ok: true,
+    item: {
+      id: data.id,
+      name: data.name,
+      category: data.category,
+      cityDepartment: data.city_department ?? undefined,
+      phone: data.phone,
+      address: data.address,
+      hours: data.hours ?? undefined,
+      note: data.note ?? undefined,
+      email: data.email ?? undefined,
+      website: data.website ?? undefined,
+      sourceUrl: data.source_url ?? undefined,
+      appointmentUrl: data.appointment_url ?? undefined,
+      appointmentLabel: data.appointment_label ?? undefined,
     },
   };
 }

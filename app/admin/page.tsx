@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { getAdminAccess } from "@/lib/admin-access";
-import { getAdminEvents, getAdminNews, getAdminReports } from "@/lib/admin-data";
+import { getAdminDirectory, getAdminEvents, getAdminNews, getAdminReports } from "@/lib/admin-data";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export default async function AdminPage() {
@@ -51,9 +51,10 @@ export default async function AdminPage() {
     );
   }
 
-  const [initialNews, initialEvents, initialReports] = await Promise.all([
+  const [initialNews, initialEvents, initialDirectory, initialReports] = await Promise.all([
     getAdminNews(),
     getAdminEvents(),
+    getAdminDirectory(),
     getAdminReports(),
   ]);
 
@@ -63,6 +64,7 @@ export default async function AdminPage() {
       role={access.role}
       initialNews={initialNews}
       initialEvents={initialEvents}
+      initialDirectory={initialDirectory}
       initialReports={initialReports}
     />
   );

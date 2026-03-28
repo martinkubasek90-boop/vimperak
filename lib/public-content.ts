@@ -1,9 +1,15 @@
-import { getEvents, getNews, getPolls } from "@/lib/db";
-import type { Event as MockEvent, NewsItem as MockNewsItem, Poll as MockPoll } from "@/lib/data";
+import { getDirectory, getEvents, getNews, getPolls } from "@/lib/db";
+import type {
+  DirectoryItem as MockDirectoryItem,
+  Event as MockEvent,
+  NewsItem as MockNewsItem,
+  Poll as MockPoll,
+} from "@/lib/data";
 
 export type PublicNewsItem = MockNewsItem;
 export type PublicEventItem = MockEvent;
 export type PublicPoll = MockPoll;
+export type PublicDirectoryItem = MockDirectoryItem;
 
 const newsImageByCategory: Record<PublicNewsItem["category"], string> = {
   upozornění: "/news/upozorneni.svg",
@@ -79,6 +85,53 @@ function normalizePoll(item: Record<string, unknown>): PublicPoll {
   };
 }
 
+function normalizeDirectoryItem(item: Record<string, unknown>): PublicDirectoryItem {
+  return {
+    id:
+      typeof item.id === "number"
+        ? item.id
+        : Number(String(item.id).slice(0, 8).replace(/\D/g, "")) || 0,
+    name: String(item.name ?? ""),
+    category: String(item.category ?? "obchod") as PublicDirectoryItem["category"],
+    cityDepartment:
+      typeof item.city_department === "string"
+        ? (item.city_department as NonNullable<PublicDirectoryItem["cityDepartment"]>)
+        : typeof item.cityDepartment === "string"
+          ? (item.cityDepartment as NonNullable<PublicDirectoryItem["cityDepartment"]>)
+          : undefined,
+    phone: String(item.phone ?? ""),
+    address: String(item.address ?? ""),
+    hours: typeof item.hours === "string" ? item.hours : undefined,
+    rating:
+      typeof item.rating === "number"
+        ? item.rating
+        : typeof item.rating === "string"
+          ? Number(item.rating)
+          : undefined,
+    note: typeof item.note === "string" ? item.note : undefined,
+    email: typeof item.email === "string" ? item.email : undefined,
+    website: typeof item.website === "string" ? item.website : undefined,
+    sourceUrl:
+      typeof item.source_url === "string"
+        ? item.source_url
+        : typeof item.sourceUrl === "string"
+          ? item.sourceUrl
+          : undefined,
+    appointmentUrl:
+      typeof item.appointment_url === "string"
+        ? item.appointment_url
+        : typeof item.appointmentUrl === "string"
+          ? item.appointmentUrl
+          : undefined,
+    appointmentLabel:
+      typeof item.appointment_label === "string"
+        ? item.appointment_label
+        : typeof item.appointmentLabel === "string"
+          ? item.appointmentLabel
+          : undefined,
+  };
+}
+
 export async function getPublicNews(): Promise<PublicNewsItem[]> {
   const items = await getNews();
   return items.map((item) => normalizeNewsItem(item as Record<string, unknown>));
@@ -92,4 +145,9 @@ export async function getPublicEvents(): Promise<PublicEventItem[]> {
 export async function getPublicPolls(): Promise<PublicPoll[]> {
   const items = await getPolls();
   return items.map((item) => normalizePoll(item as Record<string, unknown>));
+}
+
+export async function getPublicDirectory(): Promise<PublicDirectoryItem[]> {
+  const items = await getDirectory();
+  return items.map((item) => normalizeDirectoryItem(item as Record<string, unknown>));
 }

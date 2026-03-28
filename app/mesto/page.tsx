@@ -2,10 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
-import { directory, news, polls } from "@/lib/data";
-import { getPublicNews, getPublicPolls } from "@/lib/public-content";
-
-const cityContacts = directory.filter((item) => item.category === "město").slice(0, 4);
+import { getPublicDirectory, getPublicNews, getPublicPolls } from "@/lib/public-content";
 
 const cityActions = [
   {
@@ -39,8 +36,13 @@ const cityActions = [
 ];
 
 export default async function MestoPage() {
-  const [publicNews, publicPolls] = await Promise.all([getPublicNews(), getPublicPolls()]);
+  const [publicNews, publicPolls, publicDirectory] = await Promise.all([
+    getPublicNews(),
+    getPublicPolls(),
+    getPublicDirectory(),
+  ]);
   const latestNews = [...publicNews].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 2);
+  const cityContacts = publicDirectory.filter((item) => item.category === "město").slice(0, 4);
   return (
     <>
       <TopBar />
@@ -241,6 +243,20 @@ export default async function MestoPage() {
                 <span className="material-symbols-outlined">arrow_forward</span>
               </div>
             </div>
+            {cityContacts.length ? (
+              <div className="mt-4 grid gap-2">
+                {cityContacts.slice(0, 2).map((item) => (
+                  <div key={`${item.id}-${item.name}`} className="rounded-2xl px-4 py-3" style={{ background: "rgba(255,255,255,0.5)" }}>
+                    <div className="text-sm font-bold" style={{ color: "var(--on-secondary-container)" }}>
+                      {item.name}
+                    </div>
+                    <div className="mt-1 text-sm" style={{ color: "var(--on-secondary-container)" }}>
+                      {item.phone}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </Link>
         </section>
 
