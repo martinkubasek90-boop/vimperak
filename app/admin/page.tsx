@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { getAdminAccess } from "@/lib/admin-access";
+import { getAdminEvents, getAdminNews, getAdminReports } from "@/lib/admin-data";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export default async function AdminPage() {
@@ -50,5 +51,19 @@ export default async function AdminPage() {
     );
   }
 
-  return <AdminDashboard email={user.email ?? "Neznámý uživatel"} role={access.role} />;
+  const [initialNews, initialEvents, initialReports] = await Promise.all([
+    getAdminNews(),
+    getAdminEvents(),
+    getAdminReports(),
+  ]);
+
+  return (
+    <AdminDashboard
+      email={user.email ?? "Neznámý uživatel"}
+      role={access.role}
+      initialNews={initialNews}
+      initialEvents={initialEvents}
+      initialReports={initialReports}
+    />
+  );
 }

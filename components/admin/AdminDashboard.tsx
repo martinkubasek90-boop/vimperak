@@ -1,22 +1,32 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { news as mockNews, events as mockEvents, reports as mockReports } from "@/lib/admin-mock";
-import { AdminRole, AdminSection, getRoleConfig } from "@/lib/admin-access";
-import { AdminSignOutButton } from "@/components/admin/AdminSignOutButton";
 import {
+  createEventAction,
+  createNewsAction,
+  updateReportStatusAction,
+} from "@/app/admin/actions";
+import { AdminSignOutButton } from "@/components/admin/AdminSignOutButton";
+import { AdminRole, AdminSection, getRoleConfig } from "@/lib/admin-access";
+import type {
+  AdminEventItem,
+  AdminNewsItem,
+  AdminReportItem,
+  AdminReportStatus,
+} from "@/lib/admin-types";
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle,
+  Clock,
   LayoutDashboard,
   Newspaper,
-  Calendar,
-  Wrench,
   Plus,
-  CheckCircle,
-  AlertTriangle,
-  Clock,
   TrendingUp,
   Users,
   Vote,
+  Wrench,
 } from "lucide-react";
 
 const NAV_ITEMS: Array<{
@@ -40,22 +50,30 @@ const statusColor = {
 type AdminDashboardProps = {
   email: string;
   role: AdminRole;
+  initialNews: AdminNewsItem[];
+  initialEvents: AdminEventItem[];
+  initialReports: AdminReportItem[];
 };
 
-export function AdminDashboard({ email, role }: AdminDashboardProps) {
+export function AdminDashboard({
+  email,
+  role,
+  initialNews,
+  initialEvents,
+  initialReports,
+}: AdminDashboardProps) {
   const permissions = getRoleConfig(role);
   const allowedTabs = permissions.sections;
   const [tab, setTab] = useState<AdminSection>(allowedTabs[0] ?? "přehled");
+  const [newsItems, setNewsItems] = useState(initialNews);
+  const [eventItems, setEventItems] = useState(initialEvents);
+  const [reportItems, setReportItems] = useState(initialReports);
 
   useEffect(() => {
     if (!allowedTabs.includes(tab)) {
       setTab(allowedTabs[0] ?? "přehled");
     }
   }, [allowedTabs, tab]);
-
-  const [newsItems, setNewsItems] = useState(mockNews);
-  const [eventItems, setEventItems] = useState(mockEvents);
-  const [reportItems, setReportItems] = useState(mockReports);
 
   const urgentCount = useMemo(
     () => newsItems.filter((item) => item.urgent).length,
@@ -75,12 +93,12 @@ export function AdminDashboard({ email, role }: AdminDashboardProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <aside className="w-56 bg-brand-900 text-white flex-col shrink-0 hidden md:flex">
-        <div className="px-4 py-5 border-b border-brand-800">
-          <div className="font-bold text-brand-200 text-xs uppercase tracking-widest mb-0.5">
+      <aside className="hidden w-56 shrink-0 flex-col bg-brand-900 text-white md:flex">
+        <div className="border-b border-brand-800 px-4 py-5">
+          <div className="mb-0.5 text-xs font-bold uppercase tracking-widest text-brand-200">
             Admin
           </div>
-          <div className="font-bold text-white text-lg">Vimperáci</div>
+          <div className="text-lg font-bold text-white">Vimperáci</div>
         </div>
 
         <nav className="flex-1 py-4">
@@ -90,20 +108,20 @@ export function AdminDashboard({ email, role }: AdminDashboardProps) {
                 key={id}
                 type="button"
                 onClick={() => setTab(id)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                className={`flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
                   tab === id
-                    ? "bg-brand-700 text-white font-medium"
+                    ? "bg-brand-700 font-medium text-white"
                     : "text-brand-300 hover:bg-brand-800 hover:text-white"
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="h-4 w-4" />
                 {label}
               </button>
             ),
           )}
         </nav>
 
-        <div className="p-4 border-t border-brand-800 space-y-3">
+        <div className="space-y-3 border-t border-brand-800 p-4">
           <div className="rounded-xl border border-brand-700 bg-brand-800/80 p-3">
             <div className="text-xs uppercase tracking-widest text-brand-300">
               Přístup
@@ -115,15 +133,15 @@ export function AdminDashboard({ email, role }: AdminDashboardProps) {
           </div>
           <Link
             href="/"
-            className="block text-xs text-brand-400 hover:text-white transition-colors"
+            className="block text-xs text-brand-400 transition-colors hover:text-white"
           >
             ← Zpět na web
           </Link>
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-start justify-between gap-4">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex items-start justify-between gap-4 border-b border-gray-200 bg-white px-6 py-4">
           <div>
             <h1 className="font-bold text-gray-900">
               {tab === "přehled" && "Přehled"}
@@ -133,32 +151,7 @@ export function AdminDashboard({ email, role }: AdminDashboardProps) {
             </h1>
             <p className="mt-1 text-sm text-gray-500">{permissions.description}</p>
           </div>
-
-          <div className="flex items-center gap-2">
-            {tab === "zpravodaj" && permissions.canCreateNews ? (
-              <button
-                type="button"
-                onClick={() => setTab("zpravodaj")}
-                className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
-              >
-                <Plus className="w-4 h-4" />
-                Přidat zprávu
-              </button>
-            ) : null}
-
-            {tab === "akce" && permissions.canCreateEvents ? (
-              <button
-                type="button"
-                onClick={() => setTab("akce")}
-                className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
-              >
-                <Plus className="w-4 h-4" />
-                Přidat akci
-              </button>
-            ) : null}
-
-            <AdminSignOutButton />
-          </div>
+          <AdminSignOutButton />
         </header>
 
         <main className="flex-1 overflow-auto p-6">
@@ -216,7 +209,7 @@ function DashboardTab({
 }) {
   return (
     <div>
-      <div className="grid grid-cols-2 gap-4 mb-8 md:grid-cols-4">
+      <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
         {[
           {
             label: "Urgentní zprávy",
@@ -243,8 +236,8 @@ function DashboardTab({
             color: "text-brand-600 bg-brand-50 border-brand-200",
           },
         ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className={`border rounded-xl p-4 ${color}`}>
-            <Icon className="w-5 h-5 mb-2" />
+          <div key={label} className={`rounded-xl border p-4 ${color}`}>
+            <Icon className="mb-2 h-5 w-5" />
             <div className="text-2xl font-black">{value}</div>
             <div className="text-xs font-medium opacity-70">{label}</div>
           </div>
@@ -254,46 +247,46 @@ function DashboardTab({
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <TrendingUp className="w-4 h-4 text-brand-500" /> Aktivita tento týden
+            <TrendingUp className="h-4 w-4 text-brand-500" /> Aktivita tento týden
           </h3>
           <div className="space-y-2 text-sm text-gray-600">
             <div className="flex justify-between">
               <span>Nové závady</span>
-              <span className="font-semibold">7</span>
+              <span className="font-semibold">{pendingReports}</span>
             </div>
             <div className="flex justify-between">
-              <span>Vyřešené závady</span>
-              <span className="font-semibold text-green-600">4</span>
+              <span>Urgentní zprávy</span>
+              <span className="font-semibold text-red-600">{urgentCount}</span>
             </div>
             <div className="flex justify-between">
-              <span>Hlasů v anketách</span>
-              <span className="font-semibold">128</span>
+              <span>Nadcházející akce</span>
+              <span className="font-semibold">{upcomingEvents}</span>
             </div>
             <div className="flex justify-between">
-              <span>Nové zprávy</span>
-              <span className="font-semibold">3</span>
+              <span>Aktivní hlasování</span>
+              <span className="font-semibold">2</span>
             </div>
           </div>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <Users className="w-4 h-4 text-brand-500" /> Rychlé akce
+            <Users className="h-4 w-4 text-brand-500" /> Rychlé akce
           </h3>
           <div className="space-y-2">
             {[
               ["Přidat zprávu do zpravodaje", "zpravodaj"],
               ["Přidat akci / událost", "akce"],
               ["Zobrazit nová hlášení závad", "závady"],
-            ].map(([label, tab]) => (
+            ].map(([label, nextTab]) => (
               <button
                 key={label}
                 type="button"
-                onClick={() => onSelectTab(tab as AdminSection)}
+                onClick={() => onSelectTab(nextTab as AdminSection)}
                 className="flex w-full items-center justify-between rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-left text-sm text-brand-700 transition-colors hover:bg-brand-100"
               >
                 {label}
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="h-3.5 w-3.5" />
               </button>
             ))}
           </div>
@@ -311,11 +304,13 @@ function NewsTab({
 }: {
   canEdit: boolean;
   canPublishUrgent: boolean;
-  items: typeof mockNews;
-  onItemsChange: (items: typeof mockNews) => void;
+  items: AdminNewsItem[];
+  onItemsChange: (items: AdminNewsItem[]) => void;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({
     title: "",
     summary: "",
@@ -326,20 +321,21 @@ function NewsTab({
   function handleSave() {
     if (!canEdit || !form.title || !form.summary) return;
 
-    const urgent = canPublishUrgent ? form.urgent : false;
-    onItemsChange([
-      {
-        id: Date.now(),
-        ...form,
-        urgent,
-        date: new Date().toISOString().split("T")[0],
-      },
-      ...items,
-    ]);
-    setForm({ title: "", summary: "", category: "radnice", urgent: false });
-    setShowForm(false);
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 3000);
+    setError("");
+    startTransition(async () => {
+      const result = await createNewsAction(form);
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      onItemsChange([result.item, ...items]);
+      setForm({ title: "", summary: "", category: "radnice", urgent: false });
+      setShowForm(false);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 3000);
+    });
   }
 
   return (
@@ -349,10 +345,9 @@ function NewsTab({
       ) : null}
 
       {saved ? (
-        <div className="mb-4 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-2.5 text-sm text-green-700">
-          <CheckCircle className="w-4 h-4" /> Zpráva byla přidána.
-        </div>
+        <SuccessBanner text="Zpráva byla uložená do Supabase." />
       ) : null}
+      {error ? <ErrorBanner text={error} /> : null}
 
       {canEdit ? (
         <button
@@ -360,7 +355,7 @@ function NewsTab({
           onClick={() => setShowForm((current) => !current)}
           className="mb-5 flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="h-4 w-4" />
           Přidat zprávu
         </button>
       ) : null}
@@ -424,9 +419,10 @@ function NewsTab({
               <button
                 type="button"
                 onClick={handleSave}
-                className="rounded-lg bg-brand-600 px-4 py-2 text-sm text-white hover:bg-brand-700"
+                disabled={isPending}
+                className="rounded-lg bg-brand-600 px-4 py-2 text-sm text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Uložit
+                {isPending ? "Ukládám..." : "Uložit"}
               </button>
               <button
                 type="button"
@@ -475,10 +471,13 @@ function EventsTab({
   onItemsChange,
 }: {
   canEdit: boolean;
-  items: typeof mockEvents;
-  onItemsChange: (items: typeof mockEvents) => void;
+  items: AdminEventItem[];
+  onItemsChange: (items: AdminEventItem[]) => void;
 }) {
   const [showForm, setShowForm] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({
     title: "",
     date: "",
@@ -491,17 +490,30 @@ function EventsTab({
 
   function handleSave() {
     if (!canEdit || !form.title || !form.date || !form.place) return;
-    onItemsChange([{ id: Date.now(), ...form }, ...items]);
-    setForm({
-      title: "",
-      date: "",
-      time: "18:00",
-      place: "",
-      category: "kultura",
-      free: true,
-      price: "",
+
+    setError("");
+    startTransition(async () => {
+      const result = await createEventAction(form);
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      onItemsChange([result.item, ...items]);
+      setForm({
+        title: "",
+        date: "",
+        time: "18:00",
+        place: "",
+        category: "kultura",
+        free: true,
+        price: "",
+      });
+      setShowForm(false);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 3000);
     });
-    setShowForm(false);
   }
 
   return (
@@ -510,13 +522,16 @@ function EventsTab({
         <ReadOnlyBanner text="Tahle role může akce pouze číst. Zakládání a editace patří redaktorům." />
       ) : null}
 
+      {saved ? <SuccessBanner text="Akce byla uložená do Supabase." /> : null}
+      {error ? <ErrorBanner text={error} /> : null}
+
       {canEdit ? (
         <button
           type="button"
           onClick={() => setShowForm((current) => !current)}
           className="mb-5 flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="h-4 w-4" />
           Přidat akci
         </button>
       ) : null}
@@ -596,9 +611,10 @@ function EventsTab({
             <button
               type="button"
               onClick={handleSave}
-              className="rounded-lg bg-brand-600 px-4 py-2 text-sm text-white hover:bg-brand-700"
+              disabled={isPending}
+              className="rounded-lg bg-brand-600 px-4 py-2 text-sm text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Uložit
+              {isPending ? "Ukládám..." : "Uložit"}
             </button>
             <button
               type="button"
@@ -651,12 +667,30 @@ function ReportsTab({
   onItemsChange,
 }: {
   canResolve: boolean;
-  items: typeof mockReports;
-  onItemsChange: (items: typeof mockReports) => void;
+  items: AdminReportItem[];
+  onItemsChange: (items: AdminReportItem[]) => void;
 }) {
-  function updateStatus(id: number, status: string) {
+  const [error, setError] = useState("");
+  const [pendingId, setPendingId] = useState<string | null>(null);
+
+  function updateStatus(id: string | number, status: AdminReportStatus) {
     if (!canResolve) return;
-    onItemsChange(items.map((item) => (item.id === id ? { ...item, status } : item)));
+
+    setError("");
+    setPendingId(String(id));
+
+    void updateReportStatusAction({ id: String(id), status }).then((result) => {
+      setPendingId(null);
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      onItemsChange(
+        items.map((item) => (item.id === id ? result.item : item)),
+      );
+    });
   }
 
   return (
@@ -664,6 +698,7 @@ function ReportsTab({
       {!canResolve ? (
         <ReadOnlyBanner text="Tahle role vidí stav hlášení, ale nesmí měnit workflow závad." />
       ) : null}
+      {error ? <ErrorBanner text={error} /> : null}
 
       {items.map((item) => (
         <div key={item.id} className="rounded-xl border border-gray-200 bg-white p-4">
@@ -674,33 +709,39 @@ function ReportsTab({
             </div>
             <span
               className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                statusColor[item.status as keyof typeof statusColor]
+                statusColor[item.status]
               }`}
             >
               {item.status}
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs text-gray-400">
-            <Clock className="w-3 h-3" />
+            <Clock className="h-3 w-3" />
             {item.date}
             <span className="text-gray-300">·</span>
             {item.category}
             <div className="ml-auto flex gap-1.5">
-              {["přijato", "v řešení", "vyřešeno"].map((status) => (
-                <button
-                  key={status}
-                  type="button"
-                  disabled={!canResolve}
-                  onClick={() => updateStatus(item.id, status)}
-                  className={`rounded border px-2 py-1 text-xs transition-colors ${
-                    item.status === status
-                      ? "bg-brand-600 text-white border-brand-600"
-                      : "border-gray-200 text-gray-600 hover:border-brand-300"
-                  } ${!canResolve ? "cursor-not-allowed opacity-60" : ""}`}
-                >
-                  {status}
-                </button>
-              ))}
+              {(["přijato", "v řešení", "vyřešeno"] as AdminReportStatus[]).map(
+                (status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    disabled={!canResolve || pendingId === String(item.id)}
+                    onClick={() => updateStatus(item.id, status)}
+                    className={`rounded border px-2 py-1 text-xs transition-colors ${
+                      item.status === status
+                        ? "border-brand-600 bg-brand-600 text-white"
+                        : "border-gray-200 text-gray-600 hover:border-brand-300"
+                    } ${
+                      !canResolve || pendingId === String(item.id)
+                        ? "cursor-not-allowed opacity-60"
+                        : ""
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ),
+              )}
             </div>
           </div>
         </div>
@@ -712,6 +753,23 @@ function ReportsTab({
 function ReadOnlyBanner({ text }: { text: string }) {
   return (
     <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      {text}
+    </div>
+  );
+}
+
+function SuccessBanner({ text }: { text: string }) {
+  return (
+    <div className="mb-4 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-2.5 text-sm text-green-700">
+      <CheckCircle className="h-4 w-4" />
+      {text}
+    </div>
+  );
+}
+
+function ErrorBanner({ text }: { text: string }) {
+  return (
+    <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
       {text}
     </div>
   );
