@@ -3,9 +3,9 @@ import Image from "next/image";
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
 import { directory, news, polls } from "@/lib/data";
+import { getPublicNews, getPublicPolls } from "@/lib/public-content";
 
 const cityContacts = directory.filter((item) => item.category === "město").slice(0, 4);
-const latestNews = [...news].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 2);
 
 const cityActions = [
   {
@@ -38,7 +38,9 @@ const cityActions = [
   },
 ];
 
-export default function MestoPage() {
+export default async function MestoPage() {
+  const [publicNews, publicPolls] = await Promise.all([getPublicNews(), getPublicPolls()]);
+  const latestNews = [...publicNews].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 2);
   return (
     <>
       <TopBar />
@@ -90,7 +92,7 @@ export default function MestoPage() {
                       className="absolute right-4 top-4 inline-flex w-fit rounded-full px-2 py-[0.35rem] text-[8px] font-black uppercase tracking-[0.12em]"
                       style={{ background: "rgba(255,255,255,0.78)", color: "var(--secondary)" }}
                     >
-                      {polls.length} aktivní ankety
+                      {publicPolls.length} aktivní ankety
                     </span>
                   )}
                   <h2 className="mt-4 font-headline text-base font-extrabold leading-snug" style={{ color: "var(--on-surface)" }}>
@@ -180,7 +182,7 @@ export default function MestoPage() {
             </Link>
           </div>
           <div className="space-y-3">
-            {polls.slice(0, 2).map((poll) => (
+            {publicPolls.slice(0, 2).map((poll) => (
               <Link
                 key={poll.id}
                 href="/hlasovani"

@@ -3,7 +3,7 @@ import BottomNav from "@/components/layout/BottomNav";
 import PwaInstallCard from "@/components/PwaInstallCard";
 import Link from "next/link";
 import Image from "next/image";
-import { events, news } from "@/lib/data";
+import { getPublicEvents, getPublicNews } from "@/lib/public-content";
 
 const quickActionRows = [
   [
@@ -32,7 +32,8 @@ const pollOptions = [
   { label: "Sportoviště",        pct: 43 },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [events, news] = await Promise.all([getPublicEvents(), getPublicNews()]);
   const upcoming = [...events]
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 4);
