@@ -12,7 +12,9 @@
     "cap:open:ios": "npx cap open ios",
     "cap:open:android": "npx cap open android",
     "scrape": "node scripts/scrape-vimperk.mjs",
-    "scrape:update": "node scripts/scrape-vimperk.mjs"
+    "scrape:update": "node scripts/scrape-vimperk.mjs",
+    "sync:directory": "node scripts/sync-vimperk-directory.mjs",
+    "sync:directory:dry": "node scripts/sync-vimperk-directory.mjs --dry-run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",

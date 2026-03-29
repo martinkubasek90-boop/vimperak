@@ -1,8 +1,15 @@
-import { directory as mockDirectory, events as mockEvents, news as mockNews, reports as mockReports } from "@/lib/admin-mock";
+import {
+  directory as mockDirectory,
+  events as mockEvents,
+  news as mockNews,
+  polls as mockPolls,
+  reports as mockReports,
+} from "@/lib/admin-mock";
 import type {
   AdminDirectoryItem,
   AdminEventItem,
   AdminNewsItem,
+  AdminPollItem,
   AdminReportItem,
   AdminReportStatus,
 } from "@/lib/admin-types";
@@ -125,7 +132,7 @@ export async function getAdminDirectory(): Promise<AdminDirectoryItem[]> {
   const { data, error } = await supabase
     .from("directory")
     .select(
-      "id, name, category, city_department, phone, address, hours, note, email, website, source_url, appointment_url, appointment_label",
+      "id, name, category, city_department, phone, address, hours, note, email, website, source_url, appointment_url, appointment_label, source_kind, source_external_id, source_synced_at, is_locked",
     )
     .order("category", { ascending: true })
     .order("name", { ascending: true });
@@ -149,7 +156,47 @@ export async function getAdminDirectory(): Promise<AdminDirectoryItem[]> {
     sourceUrl: item.source_url ?? undefined,
     appointmentUrl: item.appointment_url ?? undefined,
     appointmentLabel: item.appointment_label ?? undefined,
+    sourceKind: item.source_kind ?? "manual",
+    sourceExternalId: item.source_external_id ?? undefined,
+    sourceSyncedAt: item.source_synced_at ?? undefined,
+    isLocked: item.is_locked ?? false,
   }));
+}
+
+export async function getAdminPolls(): Promise<AdminPollItem[]> {
+  if (!isSupabaseConfigured()) {
+    return mockPolls;
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("polls")
+    .select("id, question, category, ends_at, poll_options(id, text, votes, sort_order)")
+    .order("ends_at", { ascending: true });
+
+  if (error || !data) {
+    console.error("admin polls:", error);
+    return mockPolls;
+  }
+
+  return data.map((item) => {
+    const options = [...(item.poll_options ?? [])]
+      .sort((left, right) => (left.sort_order ?? 0) - (right.sort_order ?? 0))
+      .map((option) => ({
+        id: option.id,
+        text: option.text,
+        votes: option.votes,
+      }));
+
+    return {
+      id: item.id,
+      question: item.question,
+      category: item.category,
+      endsAt: item.ends_at,
+      totalVotes: options.reduce((sum, option) => sum + option.votes, 0),
+      options,
+    };
+  });
 }
 
 export async function getAdminReports(): Promise<AdminReportItem[]> {

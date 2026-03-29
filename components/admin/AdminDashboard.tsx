@@ -4,8 +4,17 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   createDirectoryAction,
+  createPollAction,
+  deleteDirectoryAction,
+  deleteEventAction,
+  deleteNewsAction,
+  deletePollAction,
   createEventAction,
   createNewsAction,
+  updateDirectoryAction,
+  updateEventAction,
+  updateNewsAction,
+  updatePollAction,
   updateReportStatusAction,
 } from "@/app/admin/actions";
 import { AdminSignOutButton } from "@/components/admin/AdminSignOutButton";
@@ -14,6 +23,7 @@ import type {
   AdminDirectoryItem,
   AdminEventItem,
   AdminNewsItem,
+  AdminPollItem,
   AdminReportItem,
   AdminReportStatus,
 } from "@/lib/admin-types";
@@ -40,6 +50,7 @@ const NAV_ITEMS: Array<{
   { id: "přehled", label: "Přehled", icon: LayoutDashboard },
   { id: "zpravodaj", label: "Zpravodaj", icon: Newspaper },
   { id: "akce", label: "Akce", icon: Calendar },
+  { id: "ankety", label: "Ankety", icon: Vote },
   { id: "kontakty", label: "Kontakty", icon: ContactRound },
   { id: "závady", label: "Závady", icon: Wrench },
 ];
@@ -56,6 +67,7 @@ type AdminDashboardProps = {
   role: AdminRole;
   initialNews: AdminNewsItem[];
   initialEvents: AdminEventItem[];
+  initialPolls: AdminPollItem[];
   initialDirectory: AdminDirectoryItem[];
   initialReports: AdminReportItem[];
 };
@@ -65,6 +77,7 @@ export function AdminDashboard({
   role,
   initialNews,
   initialEvents,
+  initialPolls,
   initialDirectory,
   initialReports,
 }: AdminDashboardProps) {
@@ -73,6 +86,7 @@ export function AdminDashboard({
   const [tab, setTab] = useState<AdminSection>(allowedTabs[0] ?? "přehled");
   const [newsItems, setNewsItems] = useState(initialNews);
   const [eventItems, setEventItems] = useState(initialEvents);
+  const [pollItems, setPollItems] = useState(initialPolls);
   const [directoryItems, setDirectoryItems] = useState(initialDirectory);
   const [reportItems, setReportItems] = useState(initialReports);
 
@@ -101,6 +115,7 @@ export function AdminDashboard({
     () => directoryItems.filter((item) => item.category === "město").length,
     [directoryItems],
   );
+  const activePolls = useMemo(() => pollItems.length, [pollItems]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -158,6 +173,7 @@ export function AdminDashboard({
               {tab === "přehled" && "Přehled"}
               {tab === "zpravodaj" && "Zpravodaj — správa článků"}
               {tab === "akce" && "Akce — správa událostí"}
+              {tab === "ankety" && "Ankety — správa hlasování"}
               {tab === "kontakty" && "Kontakty — adresář a městské odbory"}
               {tab === "závady" && "Hlášení závad"}
             </h1>
@@ -172,6 +188,7 @@ export function AdminDashboard({
               urgentCount={urgentCount}
               pendingReports={pendingReports}
               upcomingEvents={upcomingEvents}
+              activePolls={activePolls}
               cityContacts={cityContacts}
               onSelectTab={(nextTab) => {
                 if (allowedTabs.includes(nextTab)) setTab(nextTab);
@@ -193,6 +210,14 @@ export function AdminDashboard({
               canEdit={permissions.canCreateEvents}
               items={eventItems}
               onItemsChange={setEventItems}
+            />
+          ) : null}
+
+          {tab === "ankety" ? (
+            <PollsTab
+              canEdit={permissions.canManagePolls}
+              items={pollItems}
+              onItemsChange={setPollItems}
             />
           ) : null}
 
@@ -221,12 +246,14 @@ function DashboardTab({
   urgentCount,
   pendingReports,
   upcomingEvents,
+  activePolls,
   cityContacts,
   onSelectTab,
 }: {
   urgentCount: number;
   pendingReports: number;
   upcomingEvents: number;
+  activePolls: number;
   cityContacts: number;
   onSelectTab: (tab: AdminSection) => void;
 }) {
@@ -253,9 +280,9 @@ function DashboardTab({
             color: "text-blue-600 bg-blue-50 border-blue-200",
           },
           {
-            label: "Městské kontakty",
-            value: cityContacts,
-            icon: ContactRound,
+            label: "Aktivní ankety",
+            value: activePolls,
+            icon: Vote,
             color: "text-brand-600 bg-brand-50 border-brand-200",
           },
         ].map(({ label, value, icon: Icon, color }) => (
@@ -286,6 +313,10 @@ function DashboardTab({
               <span className="font-semibold">{upcomingEvents}</span>
             </div>
             <div className="flex justify-between">
+              <span>Aktivní ankety</span>
+              <span className="font-semibold">{activePolls}</span>
+            </div>
+            <div className="flex justify-between">
               <span>Městské kontakty</span>
               <span className="font-semibold">{cityContacts}</span>
             </div>
@@ -300,6 +331,7 @@ function DashboardTab({
             {[
               ["Přidat zprávu do zpravodaje", "zpravodaj"],
               ["Přidat akci / událost", "akce"],
+              ["Založit anketu", "ankety"],
               ["Přidat kontakt nebo odbor", "kontakty"],
               ["Zobrazit nová hlášení závad", "závady"],
             ].map(([label, nextTab]) => (
@@ -334,6 +366,7 @@ function NewsTab({
   const [showForm, setShowForm] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [editingId, setEditingId] = useState<string | number | null>(null);
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({
     title: "",
@@ -357,6 +390,43 @@ function NewsTab({
       onItemsChange([result.item, ...items]);
       setForm({ title: "", summary: "", category: "radnice", urgent: false });
       setShowForm(false);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 3000);
+    });
+  }
+
+  function handleDelete(id: string | number) {
+    if (!canEdit) return;
+    setError("");
+    startTransition(async () => {
+      const result = await deleteNewsAction(String(id));
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      onItemsChange(items.filter((item) => String(item.id) !== result.id));
+    });
+  }
+
+  function handleUpdate(item: AdminNewsItem) {
+    if (!canEdit) return;
+    setError("");
+    startTransition(async () => {
+      const result = await updateNewsAction({
+        id: String(item.id),
+        title: item.title,
+        summary: item.summary,
+        category: item.category,
+        urgent: item.urgent,
+      });
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      onItemsChange(items.map((current) => (current.id === item.id ? result.item : current)));
+      setEditingId(null);
       setSaved(true);
       window.setTimeout(() => setSaved(false), 3000);
     });
@@ -470,18 +540,52 @@ function NewsTab({
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
             ) : null}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-gray-900">{item.title}</p>
-              <p className="text-xs text-gray-400">
-                {item.category} · {item.date}
-              </p>
+              {editingId === item.id ? (
+                <NewsEditForm
+                  item={item}
+                  canPublishUrgent={canPublishUrgent}
+                  isPending={isPending}
+                  onCancel={() => setEditingId(null)}
+                  onSave={handleUpdate}
+                />
+              ) : (
+                <>
+                  <p className="truncate text-sm font-medium text-gray-900">{item.title}</p>
+                  <p className="text-xs text-gray-400">
+                    {item.category} · {item.date}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-600">{item.summary}</p>
+                </>
+              )}
             </div>
-            <span
-              className={`rounded-full px-2 py-0.5 text-xs ${
-                item.urgent ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              {item.urgent ? "Urgentní" : "Normální"}
-            </span>
+            <div className="shrink-0 space-y-2 text-right">
+              <span
+                className={`inline-block rounded-full px-2 py-0.5 text-xs ${
+                  item.urgent ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {item.urgent ? "Urgentní" : "Normální"}
+              </span>
+              {canEdit && editingId !== item.id ? (
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(item.id)}
+                    className="rounded border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:border-brand-300"
+                  >
+                    Upravit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(item.id)}
+                    disabled={isPending}
+                    className="rounded border border-red-200 px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-60"
+                  >
+                    Smazat
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         ))}
       </div>
@@ -501,6 +605,7 @@ function EventsTab({
   const [showForm, setShowForm] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [editingId, setEditingId] = useState<string | number | null>(null);
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({
     title: "",
@@ -535,6 +640,46 @@ function EventsTab({
         price: "",
       });
       setShowForm(false);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 3000);
+    });
+  }
+
+  function handleDelete(id: string | number) {
+    if (!canEdit) return;
+    setError("");
+    startTransition(async () => {
+      const result = await deleteEventAction(String(id));
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      onItemsChange(items.filter((item) => String(item.id) !== result.id));
+    });
+  }
+
+  function handleUpdate(item: AdminEventItem) {
+    if (!canEdit) return;
+    setError("");
+    startTransition(async () => {
+      const result = await updateEventAction({
+        id: String(item.id),
+        title: item.title,
+        date: item.date,
+        time: item.time,
+        place: item.place,
+        category: item.category,
+        free: item.free,
+        price: item.price,
+      });
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      onItemsChange(items.map((current) => (current.id === item.id ? result.item : current)));
+      setEditingId(null);
       setSaved(true);
       window.setTimeout(() => setSaved(false), 3000);
     });
@@ -666,18 +811,50 @@ function EventsTab({
               </div>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-gray-900">{item.title}</p>
-              <p className="text-xs text-gray-400">
-                {item.place} · {item.time} · {item.category}
-              </p>
+              {editingId === item.id ? (
+                <EventEditForm
+                  item={item}
+                  isPending={isPending}
+                  onCancel={() => setEditingId(null)}
+                  onSave={handleUpdate}
+                />
+              ) : (
+                <>
+                  <p className="truncate text-sm font-medium text-gray-900">{item.title}</p>
+                  <p className="text-xs text-gray-400">
+                    {item.place} · {item.time} · {item.category}
+                  </p>
+                </>
+              )}
             </div>
-            <span
-              className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${
-                item.free ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              {item.free ? "Zdarma" : item.price}
-            </span>
+            <div className="shrink-0 space-y-2 text-right">
+              <span
+                className={`inline-block rounded-full px-2 py-0.5 text-xs ${
+                  item.free ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {item.free ? "Zdarma" : item.price}
+              </span>
+              {canEdit && editingId !== item.id ? (
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(item.id)}
+                    className="rounded border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:border-brand-300"
+                  >
+                    Upravit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(item.id)}
+                    disabled={isPending}
+                    className="rounded border border-red-200 px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-60"
+                  >
+                    Smazat
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         ))}
       </div>
@@ -694,9 +871,16 @@ function DirectoryTab({
   items: AdminDirectoryItem[];
   onItemsChange: (items: AdminDirectoryItem[]) => void;
 }) {
+  function getSourceLabel(item: AdminDirectoryItem) {
+    if (item.sourceKind === "vimperk_web") return "sync z vimperk.cz";
+    if (item.sourceKind === "import") return "import";
+    return "ručně";
+  }
+
   const [showForm, setShowForm] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [editingId, setEditingId] = useState<string | number | null>(null);
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({
     name: "",
@@ -753,6 +937,51 @@ function DirectoryTab({
     });
   }
 
+  function handleDelete(id: string | number) {
+    if (!canEdit) return;
+    setError("");
+    startTransition(async () => {
+      const result = await deleteDirectoryAction(String(id));
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      onItemsChange(items.filter((item) => String(item.id) !== result.id));
+    });
+  }
+
+  function handleUpdate(item: AdminDirectoryItem) {
+    if (!canEdit) return;
+    setError("");
+    startTransition(async () => {
+      const result = await updateDirectoryAction({
+        id: String(item.id),
+        name: item.name,
+        category: item.category,
+        cityDepartment: item.cityDepartment ?? "vše",
+        phone: item.phone,
+        address: item.address,
+        hours: item.hours ?? "",
+        note: item.note ?? "",
+        email: item.email ?? "",
+        website: item.website ?? "",
+        sourceUrl: item.sourceUrl ?? "",
+        appointmentUrl: item.appointmentUrl ?? "",
+        appointmentLabel: item.appointmentLabel ?? "",
+      });
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      onItemsChange(items.map((current) => (current.id === item.id ? result.item : current)));
+      setEditingId(null);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 3000);
+    });
+  }
+
   return (
     <div>
       {!canEdit ? (
@@ -760,6 +989,9 @@ function DirectoryTab({
       ) : null}
       {saved ? <SuccessBanner text="Kontakt byl uložený do Supabase." /> : null}
       {error ? <ErrorBanner text={error} /> : null}
+      <p className="mb-5 text-sm text-gray-500">
+        Oficiální městské kontakty mají být synchronizované ze zdroje. Admin tu má spravovat hlavně ruční a doplňkové záznamy.
+      </p>
 
       {canEdit ? (
         <button
@@ -919,22 +1151,656 @@ function DirectoryTab({
           <div key={item.id} className="rounded-xl border border-gray-200 bg-white px-4 py-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-900">{item.name}</p>
-                <p className="text-xs text-gray-400">
-                  {item.category}
-                  {item.cityDepartment ? ` · ${item.cityDepartment}` : ""}
-                </p>
-                <p className="mt-2 text-sm text-gray-600">{item.phone}</p>
-                <p className="text-sm text-gray-500">{item.address}</p>
-                {item.hours ? <p className="mt-1 text-xs text-gray-500">{item.hours}</p> : null}
-                {item.email ? <p className="mt-1 text-xs text-gray-500">{item.email}</p> : null}
+                {editingId === item.id ? (
+                  <DirectoryEditForm
+                    item={item}
+                    isPending={isPending}
+                    onCancel={() => setEditingId(null)}
+                    onSave={handleUpdate}
+                  />
+                ) : (
+                  <>
+                    <p className="truncate text-sm font-medium text-gray-900">{item.name}</p>
+                    <p className="text-xs text-gray-400">
+                      {item.category}
+                      {item.cityDepartment ? ` · ${item.cityDepartment}` : ""}
+                    </p>
+                    <p className="mt-2 text-sm text-gray-600">{item.phone}</p>
+                    <p className="text-sm text-gray-500">{item.address}</p>
+                    {item.hours ? <p className="mt-1 text-xs text-gray-500">{item.hours}</p> : null}
+                    {item.email ? <p className="mt-1 text-xs text-gray-500">{item.email}</p> : null}
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                      <span className="rounded-full bg-gray-100 px-2 py-0.5">{getSourceLabel(item)}</span>
+                      {item.isLocked ? <span className="rounded-full bg-amber-50 px-2 py-0.5 text-amber-700">uzamčeno pro sync</span> : null}
+                    </div>
+                  </>
+                )}
               </div>
-              <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-700">
-                {item.category}
-              </span>
+              <div className="shrink-0 space-y-2 text-right">
+                <span className="inline-block rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-700">
+                  {item.category}
+                </span>
+                {canEdit && editingId !== item.id ? (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(item.id)}
+                      disabled={item.isLocked}
+                      className="rounded border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:border-brand-300"
+                    >
+                      Upravit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(item.id)}
+                      disabled={isPending || item.isLocked}
+                      className="rounded border border-red-200 px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-60"
+                    >
+                      Smazat
+                    </button>
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function PollsTab({
+  canEdit,
+  items,
+  onItemsChange,
+}: {
+  canEdit: boolean;
+  items: AdminPollItem[];
+  onItemsChange: (items: AdminPollItem[]) => void;
+}) {
+  const [showForm, setShowForm] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+  const [editingId, setEditingId] = useState<string | number | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [form, setForm] = useState({
+    question: "",
+    category: "obecné",
+    endsAt: "",
+    options: ["", ""],
+  });
+
+  function handleCreate() {
+    if (!canEdit || !form.question || !form.endsAt) return;
+    setError("");
+    startTransition(async () => {
+      const result = await createPollAction(form);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      onItemsChange([...items, result.item]);
+      setForm({ question: "", category: "obecné", endsAt: "", options: ["", ""] });
+      setShowForm(false);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 3000);
+    });
+  }
+
+  function handleUpdate(item: AdminPollItem) {
+    if (!canEdit) return;
+    setError("");
+    startTransition(async () => {
+      const result = await updatePollAction({
+        id: String(item.id),
+        question: item.question,
+        category: item.category,
+        endsAt: item.endsAt,
+        options: item.options.map((option) => ({ id: String(option.id), text: option.text })),
+      });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      onItemsChange(items.map((current) => (current.id === item.id ? result.item : current)));
+      setEditingId(null);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 3000);
+    });
+  }
+
+  function handleDelete(id: string | number) {
+    if (!canEdit) return;
+    setError("");
+    startTransition(async () => {
+      const result = await deletePollAction(String(id));
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      onItemsChange(items.filter((item) => String(item.id) !== result.id));
+    });
+  }
+
+  return (
+    <div>
+      {!canEdit ? <ReadOnlyBanner text="Tahle role může ankety pouze číst." /> : null}
+      {saved ? <SuccessBanner text="Anketa byla uložená do Supabase." /> : null}
+      {error ? <ErrorBanner text={error} /> : null}
+
+      {canEdit ? (
+        <button
+          type="button"
+          onClick={() => setShowForm((current) => !current)}
+          className="mb-5 flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+        >
+          <Plus className="h-4 w-4" />
+          Přidat anketu
+        </button>
+      ) : null}
+
+      {showForm ? (
+        <div className="mb-5 rounded-xl border border-gray-200 bg-white p-5">
+          <h3 className="mb-4 font-semibold">Nová anketa</h3>
+          <div className="space-y-3">
+            <input
+              placeholder="Otázka *"
+              value={form.question}
+              onChange={(event) => setForm((current) => ({ ...current, question: event.target.value }))}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <select
+                value={form.category}
+                onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
+                className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              >
+                {["infrastruktura", "kultura", "doprava", "obecné"].map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="date"
+                value={form.endsAt}
+                onChange={(event) => setForm((current) => ({ ...current, endsAt: event.target.value }))}
+                className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              />
+            </div>
+            <div className="space-y-2">
+              {form.options.map((option, index) => (
+                <input
+                  key={index}
+                  placeholder={`Možnost ${index + 1}`}
+                  value={option}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      options: current.options.map((value, optionIndex) =>
+                        optionIndex === index ? event.target.value : value,
+                      ),
+                    }))
+                  }
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setForm((current) => ({ ...current, options: [...current.options, ""] }))
+                }
+                className="rounded border border-gray-200 px-3 py-2 text-xs hover:bg-gray-50"
+              >
+                Přidat možnost
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleCreate}
+                disabled={isPending}
+                className="rounded-lg bg-brand-600 px-4 py-2 text-sm text-white hover:bg-brand-700 disabled:opacity-60"
+              >
+                {isPending ? "Ukládám..." : "Uložit"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50"
+              >
+                Zrušit
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="flex flex-col gap-3">
+        {items.map((item) => (
+          <div key={item.id} className="rounded-xl border border-gray-200 bg-white p-4">
+            {editingId === item.id ? (
+              <PollEditForm
+                item={item}
+                isPending={isPending}
+                onCancel={() => setEditingId(null)}
+                onSave={handleUpdate}
+              />
+            ) : (
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-gray-900">{item.question}</p>
+                  <p className="mt-1 text-xs text-gray-400">
+                    {item.category} · do {item.endsAt} · {item.totalVotes} hlasů
+                  </p>
+                  <ul className="mt-3 space-y-1">
+                    {item.options.map((option) => (
+                      <li key={option.id} className="text-sm text-gray-600">
+                        {option.text} <span className="text-xs text-gray-400">({option.votes})</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {canEdit ? (
+                  <div className="flex shrink-0 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(item.id)}
+                      className="rounded border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:border-brand-300"
+                    >
+                      Upravit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(item.id)}
+                      disabled={isPending}
+                      className="rounded border border-red-200 px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-60"
+                    >
+                      Smazat
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NewsEditForm({
+  item,
+  canPublishUrgent,
+  isPending,
+  onCancel,
+  onSave,
+}: {
+  item: AdminNewsItem;
+  canPublishUrgent: boolean;
+  isPending: boolean;
+  onCancel: () => void;
+  onSave: (item: AdminNewsItem) => void;
+}) {
+  const [draft, setDraft] = useState(item);
+  return (
+    <div className="space-y-2">
+      <input
+        value={draft.title}
+        onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
+        className="w-full rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <textarea
+        value={draft.summary}
+        onChange={(event) => setDraft((current) => ({ ...current, summary: event.target.value }))}
+        rows={2}
+        className="w-full resize-none rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={draft.category}
+          onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))}
+          className="rounded border border-gray-200 px-2 py-1 text-sm"
+        >
+          {["radnice", "sport", "kultura", "upozornění", "komunita"].map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+        <label className="flex items-center gap-2 text-xs">
+          <input
+            type="checkbox"
+            checked={draft.urgent}
+            disabled={!canPublishUrgent}
+            onChange={(event) => setDraft((current) => ({ ...current, urgent: event.target.checked }))}
+          />
+          Urgentní
+        </label>
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={() => onSave(draft)}
+          className="rounded bg-brand-600 px-2 py-1 text-xs text-white disabled:opacity-60"
+        >
+          Uložit
+        </button>
+        <button type="button" onClick={onCancel} className="rounded border border-gray-200 px-2 py-1 text-xs">
+          Zrušit
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function EventEditForm({
+  item,
+  isPending,
+  onCancel,
+  onSave,
+}: {
+  item: AdminEventItem;
+  isPending: boolean;
+  onCancel: () => void;
+  onSave: (item: AdminEventItem) => void;
+}) {
+  const [draft, setDraft] = useState(item);
+  return (
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <input
+        value={draft.title}
+        onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
+        className="sm:col-span-2 rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <input
+        type="date"
+        value={draft.date}
+        onChange={(event) => setDraft((current) => ({ ...current, date: event.target.value }))}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <input
+        type="time"
+        value={draft.time}
+        onChange={(event) => setDraft((current) => ({ ...current, time: event.target.value }))}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <input
+        value={draft.place}
+        onChange={(event) => setDraft((current) => ({ ...current, place: event.target.value }))}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <select
+        value={draft.category}
+        onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      >
+        {["kultura", "sport", "kino", "úřad", "trhy"].map((category) => (
+          <option key={category} value={category}>
+            {category}
+          </option>
+        ))}
+      </select>
+      <label className="sm:col-span-2 flex items-center gap-2 text-xs">
+        <input
+          type="checkbox"
+          checked={draft.free}
+          onChange={(event) => setDraft((current) => ({ ...current, free: event.target.checked }))}
+        />
+        Vstup zdarma
+      </label>
+      {!draft.free ? (
+        <input
+          value={draft.price}
+          onChange={(event) => setDraft((current) => ({ ...current, price: event.target.value }))}
+          className="sm:col-span-2 rounded border border-gray-200 px-2 py-1 text-sm"
+        />
+      ) : null}
+      <div className="sm:col-span-2 flex gap-2">
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={() => onSave(draft)}
+          className="rounded bg-brand-600 px-2 py-1 text-xs text-white disabled:opacity-60"
+        >
+          Uložit
+        </button>
+        <button type="button" onClick={onCancel} className="rounded border border-gray-200 px-2 py-1 text-xs">
+          Zrušit
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DirectoryEditForm({
+  item,
+  isPending,
+  onCancel,
+  onSave,
+}: {
+  item: AdminDirectoryItem;
+  isPending: boolean;
+  onCancel: () => void;
+  onSave: (item: AdminDirectoryItem) => void;
+}) {
+  const [draft, setDraft] = useState(item);
+  const isLocked = Boolean(item.isLocked);
+  return (
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      {isLocked ? (
+        <p className="sm:col-span-2 text-xs text-amber-700">
+          Tento kontakt je synchronizovaný z oficiálního zdroje a ručně se neupravuje.
+        </p>
+      ) : null}
+      <input
+        value={draft.name}
+        onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
+        disabled={isLocked}
+        className="sm:col-span-2 rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <select
+        value={draft.category}
+        onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))}
+        disabled={isLocked}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      >
+        {["město", "taxi", "restaurace", "lékař", "lékárna", "opravna", "sport", "ubytování", "obchod"].map((category) => (
+          <option key={category} value={category}>
+            {category}
+          </option>
+        ))}
+      </select>
+      <select
+        value={draft.cityDepartment ?? "vše"}
+        onChange={(event) => setDraft((current) => ({ ...current, cityDepartment: event.target.value }))}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+        disabled={isLocked || draft.category !== "město"}
+      >
+        <option value="vše">Bez odboru</option>
+        <option value="central">Centrální kontakt</option>
+        <option value="vnitrni-veci">Doklady a matrika</option>
+        <option value="doprava">Doprava</option>
+        <option value="zivnostensky">Podnikání</option>
+        <option value="vystavba">Výstavba</option>
+        <option value="zivotni-prostredi">Životní prostředí</option>
+        <option value="socialni">Sociální oblast</option>
+        <option value="bezpecnost">Bezpečnost</option>
+      </select>
+      <input
+        value={draft.phone}
+        onChange={(event) => setDraft((current) => ({ ...current, phone: event.target.value }))}
+        disabled={isLocked}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <input
+        value={draft.address}
+        onChange={(event) => setDraft((current) => ({ ...current, address: event.target.value }))}
+        disabled={isLocked}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <input
+        value={draft.hours ?? ""}
+        onChange={(event) => setDraft((current) => ({ ...current, hours: event.target.value }))}
+        disabled={isLocked}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <input
+        value={draft.email ?? ""}
+        onChange={(event) => setDraft((current) => ({ ...current, email: event.target.value }))}
+        disabled={isLocked}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <input
+        value={draft.website ?? ""}
+        onChange={(event) => setDraft((current) => ({ ...current, website: event.target.value }))}
+        disabled={isLocked}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <input
+        value={draft.sourceUrl ?? ""}
+        onChange={(event) => setDraft((current) => ({ ...current, sourceUrl: event.target.value }))}
+        disabled={isLocked}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <input
+        value={draft.appointmentUrl ?? ""}
+        onChange={(event) => setDraft((current) => ({ ...current, appointmentUrl: event.target.value }))}
+        disabled={isLocked}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <input
+        value={draft.appointmentLabel ?? ""}
+        onChange={(event) => setDraft((current) => ({ ...current, appointmentLabel: event.target.value }))}
+        disabled={isLocked}
+        className="rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <textarea
+        value={draft.note ?? ""}
+        onChange={(event) => setDraft((current) => ({ ...current, note: event.target.value }))}
+        disabled={isLocked}
+        rows={2}
+        className="sm:col-span-2 resize-none rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <div className="sm:col-span-2 flex gap-2">
+        <button
+          type="button"
+          disabled={isPending || isLocked}
+          onClick={() => onSave(draft)}
+          className="rounded bg-brand-600 px-2 py-1 text-xs text-white disabled:opacity-60"
+        >
+          Uložit
+        </button>
+        <button type="button" onClick={onCancel} className="rounded border border-gray-200 px-2 py-1 text-xs">
+          Zrušit
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PollEditForm({
+  item,
+  isPending,
+  onCancel,
+  onSave,
+}: {
+  item: AdminPollItem;
+  isPending: boolean;
+  onCancel: () => void;
+  onSave: (item: AdminPollItem) => void;
+}) {
+  const [draft, setDraft] = useState(item);
+
+  return (
+    <div className="space-y-3">
+      <input
+        value={draft.question}
+        onChange={(event) => setDraft((current) => ({ ...current, question: event.target.value }))}
+        className="w-full rounded border border-gray-200 px-2 py-1 text-sm"
+      />
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <select
+          value={draft.category}
+          onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))}
+          className="rounded border border-gray-200 px-2 py-1 text-sm"
+        >
+          {["infrastruktura", "kultura", "doprava", "obecné"].map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+        <input
+          type="date"
+          value={draft.endsAt}
+          onChange={(event) => setDraft((current) => ({ ...current, endsAt: event.target.value }))}
+          className="rounded border border-gray-200 px-2 py-1 text-sm"
+        />
+      </div>
+      <div className="space-y-2">
+        {draft.options.map((option, index) => (
+          <input
+            key={`${option.id}-${index}`}
+            value={option.text}
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                options: current.options.map((candidate, optionIndex) =>
+                  optionIndex === index
+                    ? { ...candidate, text: event.target.value }
+                    : candidate,
+                ),
+              }))
+            }
+            className="w-full rounded border border-gray-200 px-2 py-1 text-sm"
+          />
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() =>
+            setDraft((current) => ({
+              ...current,
+              options: [
+                ...current.options,
+                { id: `new-${current.options.length + 1}`, text: "", votes: 0 },
+              ],
+            }))
+          }
+          className="rounded border border-gray-200 px-2 py-1 text-xs hover:bg-gray-50"
+        >
+          Přidat možnost
+        </button>
+        {draft.options.length > 2 ? (
+          <button
+            type="button"
+            onClick={() =>
+              setDraft((current) => ({
+                ...current,
+                options: current.options.slice(0, -1),
+              }))
+            }
+            className="rounded border border-red-200 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
+          >
+            Odebrat poslední
+          </button>
+        ) : null}
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={() => onSave(draft)}
+          className="rounded bg-brand-600 px-2 py-1 text-xs text-white disabled:opacity-60"
+        >
+          Uložit
+        </button>
+        <button type="button" onClick={onCancel} className="rounded border border-gray-200 px-2 py-1 text-xs">
+          Zrušit
+        </button>
       </div>
     </div>
   );

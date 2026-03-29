@@ -32,6 +32,25 @@ export type AdminDirectoryItem = {
   sourceUrl?: string;
   appointmentUrl?: string;
   appointmentLabel?: string;
+  sourceKind?: "manual" | "vimperk_web" | "import";
+  sourceExternalId?: string;
+  sourceSyncedAt?: string;
+  isLocked?: boolean;
+};
+
+export type AdminPollOption = {
+  id: string | number;
+  text: string;
+  votes: number;
+};
+
+export type AdminPollItem = {
+  id: string | number;
+  question: string;
+  category: string;
+  endsAt: string;
+  totalVotes: number;
+  options: AdminPollOption[];
 };
 
 export type AdminReportStatus = "přijato" | "v řešení" | "vyřešeno" | "zamítnuto";
