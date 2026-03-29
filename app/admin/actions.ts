@@ -340,6 +340,10 @@ export async function createDirectoryAction(input: {
     return { ok: false, error: "Tento účet nemá právo spravovat kontakty a adresář." };
   }
 
+  if (input.category === "město") {
+    return { ok: false, error: "Oficiální městské kontakty se mají synchronizovat z vimperk.cz, ne zakládat ručně." };
+  }
+
   const { data, error } = await supabase
     .from("directory")
     .insert([
@@ -418,6 +422,10 @@ export async function updateDirectoryAction(input: {
 
   if (existing.is_locked) {
     return { ok: false, error: "Oficiální synchronizovaný kontakt se ručně nepřepisuje. Upravte zdroj na vimperk.cz nebo synchronizaci." };
+  }
+
+  if (input.category === "město") {
+    return { ok: false, error: "Ruční záznam nelze převést na oficiální městský kontakt. Ten musí vzniknout přes synchronizaci." };
   }
 
   const { data, error } = await supabase

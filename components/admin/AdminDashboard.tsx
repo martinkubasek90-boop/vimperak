@@ -332,7 +332,7 @@ function DashboardTab({
               ["Přidat zprávu do zpravodaje", "zpravodaj"],
               ["Přidat akci / událost", "akce"],
               ["Založit anketu", "ankety"],
-              ["Přidat kontakt nebo odbor", "kontakty"],
+              ["Přidat ruční kontakt", "kontakty"],
               ["Zobrazit nová hlášení závad", "závady"],
             ].map(([label, nextTab]) => (
               <button
@@ -877,6 +877,9 @@ function DirectoryTab({
     return "ručně";
   }
 
+  const syncedItems = items.filter((item) => item.sourceKind === "vimperk_web" || item.isLocked);
+  const manualItems = items.filter((item) => item.sourceKind !== "vimperk_web" && !item.isLocked);
+
   const [showForm, setShowForm] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
@@ -884,8 +887,8 @@ function DirectoryTab({
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({
     name: "",
-    category: "město",
-    cityDepartment: "central",
+    category: "obchod",
+    cityDepartment: "vše",
     phone: "",
     address: "",
     hours: "",
@@ -919,8 +922,8 @@ function DirectoryTab({
       );
       setForm({
         name: "",
-        category: "město",
-        cityDepartment: "central",
+        category: "obchod",
+        cityDepartment: "vše",
         phone: "",
         address: "",
         hours: "",
@@ -990,8 +993,22 @@ function DirectoryTab({
       {saved ? <SuccessBanner text="Kontakt byl uložený do Supabase." /> : null}
       {error ? <ErrorBanner text={error} /> : null}
       <p className="mb-5 text-sm text-gray-500">
-        Oficiální městské kontakty mají být synchronizované ze zdroje. Admin tu má spravovat hlavně ruční a doplňkové záznamy.
+        Oficiální městské kontakty a odbory se mají synchronizovat ze zdroje. Admin tu má spravovat hlavně ruční a doplňkové záznamy mimo oficiální web.
       </p>
+      <div className="mb-5 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <p className="font-semibold">Synchronizované kontakty</p>
+          <p className="mt-1 text-amber-800">
+            {syncedItems.length} záznamů je převzatých z vimperk.cz a jsou uzamčené proti ruční úpravě.
+          </p>
+        </div>
+        <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-700">
+          <p className="font-semibold">Ruční a doplňkové záznamy</p>
+          <p className="mt-1 text-gray-600">
+            {manualItems.length} záznamů můžeš zakládat a upravovat ručně přímo v adminu.
+          </p>
+        </div>
+      </div>
 
       {canEdit ? (
         <button
@@ -1000,13 +1017,16 @@ function DirectoryTab({
           className="mb-5 flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
         >
           <Plus className="h-4 w-4" />
-          Přidat kontakt
+          Přidat ruční kontakt
         </button>
       ) : null}
 
       {showForm ? (
         <div className="mb-5 rounded-xl border border-gray-200 bg-white p-5">
-          <h3 className="mb-4 font-semibold">Nový kontakt / záznam</h3>
+          <h3 className="mb-2 font-semibold">Nový ruční kontakt</h3>
+          <p className="mb-4 text-sm text-gray-500">
+            Slouží pro doplňkové kontakty mimo oficiální městské odbory. Odbory a úřední kontakty přicházejí ze synchronizace.
+          </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input
               placeholder="Název *"
@@ -1023,7 +1043,7 @@ function DirectoryTab({
               }
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             >
-              {["město", "taxi", "restaurace", "lékař", "lékárna", "opravna", "sport", "ubytování", "obchod"].map((category) => (
+              {["taxi", "restaurace", "lékař", "lékárna", "opravna", "sport", "ubytování", "obchod"].map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
@@ -1031,13 +1051,14 @@ function DirectoryTab({
             </select>
             <select
               value={form.cityDepartment}
-              disabled={form.category !== "město"}
+              disabled
               onChange={(event) =>
                 setForm((current) => ({ ...current, cityDepartment: event.target.value }))
               }
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400 disabled:bg-gray-50 disabled:text-gray-400"
             >
               {[
+                ["vše", "Není městský odbor"],
                 ["central", "Centrální kontakt"],
                 ["vnitrni-veci", "Doklady a matrika"],
                 ["doprava", "Doprava"],
@@ -1146,8 +1167,42 @@ function DirectoryTab({
         </div>
       ) : null}
 
+      {syncedItems.length > 0 ? (
+        <div className="mb-6">
+          <h3 className="mb-3 text-sm font-semibold text-gray-900">Oficiální synchronizované kontakty</h3>
+          <div className="flex flex-col gap-2">
+            {syncedItems.map((item) => (
+              <div key={`synced-${item.id}`} className="rounded-xl border border-amber-200 bg-amber-50/60 px-4 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-gray-900">{item.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {item.category}
+                      {item.cityDepartment ? ` · ${item.cityDepartment}` : ""}
+                    </p>
+                    <p className="mt-2 text-sm text-gray-700">{item.phone}</p>
+                    <p className="text-sm text-gray-600">{item.address}</p>
+                    {item.hours ? <p className="mt-1 text-xs text-gray-600">{item.hours}</p> : null}
+                    {item.email ? <p className="mt-1 text-xs text-gray-600">{item.email}</p> : null}
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                      <span className="rounded-full bg-white px-2 py-0.5">{getSourceLabel(item)}</span>
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">uzamčeno pro sync</span>
+                    </div>
+                  </div>
+                  <div className="shrink-0 space-y-2 text-right">
+                    <span className="inline-block rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-700">
+                      {item.category}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-2">
-        {items.map((item) => (
+        {manualItems.map((item) => (
           <div key={item.id} className="rounded-xl border border-gray-200 bg-white px-4 py-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
@@ -1178,25 +1233,24 @@ function DirectoryTab({
               </div>
               <div className="shrink-0 space-y-2 text-right">
                 <span className="inline-block rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-700">
-                  {item.category}
-                </span>
-                {canEdit && editingId !== item.id ? (
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditingId(item.id)}
-                      disabled={item.isLocked}
-                      className="rounded border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:border-brand-300"
-                    >
-                      Upravit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(item.id)}
-                      disabled={isPending || item.isLocked}
-                      className="rounded border border-red-200 px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-60"
-                    >
-                      Smazat
+                      {item.category}
+                    </span>
+                    {canEdit && editingId !== item.id ? (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditingId(item.id)}
+                          className="rounded border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:border-brand-300"
+                        >
+                          Upravit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(item.id)}
+                          disabled={isPending}
+                          className="rounded border border-red-200 px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-60"
+                        >
+                          Smazat
                     </button>
                   </div>
                 ) : null}
@@ -1204,6 +1258,11 @@ function DirectoryTab({
             </div>
           </div>
         ))}
+        {manualItems.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-6 text-sm text-gray-500">
+            Zatím tu nejsou žádné ruční kontakty. Přidávej sem jen doplňkové záznamy, ne oficiální odbory.
+          </div>
+        ) : null}
       </div>
     </div>
   );
