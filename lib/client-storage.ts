@@ -9,6 +9,9 @@ import {
 const HOME_PREFS_KEY = "vimperk.home.preferences";
 const RECENT_SEARCHES_KEY = "vimperk.recent.searches";
 const RECENT_VIEWS_KEY = "vimperk.recent.views";
+const TRACKED_REPORTS_KEY = "vimperk.tracked.reports";
+const SAVED_EVENTS_KEY = "vimperk.saved.events";
+const VOTED_POLLS_KEY = "vimperk.voted.polls";
 
 export type RecentViewItem = {
   id: string;
@@ -16,6 +19,29 @@ export type RecentViewItem = {
   title: string;
   href: string;
   subtitle?: string;
+  savedAt: string;
+};
+
+export type TrackedReportItem = {
+  id: string;
+  title: string;
+  category: string;
+  status: string;
+  createdAt: string;
+  updatedAt?: string;
+  description?: string;
+  address?: string;
+};
+
+export type SavedEventItem = {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  place: string;
+  category: string;
+  reminder: "none" | "2h" | "1d";
+  href: string;
   savedAt: string;
 };
 
@@ -33,6 +59,41 @@ function normalizeRecentView(input: unknown): RecentViewItem | null {
     title: String(item.title),
     href: String(item.href),
     subtitle: item.subtitle ? String(item.subtitle) : undefined,
+    savedAt: String(item.savedAt),
+  };
+}
+
+function normalizeTrackedReport(input: unknown): TrackedReportItem | null {
+  if (!input || typeof input !== "object") return null;
+  const item = input as Partial<TrackedReportItem>;
+  if (!item.id || !item.title || !item.category || !item.status || !item.createdAt) return null;
+  return {
+    id: String(item.id),
+    title: String(item.title),
+    category: String(item.category),
+    status: String(item.status),
+    createdAt: String(item.createdAt),
+    updatedAt: item.updatedAt ? String(item.updatedAt) : undefined,
+    description: item.description ? String(item.description) : undefined,
+    address: item.address ? String(item.address) : undefined,
+  };
+}
+
+function normalizeSavedEvent(input: unknown): SavedEventItem | null {
+  if (!input || typeof input !== "object") return null;
+  const item = input as Partial<SavedEventItem>;
+  if (!item.id || !item.title || !item.date || !item.time || !item.place || !item.category || !item.reminder || !item.href || !item.savedAt) {
+    return null;
+  }
+  return {
+    id: String(item.id),
+    title: String(item.title),
+    date: String(item.date),
+    time: String(item.time),
+    place: String(item.place),
+    category: String(item.category),
+    reminder: item.reminder,
+    href: String(item.href),
     savedAt: String(item.savedAt),
   };
 }
@@ -142,4 +203,103 @@ export function saveRecentView(item: Omit<RecentViewItem, "savedAt">) {
 export function clearRecentViews() {
   if (!isLocalStorageAvailable()) return;
   window.localStorage.removeItem(RECENT_VIEWS_KEY);
+}
+
+export function loadTrackedReports() {
+  if (!isLocalStorageAvailable()) return [] as TrackedReportItem[];
+  try {
+    const raw = window.localStorage.getItem(TRACKED_REPORTS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed)
+      ? parsed.map((item) => normalizeTrackedReport(item)).filter((item): item is TrackedReportItem => Boolean(item)).slice(0, 12)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveTrackedReport(item: TrackedReportItem) {
+  if (!isLocalStorageAvailable()) return;
+  const next = [
+    item,
+    ...loadTrackedReports().filter((current) => current.id !== item.id),
+  ].slice(0, 12);
+  window.localStorage.setItem(TRACKED_REPORTS_KEY, JSON.stringify(next));
+}
+
+export function replaceTrackedReports(items: TrackedReportItem[]) {
+  if (!isLocalStorageAvailable()) return;
+  window.localStorage.setItem(TRACKED_REPORTS_KEY, JSON.stringify(items.slice(0, 12)));
+}
+
+export function findTrackedReport(id: string) {
+  return loadTrackedReports().find((item) => item.id === id) ?? null;
+}
+
+export function loadSavedEvents() {
+  if (!isLocalStorageAvailable()) return [] as SavedEventItem[];
+  try {
+    const raw = window.localStorage.getItem(SAVED_EVENTS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed)
+      ? parsed.map((item) => normalizeSavedEvent(item)).filter((item): item is SavedEventItem => Boolean(item)).slice(0, 24)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveSavedEvent(item: Omit<SavedEventItem, "savedAt">) {
+  if (!isLocalStorageAvailable()) return;
+  const nextItem: SavedEventItem = { ...item, savedAt: new Date().toISOString() };
+  const next = [nextItem, ...loadSavedEvents().filter((current) => current.id !== nextItem.id)].slice(0, 24);
+  window.localStorage.setItem(SAVED_EVENTS_KEY, JSON.stringify(next));
+}
+
+export function removeSavedEvent(id: string) {
+  if (!isLocalStorageAvailable()) return;
+  window.localStorage.setItem(
+    SAVED_EVENTS_KEY,
+    JSON.stringify(loadSavedEvents().filter((item) => item.id !== id)),
+  );
+}
+
+export function updateSavedEventReminder(id: string, reminder: SavedEventItem["reminder"]) {
+  if (!isLocalStorageAvailable()) return;
+  const next = loadSavedEvents().map((item) => (
+    item.id === id
+      ? { ...item, reminder, savedAt: new Date().toISOString() }
+      : item
+  ));
+  window.localStorage.setItem(SAVED_EVENTS_KEY, JSON.stringify(next));
+}
+
+export function loadVotedPolls() {
+  if (!isLocalStorageAvailable()) return {} as Record<string, string>;
+  try {
+    const raw = window.localStorage.getItem(VOTED_POLLS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object") return {};
+    return Object.fromEntries(
+      Object.entries(parsed as Record<string, unknown>).filter(
+        ([key, value]) => typeof key === "string" && typeof value === "string",
+      ),
+    ) as Record<string, string>;
+  } catch {
+    return {} as Record<string, string>;
+  }
+}
+
+export function saveVotedPoll(pollId: string | number, optionId: string | number) {
+  if (!isLocalStorageAvailable()) return;
+  window.localStorage.setItem(
+    VOTED_POLLS_KEY,
+    JSON.stringify({
+      ...loadVotedPolls(),
+      [String(pollId)]: String(optionId),
+    }),
+  );
 }
