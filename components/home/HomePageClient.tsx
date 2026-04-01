@@ -8,7 +8,15 @@ import BottomNav from "@/components/layout/BottomNav";
 import PwaInstallCard from "@/components/PwaInstallCard";
 import PushNotificationButton from "@/components/PushNotificationButton";
 import { downloadEventCalendarFile } from "@/lib/calendar";
-import { loadHomePreferences, saveHomePreferences } from "@/lib/client-storage";
+import {
+  clearRecentViews,
+  loadHomePreferences,
+  loadRecentSearches,
+  loadRecentViews,
+  loadRemoteHomePreferences,
+  saveHomePreferences,
+  saveRecentView,
+} from "@/lib/client-storage";
 import {
   DEFAULT_HOME_PREFERENCES,
   type HomePreferences,
@@ -45,15 +53,25 @@ export function HomePageClient({
   polls,
 }: HomePageClientProps) {
   const [preferences, setPreferences] = useState<HomePreferences>(DEFAULT_HOME_PREFERENCES);
+  const [preferencesLoaded, setPreferencesLoaded] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentViews, setRecentViews] = useState<ReturnType<typeof loadRecentViews>>([]);
 
   useEffect(() => {
     setPreferences(loadHomePreferences());
+    setRecentSearches(loadRecentSearches());
+    setRecentViews(loadRecentViews());
+    setPreferencesLoaded(true);
+    void loadRemoteHomePreferences().then((remote) => {
+      if (remote) setPreferences(remote);
+    });
   }, []);
 
   useEffect(() => {
+    if (!preferencesLoaded) return;
     saveHomePreferences(preferences);
-  }, [preferences]);
+  }, [preferences, preferencesLoaded]);
 
   const today = new Date().toISOString().slice(0, 10);
   const todaysEvents = useMemo(
@@ -125,6 +143,7 @@ export function HomePageClient({
   const sectionLabels: Record<HomeSectionId, string> = {
     today: "Dnešek ve Vimperku",
     quick: "Moje zkratky",
+    recent: "Nedávno otevřené",
     favorites: "Oblíbené kontakty",
     events: "Nadcházející akce",
     news: "Zprávy",
@@ -225,6 +244,51 @@ export function HomePageClient({
         </div>
       </section>
     ),
+    recent: (
+      <section className="px-4 pt-8">
+        <SectionHeader title="Nedávno otevřené" subtitle="Rychlý návrat tam, kde jsi byl před chvílí" />
+        {recentViews.length > 0 ? (
+          <div className="space-y-3">
+            {recentViews.map((item) => (
+              <Link
+                key={`${item.type}-${item.id}-${item.savedAt}`}
+                href={item.href}
+                className="flex items-center justify-between gap-3 rounded-[1.6rem] p-4"
+                style={{ background: "var(--surface-container-lowest)", boxShadow: "0 10px 24px rgba(67,17,24,0.06)" }}
+              >
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.16em]" style={{ color: "var(--secondary)" }}>
+                    {item.type === "news" ? "Zprávy" : item.type === "event" ? "Akce" : item.type === "directory" ? "Kontakt" : item.type === "poll" ? "Anketa" : "Stránka"}
+                  </p>
+                  <p className="mt-2 font-bold" style={{ color: "var(--on-surface)" }}>{item.title}</p>
+                  {item.subtitle ? (
+                    <p className="mt-1 text-sm" style={{ color: "var(--on-surface-variant)" }}>{item.subtitle}</p>
+                  ) : null}
+                </div>
+                <span className="material-symbols-outlined" style={{ color: "var(--primary)" }}>
+                  arrow_outward
+                </span>
+              </Link>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                clearRecentViews();
+                setRecentViews([]);
+              }}
+              className="rounded-full px-4 py-2 text-xs font-bold"
+              style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
+            >
+              Vymazat historii
+            </button>
+          </div>
+        ) : (
+          <div className="rounded-[1.6rem] p-4 text-sm" style={{ background: "var(--surface-container-lowest)" }}>
+            Až začneš otevírat výsledky hledání, kontakty nebo akce, objeví se tady rychlá historie.
+          </div>
+        )}
+      </section>
+    ),
     favorites: (
       <section className="px-4 pt-8">
         <SectionHeader title="Oblíbené kontakty" subtitle="Rychlé volání a návrat k často používaným místům" />
@@ -243,6 +307,16 @@ export function HomePageClient({
                 </div>
                 <a
                   href={`tel:${contact.phone.replace(/\s/g, "")}`}
+                  onClick={() => {
+                    saveRecentView({
+                      id: `directory-${contact.id}`,
+                      type: "directory",
+                      title: contact.name,
+                      href: "/kontakty",
+                      subtitle: `${contact.category} · ${contact.phone}`,
+                    });
+                    setRecentViews(loadRecentViews());
+                  }}
                   className="rounded-full px-4 py-3 text-sm font-bold"
                   style={{ background: "var(--primary)", color: "var(--on-primary)" }}
                 >
@@ -282,7 +356,17 @@ export function HomePageClient({
                 </div>
                 <button
                   type="button"
-                  onClick={() => downloadEventCalendarFile(event)}
+                  onClick={() => {
+                    saveRecentView({
+                      id: `event-${event.id}`,
+                      type: "event",
+                      title: event.title,
+                      href: "/kalendar",
+                      subtitle: `${event.date} · ${event.time} · ${event.place}`,
+                    });
+                    setRecentViews(loadRecentViews());
+                    downloadEventCalendarFile(event);
+                  }}
                   className="rounded-full px-4 py-3 text-xs font-bold"
                   style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}
                 >
@@ -302,6 +386,16 @@ export function HomePageClient({
             <Link
               key={`news-${item.id}`}
               href="/zpravodaj"
+              onClick={() => {
+                saveRecentView({
+                  id: `news-${item.id}`,
+                  type: "news",
+                  title: item.title,
+                  href: "/zpravodaj",
+                  subtitle: `${item.category} · ${item.date}`,
+                });
+                setRecentViews(loadRecentViews());
+              }}
               className="rounded-[1.6rem] p-4"
               style={{ background: item.urgent ? "var(--error-container)" : "var(--surface-container-lowest)" }}
             >
@@ -327,6 +421,16 @@ export function HomePageClient({
             <Link
               key={`poll-${poll.id}`}
               href="/hlasovani"
+              onClick={() => {
+                saveRecentView({
+                  id: `poll-${poll.id}`,
+                  type: "poll",
+                  title: poll.question,
+                  href: "/hlasovani",
+                  subtitle: `${poll.category} · do ${poll.endsAt}`,
+                });
+                setRecentViews(loadRecentViews());
+              }}
               className="block rounded-[1.6rem] p-4"
               style={{ background: "var(--surface-container-lowest)", boxShadow: "0 10px 24px rgba(67,17,24,0.06)" }}
             >
@@ -403,6 +507,20 @@ export function HomePageClient({
                   Přizpůsobit domovskou stránku
                 </button>
               </div>
+              {recentSearches.length > 0 ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {recentSearches.slice(0, 4).map((item) => (
+                    <Link
+                      key={item}
+                      href={`/hledat?q=${encodeURIComponent(item)}`}
+                      className="rounded-full px-3 py-2 text-xs font-bold text-white"
+                      style={{ background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.18)" }}
+                    >
+                      {item}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
         </section>

@@ -4,7 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import BottomNav from "@/components/layout/BottomNav";
 import TopBar from "@/components/layout/TopBar";
-import { loadHomePreferences, saveHomePreferences } from "@/lib/client-storage";
+import {
+  loadHomePreferences,
+  loadRemoteHomePreferences,
+  saveHomePreferences,
+  saveRecentView,
+} from "@/lib/client-storage";
 import {
   buildDirectorySearchIndex,
   cityDepartmentLabels,
@@ -70,6 +75,7 @@ export function KontaktyPageClient({
 }) {
   const [search, setSearch] = useState("");
   const [favoriteIds, setFavoriteIds] = useState<Array<string | number>>([]);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [cat, setCat] = useState<Cat>(
     filters.some((item) => item.value === initialCategory)
       ? (initialCategory as Cat)
@@ -92,9 +98,10 @@ export function KontaktyPageClient({
           item.cityDepartment === cityDepartment;
         const q = search.toLowerCase();
         const matchQ = !q || buildDirectorySearchIndex(item).includes(q);
-        return matchCat && matchDepartment && matchQ;
+        const matchFavorite = !favoritesOnly || favoriteIds.includes(item.id);
+        return matchCat && matchDepartment && matchQ && matchFavorite;
       }),
-    [cat, cityDepartment, directory, search],
+    [cat, cityDepartment, directory, favoriteIds, favoritesOnly, search],
   );
 
   const featured = useMemo(
@@ -110,6 +117,9 @@ export function KontaktyPageClient({
   useEffect(() => {
     const prefs = loadHomePreferences();
     setFavoriteIds(prefs.favoriteContactIds);
+    void loadRemoteHomePreferences().then((remote) => {
+      if (remote) setFavoriteIds(remote.favoriteContactIds);
+    });
   }, []);
 
   async function copyContact(value: string) {
@@ -135,6 +145,16 @@ export function KontaktyPageClient({
       : [...prefs.favoriteContactIds, id];
     saveHomePreferences({ ...prefs, favoriteContactIds: next });
     setFavoriteIds(next);
+  }
+
+  function rememberContact(item: PublicDirectoryItem) {
+    saveRecentView({
+      id: `directory-${item.id}`,
+      type: "directory",
+      title: item.name,
+      href: item.category === "město" ? "/kontakty" : `/adresar?k=${encodeURIComponent(item.category)}`,
+      subtitle: `${item.category} · ${item.phone}`,
+    });
   }
 
   return (
@@ -231,6 +251,22 @@ export function KontaktyPageClient({
               {label}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => setFavoritesOnly((current) => !current)}
+            className="flex-shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition-all active:scale-95"
+            style={favoritesOnly
+              ? {
+                  background: "var(--secondary-container)",
+                  color: "var(--on-secondary-container)",
+                }
+              : {
+                  background: "var(--surface-container-low)",
+                  color: "var(--on-surface)",
+                }}
+          >
+            Jen oblíbené
+          </button>
         </div>
 
         {cat === "město" ? (
@@ -298,6 +334,7 @@ export function KontaktyPageClient({
                     </div>
                     <a
                       href={`tel:${item.phone.replace(/\s/g, "")}`}
+                      onClick={() => rememberContact(item)}
                       className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
                       style={{ background: "rgba(255,255,255,0.65)", color: "var(--secondary)" }}
                     >
@@ -352,6 +389,7 @@ export function KontaktyPageClient({
                       href={featured.appointmentUrl}
                       target="_blank"
                       rel="noreferrer"
+                      onClick={() => rememberContact(featured)}
                       className="rounded-full px-4 py-3 text-sm font-bold"
                       style={{ background: "rgba(255,255,255,0.92)", color: "var(--primary)" }}
                     >
@@ -363,6 +401,7 @@ export function KontaktyPageClient({
                       href={featured.website}
                       target="_blank"
                       rel="noreferrer"
+                      onClick={() => rememberContact(featured)}
                       className="rounded-full px-4 py-3 text-sm font-bold"
                       style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
                     >
@@ -374,6 +413,7 @@ export function KontaktyPageClient({
                       href={featured.sourceUrl}
                       target="_blank"
                       rel="noreferrer"
+                      onClick={() => rememberContact(featured)}
                       className="rounded-full px-4 py-3 text-sm font-bold"
                       style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
                     >
@@ -386,6 +426,7 @@ export function KontaktyPageClient({
                 {featured.email ? (
                   <a
                     href={`mailto:${featured.email}`}
+                    onClick={() => rememberContact(featured)}
                     className="rounded-full px-4 py-3 text-sm font-bold"
                     style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
                   >
@@ -396,6 +437,7 @@ export function KontaktyPageClient({
                   href={`https://maps.google.com/?q=${encodeURIComponent(featured.address)}`}
                   target="_blank"
                   rel="noreferrer"
+                  onClick={() => rememberContact(featured)}
                   className="rounded-full px-4 py-3 text-sm font-bold"
                   style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
                 >
@@ -403,7 +445,10 @@ export function KontaktyPageClient({
                 </a>
                 <button
                   type="button"
-                  onClick={() => shareContact(featured)}
+                  onClick={() => {
+                    rememberContact(featured);
+                    void shareContact(featured);
+                  }}
                   className="rounded-full px-4 py-3 text-sm font-bold"
                   style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
                 >
@@ -412,6 +457,7 @@ export function KontaktyPageClient({
                 {featured.category === "město" ? (
                   <Link
                     href="/napsat-mestu"
+                    onClick={() => rememberContact(featured)}
                     className="rounded-full px-4 py-3 text-sm font-bold"
                     style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
                   >
@@ -420,6 +466,7 @@ export function KontaktyPageClient({
                 ) : null}
                 <Link
                   href="/zhlasit"
+                  onClick={() => rememberContact(featured)}
                   className="rounded-full px-4 py-3 text-sm font-bold"
                   style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
                 >
@@ -485,6 +532,7 @@ export function KontaktyPageClient({
                         href={item.appointmentUrl}
                         target="_blank"
                         rel="noreferrer"
+                        onClick={() => rememberContact(item)}
                         className="rounded-full px-3 py-2 text-xs font-bold"
                         style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}
                       >
@@ -496,6 +544,7 @@ export function KontaktyPageClient({
                         href={item.website}
                         target="_blank"
                         rel="noreferrer"
+                        onClick={() => rememberContact(item)}
                         className="rounded-full px-3 py-2 text-xs font-bold"
                         style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
                       >
@@ -507,6 +556,7 @@ export function KontaktyPageClient({
                         href={item.sourceUrl}
                         target="_blank"
                         rel="noreferrer"
+                        onClick={() => rememberContact(item)}
                         className="rounded-full px-3 py-2 text-xs font-bold"
                         style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
                       >
@@ -519,6 +569,7 @@ export function KontaktyPageClient({
                   {item.email ? (
                     <a
                       href={`mailto:${item.email}`}
+                      onClick={() => rememberContact(item)}
                       className="rounded-full px-3 py-2 text-xs font-bold"
                       style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
                     >
@@ -529,6 +580,7 @@ export function KontaktyPageClient({
                     href={`https://maps.google.com/?q=${encodeURIComponent(item.address)}`}
                     target="_blank"
                     rel="noreferrer"
+                    onClick={() => rememberContact(item)}
                     className="rounded-full px-3 py-2 text-xs font-bold"
                     style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
                   >
@@ -544,7 +596,10 @@ export function KontaktyPageClient({
                   </button>
                   <button
                     type="button"
-                    onClick={() => shareContact(item)}
+                    onClick={() => {
+                      rememberContact(item);
+                      void shareContact(item);
+                    }}
                     className="rounded-full px-3 py-2 text-xs font-bold"
                     style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
                   >
@@ -553,6 +608,7 @@ export function KontaktyPageClient({
                   {item.category === "město" ? (
                     <Link
                       href="/napsat-mestu"
+                      onClick={() => rememberContact(item)}
                       className="rounded-full px-3 py-2 text-xs font-bold"
                       style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
                     >
@@ -561,9 +617,10 @@ export function KontaktyPageClient({
                   ) : null}
                 </div>
               </div>
-              <a
-                href={`tel:${item.phone.replace(/\s/g, "")}`}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
+                <a
+                  href={`tel:${item.phone.replace(/\s/g, "")}`}
+                  onClick={() => rememberContact(item)}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
                 style={{
                   background: "linear-gradient(135deg, var(--primary), var(--primary-container))",
                   color: "var(--on-primary)",

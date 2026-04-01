@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import BottomNav from "@/components/layout/BottomNav";
 import TopBar from "@/components/layout/TopBar";
-import { loadHomePreferences, saveHomePreferences } from "@/lib/client-storage";
+import {
+  loadHomePreferences,
+  loadRemoteHomePreferences,
+  saveHomePreferences,
+  saveRecentView,
+} from "@/lib/client-storage";
 import type { PublicDirectoryItem } from "@/lib/public-content";
 
 type Cat = PublicDirectoryItem["category"] | "vše";
@@ -54,6 +59,7 @@ export function AdresarPageClient({
 }) {
   const [search, setSearch] = useState("");
   const [favoriteIds, setFavoriteIds] = useState<Array<string | number>>([]);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [cat, setCat] = useState<Cat>(
     filters.some((item) => item.value === initialCategory)
       ? (initialCategory as Cat)
@@ -64,6 +70,7 @@ export function AdresarPageClient({
     () =>
       directory.filter((item) => {
         const matchCat = cat === "vše" || item.category === cat;
+        const matchFavorite = !favoritesOnly || favoriteIds.includes(item.id);
         const q = search.toLowerCase();
         const matchQ =
           !q ||
@@ -71,9 +78,9 @@ export function AdresarPageClient({
             .join(" ")
             .toLowerCase()
             .includes(q);
-        return matchCat && matchQ;
+        return matchCat && matchFavorite && matchQ;
       }),
-    [cat, directory, search],
+    [cat, directory, favoriteIds, favoritesOnly, search],
   );
 
   const [featured, ...rest] = filtered;
@@ -81,6 +88,9 @@ export function AdresarPageClient({
   useEffect(() => {
     const prefs = loadHomePreferences();
     setFavoriteIds(prefs.favoriteContactIds);
+    void loadRemoteHomePreferences().then((remote) => {
+      if (remote) setFavoriteIds(remote.favoriteContactIds);
+    });
   }, []);
 
   function toggleFavorite(id: string | number) {
@@ -91,6 +101,16 @@ export function AdresarPageClient({
     const updated = { ...prefs, favoriteContactIds: next };
     saveHomePreferences(updated);
     setFavoriteIds(next);
+  }
+
+  function rememberContact(item: PublicDirectoryItem) {
+    saveRecentView({
+      id: `directory-${item.id}`,
+      type: "directory",
+      title: item.name,
+      href: `/adresar?k=${encodeURIComponent(item.category)}`,
+      subtitle: `${item.category} · ${item.phone}`,
+    });
   }
 
   return (
@@ -187,6 +207,22 @@ export function AdresarPageClient({
               {label}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => setFavoritesOnly((current) => !current)}
+            className="flex-shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition-all active:scale-95"
+            style={favoritesOnly
+              ? {
+                  background: "var(--secondary-container)",
+                  color: "var(--on-secondary-container)",
+                }
+              : {
+                  background: "var(--surface-container-low)",
+                  color: "var(--on-surface)",
+                }}
+          >
+            Jen oblíbené
+          </button>
         </div>
 
         <div className="space-y-3 px-4 pt-4">
@@ -296,12 +332,12 @@ export function AdresarPageClient({
                   {(item.website || item.sourceUrl) ? (
                     <div className="mt-2 flex gap-3 text-xs">
                       {item.website ? (
-                        <a href={item.website} target="_blank" rel="noreferrer" className="font-semibold text-primary">
+                        <a href={item.website} target="_blank" rel="noreferrer" onClick={() => rememberContact(item)} className="font-semibold text-primary">
                           Web
                         </a>
                       ) : null}
                       {item.sourceUrl ? (
-                        <a href={item.sourceUrl} target="_blank" rel="noreferrer" className="text-on-surface-variant">
+                        <a href={item.sourceUrl} target="_blank" rel="noreferrer" onClick={() => rememberContact(item)} className="text-on-surface-variant">
                           Zdroj
                         </a>
                       ) : null}
@@ -311,6 +347,7 @@ export function AdresarPageClient({
 
                 <a
                   href={`tel:${item.phone.replace(/\s/g, "")}`}
+                  onClick={() => rememberContact(item)}
                   className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-transform hover:scale-110 active:scale-95"
                   style={{
                     background: "linear-gradient(135deg, var(--primary), var(--primary-container))",

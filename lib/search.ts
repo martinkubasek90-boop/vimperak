@@ -13,7 +13,80 @@ export type SearchResultItem = {
   subtitle: string;
   href: string;
   keywords: string;
+  score?: number;
 };
+
+const SEARCH_TYPE_ORDER: SearchResultItem["type"][] = ["news", "event", "directory", "poll"];
+
+export function getSearchTypeLabel(type: SearchResultItem["type"]) {
+  switch (type) {
+    case "news":
+      return "Zprávy";
+    case "event":
+      return "Akce";
+    case "directory":
+      return "Kontakty";
+    case "poll":
+      return "Ankety";
+  }
+}
+
+function scoreSearchResult(item: SearchResultItem, query: string) {
+  if (!query) return 1;
+  const normalizedQuery = query.trim().toLowerCase();
+  const title = item.title.toLowerCase();
+  const subtitle = item.subtitle.toLowerCase();
+  const keywords = item.keywords.toLowerCase();
+  const terms = normalizedQuery.split(/\s+/).filter(Boolean);
+
+  let score = 0;
+
+  if (title === normalizedQuery) score += 120;
+  if (title.startsWith(normalizedQuery)) score += 95;
+  if (title.includes(normalizedQuery)) score += 70;
+  if (subtitle.includes(normalizedQuery)) score += 35;
+  if (keywords.includes(normalizedQuery)) score += 25;
+
+  for (const term of terms) {
+    if (title.includes(term)) score += 18;
+    if (subtitle.includes(term)) score += 8;
+    if (keywords.includes(term)) score += 6;
+  }
+
+  return score;
+}
+
+export function searchIndex(
+  index: SearchResultItem[],
+  input: {
+    query: string;
+    type?: "all" | SearchResultItem["type"];
+    limit?: number;
+  },
+) {
+  const normalizedQuery = input.query.trim().toLowerCase();
+
+  return index
+    .filter((item) => (input.type && input.type !== "all" ? item.type === input.type : true))
+    .map((item) => ({
+      ...item,
+      score: scoreSearchResult(item, normalizedQuery),
+    }))
+    .filter((item) => !normalizedQuery || item.score > 0)
+    .sort((left, right) => {
+      if ((right.score ?? 0) !== (left.score ?? 0)) return (right.score ?? 0) - (left.score ?? 0);
+      return left.title.localeCompare(right.title, "cs");
+    })
+    .slice(0, input.limit ?? 40);
+}
+
+export function groupSearchResults(results: SearchResultItem[]) {
+  return SEARCH_TYPE_ORDER.map((type) => ({
+    type,
+    label: getSearchTypeLabel(type),
+    items: results.filter((item) => item.type === type),
+  })).filter((group) => group.items.length > 0);
+}
 
 export function buildSearchIndex(input: {
   news: PublicNewsItem[];
