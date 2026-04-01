@@ -37,12 +37,20 @@ export default function TopBar() {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button
+          <Link
+            href="/hledat"
+            className="w-10 h-10 flex items-center justify-center rounded-full transition-colors active:scale-90"
+            style={{ color: "var(--secondary)", background: "rgba(237,225,214,0.55)" }}
+          >
+            <span className="material-symbols-outlined">search</span>
+          </Link>
+          <Link
+            href="/#notifikace"
             className="w-10 h-10 flex items-center justify-center rounded-full transition-colors active:scale-90"
             style={{ color: "var(--secondary)", background: "rgba(237,225,214,0.55)" }}
           >
             <span className="material-symbols-outlined">notifications</span>
-          </button>
+          </Link>
         </div>
       </div>
     </header>

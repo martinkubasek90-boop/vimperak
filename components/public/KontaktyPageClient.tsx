@@ -1,9 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import BottomNav from "@/components/layout/BottomNav";
 import TopBar from "@/components/layout/TopBar";
+import { loadHomePreferences, saveHomePreferences } from "@/lib/client-storage";
+import {
+  buildDirectorySearchIndex,
+  cityDepartmentLabels,
+  scoreFeaturedContact,
+} from "@/lib/directory";
 import type { PublicDirectoryItem } from "@/lib/public-content";
 
 type Cat = PublicDirectoryItem["category"] | "vše";
@@ -33,6 +39,7 @@ const heroFilters: { value: Cat; label: string; icon: string }[] = [
 
 const cityDepartmentFilters: { value: CityDepartment; label: string }[] = [
   { value: "vše", label: "Všechny odbory" },
+  { value: "central", label: "Centrální kontakt" },
   { value: "vnitrni-veci", label: "Doklady a matrika" },
   { value: "doprava", label: "Doprava" },
   { value: "zivnostensky", label: "Podnikání" },
@@ -62,6 +69,7 @@ export function KontaktyPageClient({
   initialCategory?: string;
 }) {
   const [search, setSearch] = useState("");
+  const [favoriteIds, setFavoriteIds] = useState<Array<string | number>>([]);
   const [cat, setCat] = useState<Cat>(
     filters.some((item) => item.value === initialCategory)
       ? (initialCategory as Cat)
@@ -83,20 +91,51 @@ export function KontaktyPageClient({
           cityDepartment === "vše" ||
           item.cityDepartment === cityDepartment;
         const q = search.toLowerCase();
-        const matchQ =
-          !q ||
-          [item.name, item.address, item.note ?? "", item.email ?? ""]
-            .join(" ")
-            .toLowerCase()
-            .includes(q);
+        const matchQ = !q || buildDirectorySearchIndex(item).includes(q);
         return matchCat && matchDepartment && matchQ;
       }),
     [cat, cityDepartment, directory, search],
   );
 
-  const featured = filtered.find((item) => item.category === "město") ?? filtered[0];
+  const featured = useMemo(
+    () =>
+      [...filtered].sort(
+        (left, right) => scoreFeaturedContact(right, search) - scoreFeaturedContact(left, search),
+      )[0],
+    [filtered, search],
+  );
   const rest = filtered.filter((item) => item.id !== featured?.id);
   const showMunicipalSection = cat === "vše" && search.trim() === "";
+
+  useEffect(() => {
+    const prefs = loadHomePreferences();
+    setFavoriteIds(prefs.favoriteContactIds);
+  }, []);
+
+  async function copyContact(value: string) {
+    await navigator.clipboard.writeText(value);
+  }
+
+  async function shareContact(item: PublicDirectoryItem) {
+    const payload = {
+      title: item.name,
+      text: [item.phone, item.address, item.email ?? ""].filter(Boolean).join(" · "),
+    };
+    if (navigator.share) {
+      await navigator.share(payload);
+      return;
+    }
+    await copyContact(`${item.name}\n${payload.text}`);
+  }
+
+  function toggleFavorite(id: string | number) {
+    const prefs = loadHomePreferences();
+    const next = prefs.favoriteContactIds.includes(id)
+      ? prefs.favoriteContactIds.filter((item) => item !== id)
+      : [...prefs.favoriteContactIds, id];
+    saveHomePreferences({ ...prefs, favoriteContactIds: next });
+    setFavoriteIds(next);
+  }
 
   return (
     <>
@@ -244,6 +283,11 @@ export function KontaktyPageClient({
                       <p className="font-headline text-base font-extrabold" style={{ color: "var(--on-secondary-container)" }}>
                         {item.name}
                       </p>
+                      {item.cityDepartment ? (
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(31, 36, 34, 0.74)" }}>
+                          {cityDepartmentLabels[item.cityDepartment] ?? item.cityDepartment}
+                        </p>
+                      ) : null}
                       <p className="mt-2 text-sm" style={{ color: "var(--on-secondary-container)" }}>{item.phone}</p>
                       <p className="mt-1 text-sm" style={{ color: "var(--on-secondary-container)" }}>{item.address}</p>
                       {item.hours ? (
@@ -281,12 +325,25 @@ export function KontaktyPageClient({
               >
                 Doporučený kontakt
               </span>
+              <button
+                type="button"
+                onClick={() => toggleFavorite(featured.id)}
+                className="ml-2 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest"
+                style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.92)" }}
+              >
+                {favoriteIds.includes(featured.id) ? "V oblíbených" : "Do oblíbených"}
+              </button>
               <h3 className="mt-4 font-headline text-2xl font-extrabold text-white">{featured.name}</h3>
               <div className="mt-4 space-y-1.5 text-sm text-white/90">
                 <div>{featured.phone}</div>
                 <div>{featured.address}</div>
                 {featured.email ? <div>{featured.email}</div> : null}
               </div>
+              {featured.cityDepartment ? (
+                <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-white/75">
+                  {cityDepartmentLabels[featured.cityDepartment] ?? featured.cityDepartment}
+                </p>
+              ) : null}
               {featured.note ? <p className="mt-3 text-sm text-white/85">{featured.note}</p> : null}
               {(featured.appointmentUrl || featured.website || featured.sourceUrl) ? (
                 <div className="mt-5 flex flex-wrap gap-2">
@@ -325,6 +382,50 @@ export function KontaktyPageClient({
                   ) : null}
                 </div>
               ) : null}
+              <div className="mt-5 flex flex-wrap gap-2">
+                {featured.email ? (
+                  <a
+                    href={`mailto:${featured.email}`}
+                    className="rounded-full px-4 py-3 text-sm font-bold"
+                    style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
+                  >
+                    Napsat e-mail
+                  </a>
+                ) : null}
+                <a
+                  href={`https://maps.google.com/?q=${encodeURIComponent(featured.address)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full px-4 py-3 text-sm font-bold"
+                  style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
+                >
+                  Otevřít mapu
+                </a>
+                <button
+                  type="button"
+                  onClick={() => shareContact(featured)}
+                  className="rounded-full px-4 py-3 text-sm font-bold"
+                  style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
+                >
+                  Sdílet kontakt
+                </button>
+                {featured.category === "město" ? (
+                  <Link
+                    href="/napsat-mestu"
+                    className="rounded-full px-4 py-3 text-sm font-bold"
+                    style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
+                  >
+                    Napsat městu
+                  </Link>
+                ) : null}
+                <Link
+                  href="/zhlasit"
+                  className="rounded-full px-4 py-3 text-sm font-bold"
+                  style={{ background: "rgba(255,255,255,0.16)", color: "white", border: "1px solid rgba(255,255,255,0.18)" }}
+                >
+                  Nahlásit závadu
+                </Link>
+              </div>
             </div>
           ) : null}
 
@@ -350,6 +451,21 @@ export function KontaktyPageClient({
                 <h3 className="font-headline text-base font-bold leading-snug" style={{ color: "var(--on-surface)" }}>
                   {item.name}
                 </h3>
+                <button
+                  type="button"
+                  onClick={() => toggleFavorite(item.id)}
+                  className="mt-2 rounded-full px-3 py-2 text-xs font-bold"
+                  style={favoriteIds.includes(item.id)
+                    ? { background: "var(--secondary-container)", color: "var(--on-secondary-container)" }
+                    : { background: "var(--surface-container-low)", color: "var(--on-surface)" }}
+                >
+                  {favoriteIds.includes(item.id) ? "Uloženo" : "Do oblíbených"}
+                </button>
+                {item.cityDepartment ? (
+                  <div className="mt-1 text-[11px] font-semibold uppercase tracking-wide" style={{ color: "var(--secondary)" }}>
+                    {cityDepartmentLabels[item.cityDepartment] ?? item.cityDepartment}
+                  </div>
+                ) : null}
                 {item.hours ? (
                   <div className="mt-1 text-xs" style={{ color: "var(--on-surface-variant)" }}>
                     {item.hours}
@@ -399,6 +515,51 @@ export function KontaktyPageClient({
                     ) : null}
                   </div>
                 ) : null}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {item.email ? (
+                    <a
+                      href={`mailto:${item.email}`}
+                      className="rounded-full px-3 py-2 text-xs font-bold"
+                      style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
+                    >
+                      E-mail
+                    </a>
+                  ) : null}
+                  <a
+                    href={`https://maps.google.com/?q=${encodeURIComponent(item.address)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-full px-3 py-2 text-xs font-bold"
+                    style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
+                  >
+                    Mapa
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => copyContact(item.phone)}
+                    className="rounded-full px-3 py-2 text-xs font-bold"
+                    style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
+                  >
+                    Kopírovat telefon
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => shareContact(item)}
+                    className="rounded-full px-3 py-2 text-xs font-bold"
+                    style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
+                  >
+                    Sdílet
+                  </button>
+                  {item.category === "město" ? (
+                    <Link
+                      href="/napsat-mestu"
+                      className="rounded-full px-3 py-2 text-xs font-bold"
+                      style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
+                    >
+                      Napsat městu
+                    </Link>
+                  ) : null}
+                </div>
               </div>
               <a
                 href={`tel:${item.phone.replace(/\s/g, "")}`}
@@ -413,6 +574,17 @@ export function KontaktyPageClient({
               </a>
             </div>
           ))}
+          {filtered.length === 0 ? (
+            <div
+              className="rounded-[1.8rem] p-5 text-sm"
+              style={{
+                background: "var(--surface-container-lowest)",
+                boxShadow: "0 10px 24px rgba(67,17,24,0.06)",
+              }}
+            >
+              Nenašel se žádný kontakt. Zkuste jinou kategorii, telefon, odbor nebo klíčové slovo.
+            </div>
+          ) : null}
         </section>
 
         <section className="px-4 pb-4 pt-8">

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { downloadEventCalendarFile } from "@/lib/calendar";
 import { Calendar, Clock, MapPin, Ticket, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PublicEventItem } from "@/lib/public-content";
@@ -140,6 +141,14 @@ export function AkcePageClient({ events }: { events: PublicEventItem[] }) {
                     </span>
                   )}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => downloadEventCalendarFile(event)}
+                  className="mt-4 rounded-full px-4 py-2 text-xs font-bold"
+                  style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}
+                >
+                  Přidat do kalendáře
+                </button>
               </div>
             </article>
           ))}

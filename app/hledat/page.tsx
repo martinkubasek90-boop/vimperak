@@ -1,4 +1,4 @@
-import { HomePageClient } from "@/components/home/HomePageClient";
+import { SearchPageClient } from "@/components/search/SearchPageClient";
 import {
   getPublicDirectory,
   getPublicEvents,
@@ -6,18 +6,18 @@ import {
   getPublicPolls,
 } from "@/lib/public-content";
 
-export default async function HomePage() {
-  const [events, news, directory, polls] = await Promise.all([
-    getPublicEvents(),
+export default async function SearchPage() {
+  const [news, events, directory, polls] = await Promise.all([
     getPublicNews(),
+    getPublicEvents(),
     getPublicDirectory(),
     getPublicPolls(),
   ]);
 
   return (
-    <HomePageClient
-      events={events}
+    <SearchPageClient
       news={news}
+      events={events}
       directory={directory}
       polls={polls}
     />

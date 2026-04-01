@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import {
+  bulkDeleteDirectoryAction,
   createDirectoryAction,
   createPollAction,
   deleteDirectoryAction,
@@ -11,6 +12,7 @@ import {
   deletePollAction,
   createEventAction,
   createNewsAction,
+  getDirectorySyncPreviewAction,
   updateDirectoryAction,
   updateEventAction,
   updateNewsAction,
@@ -20,6 +22,7 @@ import {
 import { AdminSignOutButton } from "@/components/admin/AdminSignOutButton";
 import { AdminRole, AdminSection, getRoleConfig } from "@/lib/admin-access";
 import type {
+  AdminAuditLogItem,
   AdminDirectoryItem,
   AdminEventItem,
   AdminNewsItem,
@@ -32,15 +35,27 @@ import {
   Calendar,
   CheckCircle,
   Clock,
+  Copy,
   ContactRound,
+  Download,
   LayoutDashboard,
   Newspaper,
   Plus,
+  RefreshCw,
+  Search,
   TrendingUp,
   Users,
   Vote,
   Wrench,
 } from "lucide-react";
+import {
+  MANUAL_DIRECTORY_CATEGORIES,
+  cityDepartmentLabels,
+  findPotentialDuplicateNames,
+  getContactQualityIssues,
+  getContactWorkflowStatus,
+  sortDirectoryItems,
+} from "@/lib/directory";
 
 const NAV_ITEMS: Array<{
   id: AdminSection;
@@ -70,6 +85,7 @@ type AdminDashboardProps = {
   initialPolls: AdminPollItem[];
   initialDirectory: AdminDirectoryItem[];
   initialReports: AdminReportItem[];
+  initialAuditLog: AdminAuditLogItem[];
 };
 
 export function AdminDashboard({
@@ -80,6 +96,7 @@ export function AdminDashboard({
   initialPolls,
   initialDirectory,
   initialReports,
+  initialAuditLog,
 }: AdminDashboardProps) {
   const permissions = getRoleConfig(role);
   const allowedTabs = permissions.sections;
@@ -89,6 +106,7 @@ export function AdminDashboard({
   const [pollItems, setPollItems] = useState(initialPolls);
   const [directoryItems, setDirectoryItems] = useState(initialDirectory);
   const [reportItems, setReportItems] = useState(initialReports);
+  const [auditLogItems] = useState(initialAuditLog);
 
   useEffect(() => {
     if (!allowedTabs.includes(tab)) {
@@ -116,6 +134,46 @@ export function AdminDashboard({
     [directoryItems],
   );
   const activePolls = useMemo(() => pollItems.length, [pollItems]);
+  const contactsNeedingReview = useMemo(
+    () =>
+      directoryItems.filter((item) => getContactWorkflowStatus(item) === "review").length,
+    [directoryItems],
+  );
+  const duplicateContactCount = useMemo(
+    () => findPotentialDuplicateNames(directoryItems).size,
+    [directoryItems],
+  );
+  const staleSyncedContacts = useMemo(
+    () =>
+      directoryItems.filter((item) =>
+        getContactQualityIssues(item).some((issue) => issue.code === "stale-sync"),
+      ).length,
+    [directoryItems],
+  );
+  const recentActivity = useMemo(
+    () =>
+      [
+        ...newsItems.slice(0, 3).map((item) => ({
+          id: `news-${item.id}`,
+          label: item.title,
+          meta: `Zpravodaj · ${item.date}`,
+          section: "zpravodaj" as AdminSection,
+        })),
+        ...eventItems.slice(0, 3).map((item) => ({
+          id: `event-${item.id}`,
+          label: item.title,
+          meta: `Akce · ${item.date} ${item.time}`,
+          section: "akce" as AdminSection,
+        })),
+        ...reportItems.slice(0, 3).map((item) => ({
+          id: `report-${item.id}`,
+          label: item.title,
+          meta: `Závady · ${item.status}`,
+          section: "závady" as AdminSection,
+        })),
+      ].slice(0, 6),
+    [eventItems, newsItems, reportItems],
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -190,6 +248,11 @@ export function AdminDashboard({
               upcomingEvents={upcomingEvents}
               activePolls={activePolls}
               cityContacts={cityContacts}
+              contactsNeedingReview={contactsNeedingReview}
+              duplicateContactCount={duplicateContactCount}
+              staleSyncedContacts={staleSyncedContacts}
+              recentActivity={recentActivity}
+              auditLogItems={auditLogItems}
               onSelectTab={(nextTab) => {
                 if (allowedTabs.includes(nextTab)) setTab(nextTab);
               }}
@@ -248,6 +311,11 @@ function DashboardTab({
   upcomingEvents,
   activePolls,
   cityContacts,
+  contactsNeedingReview,
+  duplicateContactCount,
+  staleSyncedContacts,
+  recentActivity,
+  auditLogItems,
   onSelectTab,
 }: {
   urgentCount: number;
@@ -255,6 +323,16 @@ function DashboardTab({
   upcomingEvents: number;
   activePolls: number;
   cityContacts: number;
+  contactsNeedingReview: number;
+  duplicateContactCount: number;
+  staleSyncedContacts: number;
+  recentActivity: Array<{
+    id: string;
+    label: string;
+    meta: string;
+    section: AdminSection;
+  }>;
+  auditLogItems: AdminAuditLogItem[];
   onSelectTab: (tab: AdminSection) => void;
 }) {
   return (
@@ -294,6 +372,48 @@ function DashboardTab({
         ))}
       </div>
 
+      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+          <h3 className="text-sm font-semibold text-amber-900">Workflow obsahu</h3>
+          <p className="mt-2 text-sm text-amber-800">
+            {contactsNeedingReview} kontaktů čeká na kontrolu kvality a {pendingReports} hlášení je nově přijatých.
+          </p>
+          <button
+            type="button"
+            onClick={() => onSelectTab("kontakty")}
+            className="mt-4 rounded-lg border border-amber-300 px-3 py-2 text-sm font-medium text-amber-900 hover:bg-amber-100"
+          >
+            Otevřít kontrolu kontaktů
+          </button>
+        </div>
+        <div className="rounded-xl border border-red-200 bg-red-50 p-5">
+          <h3 className="text-sm font-semibold text-red-900">Rizika v datech</h3>
+          <p className="mt-2 text-sm text-red-800">
+            {duplicateContactCount} možných duplicit, {staleSyncedContacts} starých synců a {urgentCount} urgentních zpráv.
+          </p>
+          <button
+            type="button"
+            onClick={() => onSelectTab("kontakty")}
+            className="mt-4 rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-900 hover:bg-red-100"
+          >
+            Zobrazit problémové položky
+          </button>
+        </div>
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
+          <h3 className="text-sm font-semibold text-blue-900">Adresář města</h3>
+          <p className="mt-2 text-sm text-blue-800">
+            {cityContacts} městských kontaktů je v adresáři, z toho část je synchronizovaná z oficiálního webu.
+          </p>
+          <button
+            type="button"
+            onClick={() => onSelectTab("kontakty")}
+            className="mt-4 rounded-lg border border-blue-300 px-3 py-2 text-sm font-medium text-blue-900 hover:bg-blue-100"
+          >
+            Spravovat kontakty
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
@@ -320,6 +440,14 @@ function DashboardTab({
               <span>Městské kontakty</span>
               <span className="font-semibold">{cityContacts}</span>
             </div>
+            <div className="flex justify-between">
+              <span>Kontakty ke kontrole</span>
+              <span className="font-semibold text-amber-700">{contactsNeedingReview}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Možné duplicity</span>
+              <span className="font-semibold text-red-700">{duplicateContactCount}</span>
+            </div>
           </div>
         </div>
 
@@ -344,6 +472,50 @@ function DashboardTab({
                 {label}
                 <Plus className="h-3.5 w-3.5" />
               </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-white p-5 md:col-span-2">
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+            <Clock className="h-4 w-4 text-brand-500" /> Poslední aktivita
+          </h3>
+          <div className="grid gap-2">
+            {recentActivity.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onSelectTab(item.section)}
+                className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-left hover:border-brand-200 hover:bg-brand-50"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium text-gray-900">
+                    {item.label}
+                  </span>
+                  <span className="block text-xs text-gray-500">{item.meta}</span>
+                </span>
+                <Plus className="h-3.5 w-3.5 shrink-0 text-brand-600" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-white p-5 md:col-span-2">
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+            <Clock className="h-4 w-4 text-brand-500" /> Audit log
+          </h3>
+          <div className="space-y-2">
+            {auditLogItems.slice(0, 6).map((item) => (
+              <div
+                key={item.id}
+                className="rounded-lg border border-gray-100 px-3 py-2"
+              >
+                <div className="text-sm font-medium text-gray-900">{item.summary}</div>
+                <div className="mt-1 text-xs text-gray-500">
+                  {item.entityType} · {item.action} · {new Date(item.createdAt).toLocaleString("cs-CZ")}
+                  {item.actorEmail ? ` · ${item.actorEmail}` : ""}
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -566,6 +738,9 @@ function NewsTab({
               >
                 {item.urgent ? "Urgentní" : "Normální"}
               </span>
+              {item.workflowStatus ? (
+                <span className="block text-xs text-gray-500">workflow: {item.workflowStatus}</span>
+              ) : null}
               {canEdit && editingId !== item.id ? (
                 <div className="flex gap-2">
                   <button
@@ -835,6 +1010,9 @@ function EventsTab({
               >
                 {item.free ? "Zdarma" : item.price}
               </span>
+              {item.workflowStatus ? (
+                <span className="block text-xs text-gray-500">workflow: {item.workflowStatus}</span>
+              ) : null}
               {canEdit && editingId !== item.id ? (
                 <div className="flex gap-2">
                   <button
@@ -871,19 +1049,25 @@ function DirectoryTab({
   items: AdminDirectoryItem[];
   onItemsChange: (items: AdminDirectoryItem[]) => void;
 }) {
-  function getSourceLabel(item: AdminDirectoryItem) {
-    if (item.sourceKind === "vimperk_web") return "sync z vimperk.cz";
-    if (item.sourceKind === "import") return "import";
-    return "ručně";
-  }
-
-  const syncedItems = items.filter((item) => item.sourceKind === "vimperk_web" || item.isLocked);
-  const manualItems = items.filter((item) => item.sourceKind !== "vimperk_web" && !item.isLocked);
-
+  const duplicateIds = useMemo(() => findPotentialDuplicateNames(items), [items]);
+  const [search, setSearch] = useState("");
+  const [sourceFilter, setSourceFilter] = useState<"vše" | "manual" | "sync">("vše");
+  const [workflowFilter, setWorkflowFilter] = useState<"vše" | "draft" | "review" | "ready" | "live">("vše");
+  const [qualityFilter, setQualityFilter] = useState<"vše" | "duplicates" | "missing-email" | "missing-hours" | "stale-sync">("vše");
+  const [categoryFilter, setCategoryFilter] = useState<"vše" | string>("vše");
   const [showForm, setShowForm] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState<string | number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [syncPreview, setSyncPreview] = useState<{
+    total: number;
+    locked: number;
+    stale: number;
+    missingEmail: number;
+    missingHours: number;
+    lastSyncedAt: string | null;
+  } | null>(null);
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState({
     name: "",
@@ -899,6 +1083,132 @@ function DirectoryTab({
     appointmentUrl: "",
     appointmentLabel: "",
   });
+  const syncedItems = useMemo(
+    () => items.filter((item) => item.sourceKind === "vimperk_web" || item.isLocked),
+    [items],
+  );
+  const manualItems = useMemo(
+    () => items.filter((item) => item.sourceKind !== "vimperk_web" && !item.isLocked),
+    [items],
+  );
+  const filteredItems = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return items.filter((item) => {
+      const workflow = getContactWorkflowStatus(item);
+      const qualityIssues = getContactQualityIssues(item);
+      const sourceMatches =
+        sourceFilter === "vše" ||
+        (sourceFilter === "sync" && (item.sourceKind === "vimperk_web" || item.isLocked)) ||
+        (sourceFilter === "manual" && item.sourceKind !== "vimperk_web" && !item.isLocked);
+      const workflowMatches = workflowFilter === "vše" || workflow === workflowFilter;
+      const categoryMatches = categoryFilter === "vše" || item.category === categoryFilter;
+      const qualityMatches =
+        qualityFilter === "vše" ||
+        (qualityFilter === "duplicates" && duplicateIds.has(item.id)) ||
+        qualityIssues.some((issue) => issue.code === qualityFilter);
+      const searchMatches =
+        !query ||
+        [
+          item.name,
+          item.phone,
+          item.address,
+          item.email ?? "",
+          item.note ?? "",
+          item.website ?? "",
+          item.category,
+          item.cityDepartment ? cityDepartmentLabels[item.cityDepartment] ?? item.cityDepartment : "",
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(query);
+      return sourceMatches && workflowMatches && categoryMatches && qualityMatches && searchMatches;
+    });
+  }, [categoryFilter, duplicateIds, items, qualityFilter, search, sourceFilter, workflowFilter]);
+  const filteredSyncedItems = filteredItems.filter((item) => item.sourceKind === "vimperk_web" || item.isLocked);
+  const filteredManualItems = filteredItems.filter((item) => item.sourceKind !== "vimperk_web" && !item.isLocked);
+  const contactsNeedingReview = useMemo(
+    () => items.filter((item) => getContactWorkflowStatus(item) === "review").length,
+    [items],
+  );
+  const staleContacts = useMemo(
+    () =>
+      items.filter((item) =>
+        getContactQualityIssues(item).some((issue) => issue.code === "stale-sync"),
+      ).length,
+    [items],
+  );
+  const missingEmailContacts = useMemo(
+    () =>
+      items.filter((item) =>
+        getContactQualityIssues(item).some((issue) => issue.code === "missing-email"),
+      ).length,
+    [items],
+  );
+
+  useEffect(() => {
+    startTransition(async () => {
+      const result = await getDirectorySyncPreviewAction();
+      if (result.ok) {
+        setSyncPreview(result.summary);
+      }
+    });
+  }, []);
+
+  function getSourceLabel(item: AdminDirectoryItem) {
+    if (item.sourceKind === "vimperk_web") return "sync z vimperk.cz";
+    if (item.sourceKind === "import") return "import";
+    return "ručně";
+  }
+
+  function exportCsv() {
+    const headers = [
+      "Název",
+      "Kategorie",
+      "Odbor",
+      "Telefon",
+      "E-mail",
+      "Adresa",
+      "Zdroj",
+      "Workflow",
+      "Kvalita",
+    ];
+    const rows = filteredItems.map((item) => {
+      const quality = getContactQualityIssues(item)
+        .map((issue) => issue.label)
+        .join("; ");
+      return [
+        item.name,
+        item.category,
+        item.cityDepartment ? cityDepartmentLabels[item.cityDepartment] ?? item.cityDepartment : "",
+        item.phone,
+        item.email ?? "",
+        item.address,
+        getSourceLabel(item),
+        getContactWorkflowStatus(item),
+        quality,
+      ];
+    });
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row
+          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
+          .join(","),
+      )
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "vimperk-kontakty-export.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function copySyncCommand() {
+    await navigator.clipboard.writeText("node scripts/sync-vimperk-directory.mjs --dry-run");
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2000);
+  }
 
   function handleSave() {
     if (!canEdit || !form.name || !form.phone || !form.address) return;
@@ -913,12 +1223,7 @@ function DirectoryTab({
       }
 
       onItemsChange(
-        [...items, result.item].sort((left, right) => {
-          if (left.category === right.category) {
-            return left.name.localeCompare(right.name, "cs");
-          }
-          return left.category.localeCompare(right.category, "cs");
-        }),
+        sortDirectoryItems([...items, result.item]),
       );
       setForm({
         name: "",
@@ -950,6 +1255,7 @@ function DirectoryTab({
         return;
       }
       onItemsChange(items.filter((item) => String(item.id) !== result.id));
+      setSelectedIds((current) => current.filter((candidate) => candidate !== result.id));
     });
   }
 
@@ -978,11 +1284,54 @@ function DirectoryTab({
         return;
       }
 
-      onItemsChange(items.map((current) => (current.id === item.id ? result.item : current)));
+      onItemsChange(
+        sortDirectoryItems(
+          items.map((current) => (current.id === item.id ? result.item : current)),
+        ),
+      );
       setEditingId(null);
       setSaved(true);
       window.setTimeout(() => setSaved(false), 3000);
     });
+  }
+
+  function toggleSelection(id: string | number) {
+    setSelectedIds((current) =>
+      current.includes(String(id))
+        ? current.filter((candidate) => candidate !== String(id))
+        : [...current, String(id)],
+    );
+  }
+
+  function handleBulkDelete() {
+    if (!canEdit || selectedIds.length === 0) return;
+    setError("");
+    startTransition(async () => {
+      const result = await bulkDeleteDirectoryAction(selectedIds);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      onItemsChange(items.filter((item) => !result.ids.includes(String(item.id))));
+      setSelectedIds([]);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 3000);
+    });
+  }
+
+  function workflowBadge(item: AdminDirectoryItem) {
+    const status = getContactWorkflowStatus(item);
+    const config = {
+      draft: "bg-gray-100 text-gray-700",
+      review: "bg-amber-100 text-amber-800",
+      ready: "bg-blue-100 text-blue-700",
+      live: "bg-green-100 text-green-700",
+    } as const;
+    return (
+      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${config[status]}`}>
+        {status}
+      </span>
+    );
   }
 
   return (
@@ -995,7 +1344,7 @@ function DirectoryTab({
       <p className="mb-5 text-sm text-gray-500">
         Oficiální městské kontakty a odbory se mají synchronizovat ze zdroje. Admin tu má spravovat hlavně ruční a doplňkové záznamy mimo oficiální web.
       </p>
-      <div className="mb-5 grid gap-3 sm:grid-cols-2">
+      <div className="mb-5 grid gap-3 lg:grid-cols-4">
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
           <p className="font-semibold">Synchronizované kontakty</p>
           <p className="mt-1 text-amber-800">
@@ -1007,6 +1356,190 @@ function DirectoryTab({
           <p className="mt-1 text-gray-600">
             {manualItems.length} záznamů můžeš zakládat a upravovat ručně přímo v adminu.
           </p>
+        </div>
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+          <p className="font-semibold">Rizika v adresáři</p>
+          <p className="mt-1 text-red-800">
+            {duplicateIds.size} duplicit, {contactsNeedingReview} kontaktů ke kontrole.
+          </p>
+        </div>
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+          <p className="font-semibold">Sync health</p>
+          <p className="mt-1 text-blue-800">
+            {syncPreview?.lastSyncedAt
+              ? `Poslední sync ${new Date(syncPreview.lastSyncedAt).toLocaleString("cs-CZ")}`
+              : "Sync preview zatím bez dat"}
+          </p>
+        </div>
+      </div>
+
+      <div className="mb-5 rounded-xl border border-gray-200 bg-white p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900">Kontrola kvality a sync</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {staleContacts} starých synců, {missingEmailContacts} městských kontaktů bez e-mailu a {syncPreview?.missingHours ?? 0} položek bez otevírací doby.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                startTransition(async () => {
+                  const result = await getDirectorySyncPreviewAction();
+                  if (result.ok) setSyncPreview(result.summary);
+                });
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Obnovit sync preview
+            </button>
+            <button
+              type="button"
+              onClick={copySyncCommand}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50"
+            >
+              <Copy className="h-4 w-4" />
+              Zkopírovat sync příkaz
+            </button>
+            <button
+              type="button"
+              onClick={exportCsv}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50"
+            >
+              <Download className="h-4 w-4" />
+              Export filtrováného CSV
+            </button>
+          </div>
+        </div>
+        {syncPreview ? (
+          <div className="mt-4 grid gap-3 sm:grid-cols-5">
+            {[
+              ["Sync kontaktů", syncPreview.total],
+              ["Uzamčeno", syncPreview.locked],
+              ["Starý sync", syncPreview.stale],
+              ["Bez e-mailu", syncPreview.missingEmail],
+              ["Bez hodin", syncPreview.missingHours],
+            ].map(([label, value]) => (
+              <div key={String(label)} className="rounded-lg bg-gray-50 px-3 py-2">
+                <div className="text-xs text-gray-500">{label}</div>
+                <div className="text-lg font-semibold text-gray-900">{value}</div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mb-5 rounded-xl border border-gray-200 bg-white p-4">
+        <div className="grid gap-3 lg:grid-cols-5">
+          <label className="lg:col-span-2">
+            <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
+              Hledat
+            </span>
+            <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
+              <Search className="h-4 w-4 text-gray-400" />
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Název, telefon, e-mail, adresa, odbor"
+                className="w-full text-sm outline-none"
+              />
+            </div>
+          </label>
+          <label>
+            <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
+              Zdroj
+            </span>
+            <select
+              value={sourceFilter}
+              onChange={(event) => setSourceFilter(event.target.value as typeof sourceFilter)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            >
+              <option value="vše">Vše</option>
+              <option value="manual">Jen ruční</option>
+              <option value="sync">Jen sync</option>
+            </select>
+          </label>
+          <label>
+            <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
+              Workflow
+            </span>
+            <select
+              value={workflowFilter}
+              onChange={(event) => setWorkflowFilter(event.target.value as typeof workflowFilter)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            >
+              <option value="vše">Vše</option>
+              <option value="draft">Draft</option>
+              <option value="review">Review</option>
+              <option value="ready">Ready</option>
+              <option value="live">Live</option>
+            </select>
+          </label>
+          <label>
+            <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
+              Kvalita
+            </span>
+            <select
+              value={qualityFilter}
+              onChange={(event) => setQualityFilter(event.target.value as typeof qualityFilter)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            >
+              <option value="vše">Vše</option>
+              <option value="duplicates">Možné duplicity</option>
+              <option value="missing-email">Bez e-mailu</option>
+              <option value="missing-hours">Bez hodin</option>
+              <option value="stale-sync">Starý sync</option>
+            </select>
+          </label>
+        </div>
+        <div className="mt-3 grid gap-3 lg:grid-cols-3">
+          <label>
+            <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
+              Kategorie
+            </span>
+            <select
+              value={categoryFilter}
+              onChange={(event) => setCategoryFilter(event.target.value)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            >
+              <option value="vše">Všechny kategorie</option>
+              {[...MANUAL_DIRECTORY_CATEGORIES, "město"].map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </label>
+          {canEdit ? (
+            <div className="lg:col-span-2 flex flex-wrap items-end gap-2">
+              <button
+                type="button"
+                onClick={handleBulkDelete}
+                disabled={selectedIds.length === 0 || isPending}
+                className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Smazat vybrané ({selectedIds.length})
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedIds(filteredManualItems.map((item) => String(item.id)))
+                }
+                className="rounded-lg border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50"
+              >
+                Vybrat ruční záznamy
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedIds([])}
+                className="rounded-lg border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50"
+              >
+                Vyčistit výběr
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -1043,7 +1576,7 @@ function DirectoryTab({
               }
               className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             >
-              {["taxi", "restaurace", "lékař", "lékárna", "opravna", "sport", "ubytování", "obchod"].map((category) => (
+              {MANUAL_DIRECTORY_CATEGORIES.map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
@@ -1167,11 +1700,13 @@ function DirectoryTab({
         </div>
       ) : null}
 
-      {syncedItems.length > 0 ? (
+      {filteredSyncedItems.length > 0 ? (
         <div className="mb-6">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">Oficiální synchronizované kontakty</h3>
           <div className="flex flex-col gap-2">
-            {syncedItems.map((item) => (
+            {filteredSyncedItems.map((item) => {
+              const issues = getContactQualityIssues(item);
+              return (
               <div key={`synced-${item.id}`} className="rounded-xl border border-amber-200 bg-amber-50/60 px-4 py-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
@@ -1187,7 +1722,27 @@ function DirectoryTab({
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
                       <span className="rounded-full bg-white px-2 py-0.5">{getSourceLabel(item)}</span>
                       <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">uzamčeno pro sync</span>
+                      {workflowBadge(item)}
+                      {duplicateIds.has(item.id) ? (
+                        <span className="rounded-full bg-red-100 px-2 py-0.5 text-red-700">duplicitní</span>
+                      ) : null}
                     </div>
+                    {issues.length > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {issues.map((issue) => (
+                          <span
+                            key={`${item.id}-${issue.code}`}
+                            className={`rounded-full px-2 py-0.5 text-xs ${
+                              issue.severity === "critical"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-amber-100 text-amber-800"
+                            }`}
+                          >
+                            {issue.label}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="shrink-0 space-y-2 text-right">
                     <span className="inline-block rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-700">
@@ -1196,15 +1751,26 @@ function DirectoryTab({
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       ) : null}
 
       <div className="flex flex-col gap-2">
-        {manualItems.map((item) => (
+        {filteredManualItems.map((item) => {
+          const issues = getContactQualityIssues(item);
+          const selected = selectedIds.includes(String(item.id));
+          return (
           <div key={item.id} className="rounded-xl border border-gray-200 bg-white px-4 py-3">
             <div className="flex items-start justify-between gap-3">
+              {canEdit ? (
+                <input
+                  type="checkbox"
+                  checked={selected}
+                  onChange={() => toggleSelection(item.id)}
+                  className="mt-1 h-4 w-4 accent-brand-600"
+                />
+              ) : null}
               <div className="min-w-0 flex-1">
                 {editingId === item.id ? (
                   <DirectoryEditForm
@@ -1226,8 +1792,28 @@ function DirectoryTab({
                     {item.email ? <p className="mt-1 text-xs text-gray-500">{item.email}</p> : null}
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
                       <span className="rounded-full bg-gray-100 px-2 py-0.5">{getSourceLabel(item)}</span>
+                      {workflowBadge(item)}
+                      {duplicateIds.has(item.id) ? (
+                        <span className="rounded-full bg-red-100 px-2 py-0.5 text-red-700">duplicitní</span>
+                      ) : null}
                       {item.isLocked ? <span className="rounded-full bg-amber-50 px-2 py-0.5 text-amber-700">uzamčeno pro sync</span> : null}
                     </div>
+                    {issues.length > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {issues.map((issue) => (
+                          <span
+                            key={`${item.id}-${issue.code}`}
+                            className={`rounded-full px-2 py-0.5 text-xs ${
+                              issue.severity === "critical"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-amber-100 text-amber-800"
+                            }`}
+                          >
+                            {issue.label}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
                   </>
                 )}
               </div>
@@ -1257,10 +1843,10 @@ function DirectoryTab({
               </div>
             </div>
           </div>
-        ))}
-        {manualItems.length === 0 ? (
+        )})}
+        {filteredManualItems.length === 0 && filteredSyncedItems.length === 0 ? (
           <div className="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-6 text-sm text-gray-500">
-            Zatím tu nejsou žádné ruční kontakty. Přidávej sem jen doplňkové záznamy, ne oficiální odbory.
+            Filtrům neodpovídá žádný kontakt. Zkus rozšířit hledání nebo upravit workflow/kvalitu.
           </div>
         ) : null}
       </div>
@@ -1454,6 +2040,9 @@ function PollsTab({
                   <p className="mt-1 text-xs text-gray-400">
                     {item.category} · do {item.endsAt} · {item.totalVotes} hlasů
                   </p>
+                  {item.workflowStatus ? (
+                    <p className="mt-1 text-xs text-gray-500">workflow: {item.workflowStatus}</p>
+                  ) : null}
                   <ul className="mt-3 space-y-1">
                     {item.options.map((option) => (
                       <li key={option.id} className="text-sm text-gray-600">
@@ -1665,7 +2254,7 @@ function DirectoryEditForm({
         disabled={isLocked}
         className="rounded border border-gray-200 px-2 py-1 text-sm"
       >
-        {["město", "taxi", "restaurace", "lékař", "lékárna", "opravna", "sport", "ubytování", "obchod"].map((category) => (
+        {MANUAL_DIRECTORY_CATEGORIES.map((category) => (
           <option key={category} value={category}>
             {category}
           </option>

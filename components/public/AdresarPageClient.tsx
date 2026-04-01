@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import BottomNav from "@/components/layout/BottomNav";
 import TopBar from "@/components/layout/TopBar";
+import { loadHomePreferences, saveHomePreferences } from "@/lib/client-storage";
 import type { PublicDirectoryItem } from "@/lib/public-content";
 
 type Cat = PublicDirectoryItem["category"] | "vše";
@@ -52,6 +53,7 @@ export function AdresarPageClient({
   initialCategory?: string;
 }) {
   const [search, setSearch] = useState("");
+  const [favoriteIds, setFavoriteIds] = useState<Array<string | number>>([]);
   const [cat, setCat] = useState<Cat>(
     filters.some((item) => item.value === initialCategory)
       ? (initialCategory as Cat)
@@ -75,6 +77,21 @@ export function AdresarPageClient({
   );
 
   const [featured, ...rest] = filtered;
+
+  useEffect(() => {
+    const prefs = loadHomePreferences();
+    setFavoriteIds(prefs.favoriteContactIds);
+  }, []);
+
+  function toggleFavorite(id: string | number) {
+    const prefs = loadHomePreferences();
+    const next = prefs.favoriteContactIds.includes(id)
+      ? prefs.favoriteContactIds.filter((item) => item !== id)
+      : [...prefs.favoriteContactIds, id];
+    const updated = { ...prefs, favoriteContactIds: next };
+    saveHomePreferences(updated);
+    setFavoriteIds(next);
+  }
 
   return (
     <>
@@ -199,6 +216,14 @@ export function AdresarPageClient({
                 >
                   Doporučené
                 </span>
+                <button
+                  type="button"
+                  onClick={() => toggleFavorite(featured.id)}
+                  className="ml-2 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest"
+                  style={{ background: "rgba(255,255,255,0.16)", color: "white" }}
+                >
+                  {favoriteIds.includes(featured.id) ? "V oblíbených" : "Přidat"}
+                </button>
                 <h3 className="mt-4 font-headline text-2xl font-extrabold text-white">{featured.name}</h3>
                 {featured.rating ? (
                   <div className="mt-2 flex items-center gap-2 text-white">
@@ -253,6 +278,16 @@ export function AdresarPageClient({
                       </div>
                     ) : null}
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => toggleFavorite(item.id)}
+                    className="mt-2 rounded-full px-3 py-1 text-xs font-bold"
+                    style={favoriteIds.includes(item.id)
+                      ? { background: "var(--secondary-container)", color: "var(--on-secondary-container)" }
+                      : { background: "var(--surface-container-low)", color: "var(--on-surface-variant)" }}
+                  >
+                    {favoriteIds.includes(item.id) ? "Uloženo" : "Do oblíbených"}
+                  </button>
                   {item.hours ? <div className="mt-1 text-xs text-on-surface-variant">{item.hours}</div> : null}
                   <div className="mt-2 text-sm text-on-surface-variant">{item.phone}</div>
                   <div className="mt-0.5 text-sm text-on-surface-variant">{item.address}</div>

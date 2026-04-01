@@ -1,3 +1,5 @@
+export type AdminWorkflowStatus = "draft" | "review" | "ready" | "live";
+
 export type AdminNewsItem = {
   id: string | number;
   title: string;
@@ -5,6 +7,9 @@ export type AdminNewsItem = {
   category: string;
   urgent: boolean;
   date: string;
+  workflowStatus?: AdminWorkflowStatus;
+  updatedAt?: string;
+  updatedByEmail?: string;
 };
 
 export type AdminEventItem = {
@@ -16,6 +21,9 @@ export type AdminEventItem = {
   category: string;
   free: boolean;
   price: string;
+  workflowStatus?: AdminWorkflowStatus;
+  updatedAt?: string;
+  updatedByEmail?: string;
 };
 
 export type AdminDirectoryItem = {
@@ -36,6 +44,9 @@ export type AdminDirectoryItem = {
   sourceExternalId?: string;
   sourceSyncedAt?: string;
   isLocked?: boolean;
+  workflowStatus?: AdminWorkflowStatus;
+  updatedAt?: string;
+  updatedByEmail?: string;
 };
 
 export type AdminPollOption = {
@@ -51,6 +62,9 @@ export type AdminPollItem = {
   endsAt: string;
   totalVotes: number;
   options: AdminPollOption[];
+  workflowStatus?: AdminWorkflowStatus;
+  updatedAt?: string;
+  updatedByEmail?: string;
 };
 
 export type AdminReportStatus = "přijato" | "v řešení" | "vyřešeno" | "zamítnuto";
@@ -62,4 +76,16 @@ export type AdminReportItem = {
   category: string;
   status: AdminReportStatus;
   date: string;
+  updatedAt?: string;
+  updatedByEmail?: string;
+};
+
+export type AdminAuditLogItem = {
+  id: string;
+  entityType: "news" | "event" | "poll" | "directory" | "report";
+  entityId: string;
+  action: "create" | "update" | "delete" | "workflow" | "status";
+  summary: string;
+  actorEmail?: string;
+  createdAt: string;
 };

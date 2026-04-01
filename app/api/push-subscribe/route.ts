@@ -1,29 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
 import webpush from "web-push";
+import {
+  initVapid,
+  removeNativePushRegistration,
+  removeWebPushSubscription,
+  saveNativePushRegistration,
+  saveWebPushSubscription,
+} from "@/lib/push-subscriptions";
 
 export const dynamic = "force-dynamic";
 
-// In production store subscriptions in Supabase/DB.
-const subscriptions: webpush.PushSubscription[] = [];
-
-function initVapid() {
-  webpush.setVapidDetails(
-    process.env.VAPID_CONTACT ?? "mailto:info@vimperk.app",
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!
-  );
-}
+type PushSubscribeRequest =
+  | {
+      type: "web";
+      subscription: webpush.PushSubscription;
+      topics?: string[];
+    }
+  | {
+      type: "native";
+      token: string;
+      platform: "android" | "ios";
+      topics?: string[];
+    };
 
 export async function POST(req: NextRequest) {
   try {
-    initVapid();
-    const subscription: webpush.PushSubscription = await req.json();
+    const body = (await req.json()) as PushSubscribeRequest;
+
+    if (body.type === "native") {
+      if (!body.token || !body.platform) {
+        return NextResponse.json({ error: "Invalid native token" }, { status: 400 });
+      }
+
+      const result = await saveNativePushRegistration({
+        token: body.token,
+        platform: body.platform,
+        topics: body.topics ?? [],
+      });
+
+      return NextResponse.json({ success: true, mode: "native", ...result });
+    }
+
+    const subscription = body.type === "web" ? body.subscription : body;
     if (!subscription?.endpoint) {
       return NextResponse.json({ error: "Invalid subscription" }, { status: 400 });
     }
 
-    const exists = subscriptions.some((s) => s.endpoint === subscription.endpoint);
-    if (!exists) subscriptions.push(subscription);
+    initVapid();
+    const result = await saveWebPushSubscription(subscription, body.type === "web" ? body.topics ?? [] : []);
 
     await webpush.sendNotification(
       subscription,
@@ -35,7 +59,7 @@ export async function POST(req: NextRequest) {
       })
     );
 
-    return NextResponse.json({ success: true, total: subscriptions.length });
+    return NextResponse.json({ success: true, mode: "web", ...result });
   } catch (err) {
     console.error("[push-subscribe]", err);
     return NextResponse.json({ error: "Subscription failed" }, { status: 500 });
@@ -43,8 +67,26 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const { endpoint } = await req.json();
-  const idx = subscriptions.findIndex((s) => s.endpoint === endpoint);
-  if (idx > -1) subscriptions.splice(idx, 1);
-  return NextResponse.json({ success: true });
+  try {
+    const body = (await req.json()) as { type?: "web" | "native"; endpoint?: string; token?: string };
+
+    if (body.type === "native") {
+      if (!body.token) {
+        return NextResponse.json({ error: "Missing native token" }, { status: 400 });
+      }
+
+      const result = await removeNativePushRegistration(body.token);
+      return NextResponse.json({ success: true, mode: "native", ...result });
+    }
+
+    if (!body.endpoint) {
+      return NextResponse.json({ error: "Missing endpoint" }, { status: 400 });
+    }
+
+    const result = await removeWebPushSubscription(body.endpoint);
+    return NextResponse.json({ success: true, mode: "web", ...result });
+  } catch (err) {
+    console.error("[push-unsubscribe]", err);
+    return NextResponse.json({ error: "Unsubscribe failed" }, { status: 500 });
+  }
 }

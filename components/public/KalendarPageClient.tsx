@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
+import { downloadEventCalendarFile } from "@/lib/calendar";
 import type { PublicEventItem } from "@/lib/public-content";
 
 type Category = PublicEventItem["category"] | "vše";
@@ -129,6 +130,14 @@ export function KalendarPageClient({ events }: { events: PublicEventItem[] }) {
                         : { background: "var(--surface-container)", color: "var(--on-surface-variant)" }}>
                         {event.free ? "Vstup zdarma" : event.price}
                       </span>
+                      <button
+                        type="button"
+                        onClick={() => downloadEventCalendarFile(event)}
+                        className="rounded-full px-3 py-1.5 text-xs font-semibold"
+                        style={{ background: "var(--primary-fixed)", color: "var(--on-primary-fixed)" }}
+                      >
+                        Přidat do kalendáře
+                      </button>
                     </div>
                   </div>
                 </div>
