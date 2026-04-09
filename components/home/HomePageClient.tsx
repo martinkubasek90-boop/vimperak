@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
-import { downloadEventCalendarFile } from "@/lib/calendar";
 import {
   getEventDetailHref,
   getNewsDetailHref,
@@ -33,6 +32,33 @@ type HomePageClientProps = {
   polls: PublicPoll[];
 };
 
+function formatIsoDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function addDays(base: string, offset: number) {
+  const date = new Date(`${base}T12:00:00`);
+  date.setDate(date.getDate() + offset);
+  return formatIsoDate(date);
+}
+
+function getCalendarCategoryLabel(category: PublicEventItem["category"]) {
+  switch (category) {
+    case "kino":
+      return "Kino";
+    case "sport":
+      return "Sport";
+    case "kultura":
+      return "Kultura";
+    case "trhy":
+      return "Trhy";
+    case "úřad":
+      return "Město";
+    default:
+      return "Akce";
+  }
+}
+
 export function HomePageClient({
   events,
   news,
@@ -46,14 +72,93 @@ export function HomePageClient({
     year: "numeric",
   });
 
-  const upcomingEvents = useMemo(
-    () =>
-      [...events]
-        .filter((event) => event.date >= today)
-        .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`))
-        .slice(0, 4),
-    [events, today],
+  const showcaseEvents = useMemo<PublicEventItem[]>(
+    () => [
+      {
+        id: 91001,
+        title: "Kino: Letní příběh — CZ dabing",
+        date: addDays(today, 1),
+        time: "17:30",
+        place: "Kino Vimperk",
+        category: "kino",
+        description: "Rodinné promítání pro děti i rodiče v podvečerním čase.",
+        free: false,
+        price: "140 Kč",
+      },
+      {
+        id: 91002,
+        title: "Večerní komentovaná prohlídka zámku",
+        date: addDays(today, 2),
+        time: "18:00",
+        place: "Zámek Vimperk",
+        category: "kultura",
+        description: "Speciální komentovaná prohlídka s výkladem o historii města.",
+        free: false,
+        price: "90 Kč",
+      },
+      {
+        id: 91003,
+        title: "Turnaj mladších žáků ve florbalu",
+        date: addDays(today, 3),
+        time: "10:00",
+        place: "Sportovní hala Vimperk",
+        category: "sport",
+        description: "Sobotní dopolední turnaj místních týmů a hostů z okolí.",
+        free: true,
+      },
+      {
+        id: 91004,
+        title: "Farmářské dopoledne na náměstí",
+        date: addDays(today, 4),
+        time: "09:00",
+        place: "Náměstí Svobody",
+        category: "trhy",
+        description: "Místní výrobci, pečivo, sýry a sezónní nabídka z regionu.",
+        free: true,
+      },
+      {
+        id: 91005,
+        title: "Setkání s občany na radnici",
+        date: addDays(today, 6),
+        time: "17:00",
+        place: "Radnice Vimperk",
+        category: "úřad",
+        description: "Otevřené setkání s vedením města a prostor pro dotazy.",
+        free: true,
+      },
+      {
+        id: 91006,
+        title: "Workshop: Šumava objektivem",
+        date: addDays(today, 8),
+        time: "16:30",
+        place: "Kulturní dům Vimperk",
+        category: "kultura",
+        description: "Praktický workshop krajinářské fotografie pro začátečníky.",
+        free: false,
+        price: "180 Kč",
+      },
+    ],
+    [today],
   );
+
+  const upcomingEvents = useMemo(() => {
+    const futureEvents = [...events]
+      .filter((event) => event.date >= today)
+      .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`));
+
+    const seen = new Set(futureEvents.map((event) => `${event.title}-${event.date}-${event.time}`));
+    const supplemental = showcaseEvents.filter((event) => !seen.has(`${event.title}-${event.date}-${event.time}`));
+
+    return [...futureEvents, ...supplemental].slice(0, 6);
+  }, [events, showcaseEvents, today]);
+
+  const freeEventsCount = upcomingEvents.filter((event) => event.free).length;
+  const thisWeekEventsCount = upcomingEvents.filter((event) => {
+    const eventDate = new Date(`${event.date}T12:00:00`);
+    const todayDate = new Date(`${today}T12:00:00`);
+    const diffInDays = Math.round((eventDate.getTime() - todayDate.getTime()) / 86400000);
+    return diffInDays >= 0 && diffInDays <= 7;
+  }).length;
 
   const sortedNews = useMemo(
     () => [...news].sort((a, b) => b.date.localeCompare(a.date)),
@@ -153,17 +258,24 @@ export function HomePageClient({
 
         <section className="px-4 pt-8">
           <SectionHeader title="Kalendář akcí" subtitle="Co se děje ve Vimperku" actionHref="/kalendar" />
+          <div className="mb-4 grid grid-cols-3 gap-3">
+            <CalendarStatCard label="Nejbližší akce" value={String(upcomingEvents.length)} tone="#f7f1eb" />
+            <CalendarStatCard label="Vstup zdarma" value={String(freeEventsCount)} tone="#dceee9" />
+            <CalendarStatCard label="Tento týden" value={String(thisWeekEventsCount)} tone="#f3ddd2" />
+          </div>
           <div className="space-y-3">
             {upcomingEvents.map((event) => {
               const badge = getDateBadgeParts(event.date);
+              const categoryLabel = getCalendarCategoryLabel(event.category);
 
               return (
-                <div
+                <Link
                   key={`homepage-event-${event.id}`}
+                  href={getEventDetailHref(event)}
                   className="rounded-[1.45rem] px-4 py-4"
                   style={{ background: "var(--surface-container-lowest)", boxShadow: "0 10px 20px rgba(67,17,24,0.06)" }}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-start gap-4">
                     <div
                       className="flex h-[4.5rem] w-[4.5rem] shrink-0 flex-col items-center justify-center rounded-[1rem]"
                       style={{ background: event.free ? "#dceee9" : "#f5ddd7", color: "var(--secondary)" }}
@@ -174,14 +286,41 @@ export function HomePageClient({
                       </span>
                     </div>
 
-                    <Link href={getEventDetailHref(event)} className="min-w-0 flex-1">
-                      <p className="text-[0.65rem] font-black uppercase tracking-[0.15em]" style={{ color: "var(--secondary)" }}>
-                        {event.place} · {event.time}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <span
+                            className="inline-flex rounded-full px-2.5 py-1 text-[0.66rem] font-black uppercase tracking-[0.14em]"
+                            style={{ background: "#dceee9", color: "var(--secondary)" }}
+                          >
+                            {categoryLabel}
+                          </span>
+                        </div>
+                        <p className="text-sm font-black tabular-nums" style={{ color: "var(--secondary)" }}>
+                          {event.time}
+                        </p>
+                      </div>
+
+                      <p className="mt-3 text-[0.72rem] font-black uppercase tracking-[0.14em]" style={{ color: "var(--secondary)" }}>
+                        {event.place}
                       </p>
-                      <h3 className="mt-1 text-lg font-extrabold leading-tight" style={{ color: "var(--on-surface)" }}>
+                      <h3 className="mt-1 text-[1.42rem] font-extrabold leading-tight" style={{ color: "var(--on-surface)" }}>
                         {event.title}
                       </h3>
-                      <div className="mt-2">
+                      <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
+                        {event.description}
+                      </p>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span
+                          className="inline-flex rounded-full px-2.5 py-1 text-[0.7rem] font-bold"
+                          style={{
+                            background: "#f7f1eb",
+                            color: "var(--on-surface)",
+                          }}
+                        >
+                          {event.place}
+                        </span>
                         <span
                           className="inline-flex rounded-full px-2.5 py-1 text-[0.7rem] font-bold"
                           style={{
@@ -192,18 +331,9 @@ export function HomePageClient({
                           {event.free ? "Vstup zdarma" : event.price ?? "Placená akce"}
                         </span>
                       </div>
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={() => downloadEventCalendarFile(event)}
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-                      style={{ background: "var(--surface-container-low)", color: "var(--secondary)" }}
-                    >
-                      <span className="material-symbols-outlined text-base">event_available</span>
-                    </button>
+                    </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -373,4 +503,25 @@ function SectionHeader({
 function capitalizeLabel(value: string) {
   if (!value) return value;
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function CalendarStatCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: string;
+}) {
+  return (
+    <div className="rounded-[1.3rem] px-4 py-4" style={{ background: tone }}>
+      <p className="text-[0.82rem] font-semibold leading-tight" style={{ color: "var(--on-surface-variant)" }}>
+        {label}
+      </p>
+      <p className="mt-4 text-[2rem] font-black leading-none" style={{ color: "var(--primary)" }}>
+        {value}
+      </p>
+    </div>
+  );
 }
