@@ -197,36 +197,36 @@ export function HomePageClient({
               <p className="text-[0.9rem] font-bold" style={{ color: "rgba(255,255,255,0.82)" }}>
                 {capitalizeLabel(todayLabel)}
               </p>
-              <h1 className="mt-2 max-w-[14rem] font-headline text-[3.1rem] font-extrabold leading-[0.9] tracking-[-0.04em] text-white sm:max-w-[16rem]">
+              <h1 className="mt-2 max-w-[11rem] font-headline text-[2.15rem] font-extrabold leading-[0.9] tracking-[-0.04em] text-white sm:max-w-[12rem]">
                 Dobrý den,
                 <br />
                 Vimperáci.
               </h1>
 
-              <div className="mt-4 grid max-w-[21rem] grid-cols-2 gap-3">
+              <div className="mt-4 grid max-w-[15.75rem] grid-cols-2 gap-2.5">
                 <div
-                  className="rounded-[1.2rem] px-4 py-3"
+                  className="rounded-[1rem] px-3 py-2.5"
                   style={{ background: "rgba(84,61,76,0.82)", backdropFilter: "blur(10px)", color: "#ffffff" }}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[1.35rem] text-white/78">wb_sunny</span>
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[1.05rem] text-white/78">wb_sunny</span>
                     <div>
-                      <p className="text-[1.95rem] font-black leading-none">8°C</p>
-                      <p className="mt-1 text-[0.72rem] font-medium leading-tight text-white/70">Slunečno · 12°</p>
-                      <p className="text-[0.72rem] font-medium leading-tight text-white/70">max</p>
+                      <p className="text-[1.45rem] font-black leading-none">8°C</p>
+                      <p className="mt-1 text-[0.6rem] font-medium leading-tight text-white/70">Slunečno · 12°</p>
+                      <p className="text-[0.6rem] font-medium leading-tight text-white/70">max</p>
                     </div>
                   </div>
                 </div>
                 <div
-                  className="rounded-[1.2rem] px-4 py-3"
+                  className="rounded-[1rem] px-3 py-2.5"
                   style={{ background: "rgba(84,61,76,0.82)", backdropFilter: "blur(10px)", color: "#ffffff" }}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[1.35rem] text-white/78">warning</span>
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[1.05rem] text-white/78">warning</span>
                     <div>
-                      <p className="mt-0.5 text-[1rem] font-semibold leading-snug">Uzavírka</p>
-                      <p className="text-[1rem] font-semibold leading-snug">Pivovarské</p>
-                      <p className="text-[0.92rem] font-medium leading-snug text-white/84">od 28. 3.</p>
+                      <p className="mt-0.5 text-[0.78rem] font-semibold leading-snug">Uzavírka</p>
+                      <p className="text-[0.78rem] font-semibold leading-snug">Pivovarské</p>
+                      <p className="text-[0.72rem] font-medium leading-snug text-white/84">od 28. 3.</p>
                     </div>
                   </div>
                 </div>
