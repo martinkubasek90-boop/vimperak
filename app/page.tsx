@@ -1,16 +1,14 @@
 import { HomePageClient } from "@/components/home/HomePageClient";
 import {
-  getPublicDirectory,
   getPublicEvents,
   getPublicNews,
   getPublicPolls,
 } from "@/lib/public-content";
 
 export default async function HomePage() {
-  const [events, news, directory, polls] = await Promise.all([
+  const [events, news, polls] = await Promise.all([
     getPublicEvents(),
     getPublicNews(),
-    getPublicDirectory(),
     getPublicPolls(),
   ]);
 
@@ -18,7 +16,6 @@ export default async function HomePage() {
     <HomePageClient
       events={events}
       news={news}
-      directory={directory}
       polls={polls}
     />
   );
