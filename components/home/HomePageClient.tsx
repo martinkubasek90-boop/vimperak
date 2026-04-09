@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
+import { busLines } from "@/lib/data";
 import {
   getEventDetailHref,
   getNewsDetailHref,
@@ -65,6 +66,11 @@ export function HomePageClient({
   polls,
 }: HomePageClientProps) {
   const today = new Date().toISOString().slice(0, 10);
+  const nowTime = new Date().toLocaleTimeString("cs-CZ", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
   const todayLabel = new Date().toLocaleDateString("cs-CZ", {
     weekday: "long",
     day: "numeric",
@@ -149,7 +155,7 @@ export function HomePageClient({
     const seen = new Set(futureEvents.map((event) => `${event.title}-${event.date}-${event.time}`));
     const supplemental = showcaseEvents.filter((event) => !seen.has(`${event.title}-${event.date}-${event.time}`));
 
-    return [...futureEvents, ...supplemental].slice(0, 6);
+    return [...futureEvents, ...supplemental].slice(0, 3);
   }, [events, showcaseEvents, today]);
 
   const freeEventsCount = upcomingEvents.filter((event) => event.free).length;
@@ -159,6 +165,17 @@ export function HomePageClient({
     const diffInDays = Math.round((eventDate.getTime() - todayDate.getTime()) / 86400000);
     return diffInDays >= 0 && diffInDays <= 7;
   }).length;
+  const busPreview = useMemo(
+    () =>
+      busLines.slice(0, 3).map((line) => {
+        const nextDepartures = line.departures.filter((departure) => departure >= nowTime).slice(0, 2);
+        return {
+          ...line,
+          nextDepartures: nextDepartures.length > 0 ? nextDepartures : line.departures.slice(0, 2),
+        };
+      }),
+    [nowTime],
+  );
 
   const sortedNews = useMemo(
     () => [...news].sort((a, b) => b.date.localeCompare(a.date)),
@@ -336,6 +353,67 @@ export function HomePageClient({
                 </Link>
               );
             })}
+          </div>
+        </section>
+
+        <section className="px-4 pt-8">
+          <SectionHeader
+            title="Odjezdy a příjezdy autobusů"
+            subtitle="Rychlý přehled nejbližších spojů z Vimperka"
+            actionHref="/jizdy"
+          />
+          <div className="space-y-3">
+            {busPreview.map((line) => (
+              <Link
+                key={`bus-line-${line.id}`}
+                href="/jizdy"
+                className="block rounded-[1.45rem] px-4 py-4"
+                style={{ background: "var(--surface-container-lowest)", boxShadow: "0 10px 20px rgba(67,17,24,0.06)" }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="inline-flex rounded-full px-2.5 py-1 text-[0.66rem] font-black uppercase tracking-[0.14em]"
+                        style={{ background: "#dceee9", color: "var(--secondary)" }}
+                      >
+                        Linka {line.number}
+                      </span>
+                      {line.note ? (
+                        <span className="text-xs font-medium" style={{ color: "var(--on-surface-variant)" }}>
+                          {line.note}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <h3 className="mt-3 text-[1.25rem] font-extrabold leading-tight" style={{ color: "var(--on-surface)" }}>
+                      {line.from} → {line.to}
+                    </h3>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {line.nextDepartures.map((departure) => (
+                        <span
+                          key={`${line.id}-${departure}`}
+                          className="inline-flex rounded-full px-3 py-1.5 text-sm font-bold"
+                          style={{ background: "#f7f1eb", color: "var(--on-surface)" }}
+                        >
+                          {departure}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-[0.68rem] font-black uppercase tracking-[0.14em]" style={{ color: "var(--secondary)" }}>
+                      Další odjezd
+                    </p>
+                    <p className="mt-2 text-[1.4rem] font-black leading-none" style={{ color: "var(--primary)" }}>
+                      {line.nextDepartures[0] ?? "—"}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
 
