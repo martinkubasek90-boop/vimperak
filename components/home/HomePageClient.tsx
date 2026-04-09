@@ -67,8 +67,6 @@ export function HomePageClient({
     [polls, today],
   );
 
-  const heroHighlight = featuredNews?.title ?? "Uzavírka Pivovarské od 28. 3.";
-
   return (
     <>
       <TopBar />
@@ -76,7 +74,7 @@ export function HomePageClient({
         <section className="px-4 pt-2">
           <div
             className="relative overflow-hidden rounded-[2rem]"
-            style={{ minHeight: "27.25rem", boxShadow: "0 18px 40px rgba(50,24,18,0.16)", background: "#e7b59d" }}
+            style={{ minHeight: "27rem", boxShadow: "0 18px 40px rgba(50,24,18,0.16)", background: "#e7b59d" }}
           >
             <Image
               src="/editorial/castle-hero.svg"
@@ -87,44 +85,43 @@ export function HomePageClient({
             />
             <div
               className="absolute inset-0"
-              style={{ background: "linear-gradient(180deg, rgba(255,244,236,0.04) 0%, rgba(74,40,45,0.06) 44%, rgba(64,38,51,0.28) 100%)" }}
+              style={{ background: "linear-gradient(180deg, rgba(255,244,236,0.02) 0%, rgba(74,40,45,0.03) 42%, rgba(64,38,51,0.22) 100%)" }}
             />
 
-            <div className="relative z-10 flex min-h-[27.25rem] flex-col justify-end p-6">
-              <p className="text-[0.95rem] font-bold" style={{ color: "rgba(255,255,255,0.88)" }}>
+            <div className="relative z-10 flex min-h-[27rem] flex-col justify-end px-6 pb-5 pt-6">
+              <p className="text-[0.9rem] font-bold" style={{ color: "rgba(255,255,255,0.82)" }}>
                 {capitalizeLabel(todayLabel)}
               </p>
-              <h1 className="mt-2 max-w-[14rem] font-headline text-[2.35rem] font-extrabold leading-[0.88] text-white sm:max-w-[16.5rem] sm:text-[2.75rem]">
+              <h1 className="mt-2 max-w-[14rem] font-headline text-[3.1rem] font-extrabold leading-[0.9] tracking-[-0.04em] text-white sm:max-w-[16rem]">
                 Dobrý den,
                 <br />
                 Vimperáci.
               </h1>
-              <p className="mt-3 max-w-[17rem] text-[0.95rem] leading-relaxed text-white/84 sm:max-w-[21rem]">
-                Kalendář akcí, zprávy z radnice a důležité městské služby na jednom místě.
-              </p>
 
-              <div className="mt-7 grid max-w-[24rem] grid-cols-2 gap-3">
+              <div className="mt-4 grid max-w-[21rem] grid-cols-2 gap-3">
                 <div
-                  className="rounded-[1.25rem] px-4 py-3"
-                  style={{ background: "rgba(77,57,71,0.82)", backdropFilter: "blur(10px)", color: "#ffffff" }}
+                  className="rounded-[1.2rem] px-4 py-3"
+                  style={{ background: "rgba(84,61,76,0.82)", backdropFilter: "blur(10px)", color: "#ffffff" }}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[1.2rem] text-white/80">wb_sunny</span>
+                    <span className="material-symbols-outlined text-[1.35rem] text-white/78">wb_sunny</span>
                     <div>
-                      <p className="text-[1.7rem] font-black leading-none">8°C</p>
-                      <p className="mt-1 text-[0.74rem] leading-relaxed text-white/74">Slunečno · 12° max</p>
+                      <p className="text-[1.95rem] font-black leading-none">8°C</p>
+                      <p className="mt-1 text-[0.72rem] font-medium leading-tight text-white/70">Slunečno · 12°</p>
+                      <p className="text-[0.72rem] font-medium leading-tight text-white/70">max</p>
                     </div>
                   </div>
                 </div>
                 <div
-                  className="rounded-[1.25rem] px-4 py-3"
-                  style={{ background: "rgba(77,57,71,0.82)", backdropFilter: "blur(10px)", color: "#ffffff" }}
+                  className="rounded-[1.2rem] px-4 py-3"
+                  style={{ background: "rgba(84,61,76,0.82)", backdropFilter: "blur(10px)", color: "#ffffff" }}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[1.2rem] text-white/80">warning</span>
+                    <span className="material-symbols-outlined text-[1.35rem] text-white/78">warning</span>
                     <div>
-                      <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-white/72">Upozornění</p>
-                      <p className="mt-1 text-[0.95rem] font-semibold leading-snug">{heroHighlight}</p>
+                      <p className="mt-0.5 text-[1rem] font-semibold leading-snug">Uzavírka</p>
+                      <p className="text-[1rem] font-semibold leading-snug">Pivovarské</p>
+                      <p className="text-[0.92rem] font-medium leading-snug text-white/84">od 28. 3.</p>
                     </div>
                   </div>
                 </div>
