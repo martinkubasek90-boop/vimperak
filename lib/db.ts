@@ -64,6 +64,34 @@ export async function getPolls() {
   return data ?? mock.polls;
 }
 
+// ─── Reports ─────────────────────────────────────────────────────────────────
+export async function getReports(ids?: string[]) {
+  if (!isSupabaseConfigured) {
+    if (!ids?.length) return mock.reports;
+    return mock.reports.filter((item) => ids.includes(item.id));
+  }
+
+  let query = supabase
+    .from("reports")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (ids?.length) {
+    query = query.in("id", ids);
+  }
+
+  const { data, error } = await query;
+  if (error) { console.error("reports:", error); return ids?.length ? mock.reports.filter((item) => ids.includes(item.id)) : mock.reports; }
+  return data ?? (ids?.length ? mock.reports.filter((item) => ids.includes(item.id)) : mock.reports);
+}
+
+export async function getReportById(id: string) {
+  if (!isSupabaseConfigured) return mock.reports.find((item) => item.id === id) ?? null;
+  const { data, error } = await supabase.from("reports").select("*").eq("id", id).maybeSingle();
+  if (error) { console.error("report by id:", error); return mock.reports.find((item) => item.id === id) ?? null; }
+  return data ?? null;
+}
+
 // ─── Vote ─────────────────────────────────────────────────────────────────────
 export async function castVote(optionId: string) {
   if (!isSupabaseConfigured) return { success: true };

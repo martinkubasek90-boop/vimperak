@@ -1,4 +1,10 @@
 import { buildDirectorySearchIndex } from "@/lib/directory";
+import {
+  getContactDetailHref,
+  getEventDetailHref,
+  getNewsDetailHref,
+  getPollDetailHref,
+} from "@/lib/content-links";
 import type {
   PublicDirectoryItem,
   PublicEventItem,
@@ -100,7 +106,7 @@ export function buildSearchIndex(input: {
       type: "news",
       title: item.title,
       subtitle: `${item.category} · ${item.date}`,
-      href: "/zpravodaj",
+      href: getNewsDetailHref(item),
       keywords: [item.title, item.summary, item.category, item.date].join(" ").toLowerCase(),
     })),
     ...input.events.map<SearchResultItem>((item) => ({
@@ -108,7 +114,7 @@ export function buildSearchIndex(input: {
       type: "event",
       title: item.title,
       subtitle: `${item.place} · ${item.date} ${item.time}`,
-      href: "/kalendar",
+      href: getEventDetailHref(item),
       keywords: [item.title, item.description, item.place, item.category, item.date, item.time]
         .join(" ")
         .toLowerCase(),
@@ -118,7 +124,7 @@ export function buildSearchIndex(input: {
       type: "directory",
       title: item.name,
       subtitle: `${item.category} · ${item.address}`,
-      href: item.category === "město" ? "/kontakty" : `/adresar?k=${encodeURIComponent(item.category)}`,
+      href: getContactDetailHref(item),
       keywords: buildDirectorySearchIndex(item),
     })),
     ...input.polls.map<SearchResultItem>((item) => ({
@@ -126,7 +132,7 @@ export function buildSearchIndex(input: {
       type: "poll",
       title: item.question,
       subtitle: `${item.category} · do ${item.endsAt}`,
-      href: "/hlasovani",
+      href: getPollDetailHref(item),
       keywords: [item.question, item.category, item.endsAt, ...item.options.map((option) => option.text)]
         .join(" ")
         .toLowerCase(),

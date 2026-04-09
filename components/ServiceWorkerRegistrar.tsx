@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+import { isNativeApp } from "@/lib/push-client";
 
 export default function ServiceWorkerRegistrar() {
   useEffect(() => {
+    if (isNativeApp()) return;
     if (!("serviceWorker" in navigator)) return;
 
     let refreshing = false;

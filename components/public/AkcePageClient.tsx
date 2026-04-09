@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { downloadEventCalendarFile } from "@/lib/calendar";
+import { loadSavedEvents, removeSavedEvent, saveSavedEvent } from "@/lib/client-storage";
+import { getEventDetailHref } from "@/lib/content-links";
+import { getAnonymousInstallationId } from "@/lib/push-client";
 import { Calendar, Clock, MapPin, Ticket, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PublicEventItem } from "@/lib/public-content";
@@ -29,6 +34,36 @@ const categoryColor: Record<PublicEventItem["category"], string> = {
 
 export function AkcePageClient({ events }: { events: PublicEventItem[] }) {
   const [activeCategory, setActiveCategory] = useState<Category>("vše");
+  const [savedIds, setSavedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSavedIds(loadSavedEvents().map((item) => item.id));
+  }, []);
+
+  async function syncReminder(action: "save" | "remove", event: PublicEventItem) {
+    const installationId = getAnonymousInstallationId();
+    if (!installationId) return;
+    const payload = {
+      installationId,
+      eventId: String(event.id),
+      title: event.title,
+      date: event.date,
+      time: event.time,
+      place: event.place,
+      url: getEventDetailHref(event),
+      reminderType: "1d" as const,
+    };
+
+    try {
+      await fetch("/api/reminders", {
+        method: action === "save" ? "POST" : "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      // Local saved state still works even when server scheduling is unavailable.
+    }
+  }
 
   const filtered = events
     .filter((event) => activeCategory === "vše" || event.category === activeCategory)
@@ -98,8 +133,9 @@ export function AkcePageClient({ events }: { events: PublicEventItem[] }) {
 
         <div className="flex flex-col gap-3">
           {filtered.map((event) => (
-            <article
+            <Link
               key={event.id}
+              href={getEventDetailHref(event)}
               className="rounded-[1.6rem] p-4 md:p-5 flex flex-col md:flex-row gap-4 transition-shadow"
               style={{ background: "var(--surface-container-lowest)", border: "1px solid rgba(159,29,47,0.06)", boxShadow: "0 12px 24px rgba(67,17,24,0.06)" }}
             >
@@ -143,14 +179,48 @@ export function AkcePageClient({ events }: { events: PublicEventItem[] }) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => downloadEventCalendarFile(event)}
+                  onClick={(eventClick) => {
+                    eventClick.preventDefault();
+                    downloadEventCalendarFile(event);
+                  }}
                   className="mt-4 rounded-full px-4 py-2 text-xs font-bold"
                   style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}
                 >
                   Přidat do kalendáře
                 </button>
+                <button
+                  type="button"
+                  onClick={(eventClick) => {
+                    eventClick.preventDefault();
+                    const eventId = String(event.id);
+                    if (savedIds.includes(eventId)) {
+                      removeSavedEvent(eventId);
+                      setSavedIds(loadSavedEvents().map((item) => item.id));
+                      void syncReminder("remove", event);
+                      return;
+                    }
+                    saveSavedEvent({
+                      id: eventId,
+                      title: event.title,
+                      date: event.date,
+                      time: event.time,
+                      place: event.place,
+                      category: event.category,
+                      reminder: "1d",
+                      href: getEventDetailHref(event),
+                    });
+                    setSavedIds(loadSavedEvents().map((item) => item.id));
+                    void syncReminder("save", event);
+                  }}
+                  className="mt-2 rounded-full px-4 py-2 text-xs font-bold"
+                  style={savedIds.includes(String(event.id))
+                    ? { background: "var(--primary-fixed)", color: "var(--on-primary-fixed)" }
+                    : { background: "var(--surface-container-low)", color: "var(--on-surface)" }}
+                >
+                  {savedIds.includes(String(event.id)) ? "Uloženo s reminderem" : "Uložit akci"}
+                </button>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </main>

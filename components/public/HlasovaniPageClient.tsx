@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
+import { loadVotedPolls, saveVotedPoll } from "@/lib/client-storage";
+import { getPollDetailHref } from "@/lib/content-links";
 import { cn } from "@/lib/utils";
 import type { PublicPoll } from "@/lib/public-content";
 
@@ -18,13 +21,40 @@ function daysLeft(dateStr: string) {
 }
 
 export function HlasovaniPageClient({ polls }: { polls: PublicPoll[] }) {
-  const [voted, setVoted] = useState<Record<number, number>>({});
-  const [selected, setSelected] = useState<Record<number, number>>({});
+  const [voted, setVoted] = useState<Record<string, string>>({});
+  const [selected, setSelected] = useState<Record<string, string>>({});
+  const [loadingPollId, setLoadingPollId] = useState<string | null>(null);
+  const [errorPollId, setErrorPollId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  function handleVote(pollId: number) {
-    const choice = selected[pollId];
+  useEffect(() => {
+    setVoted(loadVotedPolls());
+  }, []);
+
+  async function handleVote(pollId: string | number) {
+    const pollKey = String(pollId);
+    const choice = selected[pollKey];
     if (choice == null) return;
-    setVoted((prev) => ({ ...prev, [pollId]: choice }));
+    setErrorPollId(null);
+    setErrorMessage(null);
+    setLoadingPollId(pollKey);
+    try {
+      const response = await fetch("/api/vote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ optionId: choice }),
+      });
+      if (!response.ok) {
+        throw new Error("vote failed");
+      }
+      saveVotedPoll(pollKey, choice);
+      setVoted((prev) => ({ ...prev, [pollKey]: choice }));
+    } catch {
+      setErrorPollId(pollKey);
+      setErrorMessage("Hlas se nepodařilo odeslat. Zkus to prosím znovu.");
+    } finally {
+      setLoadingPollId(null);
+    }
   }
 
   return (
@@ -75,13 +105,22 @@ export function HlasovaniPageClient({ polls }: { polls: PublicPoll[] }) {
           ))}
         </div>
 
+        {polls.length === 0 ? (
+          <div className="rounded-[2rem] px-6 py-12 text-center" style={{ background: "var(--surface-container-lowest)", boxShadow: "0 14px 28px rgba(67,17,24,0.07)" }}>
+            <span className="material-symbols-outlined mb-3 block text-5xl" style={{ color: "var(--outline)" }}>how_to_vote</span>
+            <p className="font-headline text-xl font-extrabold" style={{ color: "var(--on-surface)" }}>Teď tu nejsou žádné aktivní ankety</p>
+            <p className="mt-2 text-sm" style={{ color: "var(--on-surface-variant)" }}>Jakmile město zveřejní nové hlasování, objeví se tady.</p>
+          </div>
+        ) : null}
+
         <div className="space-y-6">
           {polls.map((poll) => {
-            const hasVoted = poll.id in voted;
+            const pollKey = String(poll.id);
+            const hasVoted = pollKey in voted;
             const totalVotes = hasVoted ? poll.totalVotes + 1 : poll.totalVotes;
             const options = poll.options.map((option) => ({
               ...option,
-              votes: hasVoted && option.id === voted[poll.id] ? option.votes + 1 : option.votes,
+              votes: hasVoted && String(option.id) === voted[pollKey] ? option.votes + 1 : option.votes,
             }));
             const maxVotes = Math.max(...options.map((option) => option.votes));
             const left = daysLeft(poll.endsAt);
@@ -114,14 +153,14 @@ export function HlasovaniPageClient({ polls }: { polls: PublicPoll[] }) {
                   {options.map((opt) => {
                     const pct = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
                     const isLeading = opt.votes === maxVotes && hasVoted;
-                    const isVotedFor = voted[poll.id] === opt.id;
-                    const isSelected = selected[poll.id] === opt.id;
+                    const isVotedFor = voted[pollKey] === String(opt.id);
+                    const isSelected = selected[pollKey] === String(opt.id);
 
                     return (
                       <div key={opt.id}>
                         {!hasVoted ? (
                           <button
-                            onClick={() => setSelected((current) => ({ ...current, [poll.id]: opt.id }))}
+                            onClick={() => setSelected((current) => ({ ...current, [pollKey]: String(opt.id) }))}
                             className="w-full text-left rounded-2xl px-4 py-3.5 flex items-center gap-3 transition-all active:scale-[0.98]"
                             style={isSelected
                               ? { background: "var(--primary-fixed)", border: "2px solid var(--primary)", color: "var(--on-primary-fixed)", boxShadow: "0 8px 18px rgba(67,17,24,0.08)" }
@@ -155,25 +194,40 @@ export function HlasovaniPageClient({ polls }: { polls: PublicPoll[] }) {
                   })}
 
                   {!hasVoted ? (
-                    <button
-                      disabled={selected[poll.id] == null}
-                      onClick={() => handleVote(poll.id)}
-                      className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.97] mt-2 disabled:opacity-40"
-                      style={{
-                        background: selected[poll.id] != null ? "linear-gradient(135deg, var(--primary), var(--primary-container))" : "var(--surface-container-high)",
-                        color: selected[poll.id] != null ? "var(--on-primary)" : "var(--on-surface-variant)",
-                        boxShadow: selected[poll.id] != null ? "0 12px 22px rgba(67,17,24,0.14)" : "none",
-                      }}
-                    >
-                      <span className="material-symbols-outlined text-base">how_to_vote</span>
-                      Hlasovat
-                    </button>
+                    <div className="mt-2 flex gap-2">
+                      <button
+                        disabled={selected[pollKey] == null || loadingPollId === pollKey}
+                        onClick={() => handleVote(poll.id)}
+                        className="flex-1 py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.97] disabled:opacity-40"
+                        style={{
+                          background: selected[pollKey] != null ? "linear-gradient(135deg, var(--primary), var(--primary-container))" : "var(--surface-container-high)",
+                          color: selected[pollKey] != null ? "var(--on-primary)" : "var(--on-surface-variant)",
+                          boxShadow: selected[pollKey] != null ? "0 12px 22px rgba(67,17,24,0.14)" : "none",
+                        }}
+                      >
+                        <span className="material-symbols-outlined text-base">how_to_vote</span>
+                        {loadingPollId === pollKey ? "Odesílám…" : "Hlasovat"}
+                      </button>
+                      <Link
+                        href={getPollDetailHref(poll)}
+                        className="rounded-2xl px-4 py-4 text-sm font-bold"
+                        style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
+                      >
+                        Detail
+                      </Link>
+                    </div>
                   ) : (
                     <div className="flex items-center gap-3 rounded-2xl px-4 py-3 mt-2" style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}>
                       <span className="material-symbols-outlined text-xl">check_circle</span>
                       <p className="text-sm font-semibold">Váš hlas byl zaznamenán. Děkujeme!</p>
                     </div>
                   )}
+
+                  {errorPollId === pollKey && errorMessage ? (
+                    <p className="mt-3 text-sm font-medium" style={{ color: "var(--error)" }}>
+                      {errorMessage}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             );

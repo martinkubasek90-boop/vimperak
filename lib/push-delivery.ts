@@ -11,6 +11,7 @@ export type PushPayload = {
   tag?: string;
   urgent?: boolean;
   topics?: string[];
+  installationIds?: string[];
 };
 
 type DeliveryStats = {
@@ -129,7 +130,9 @@ async function sendWebPush(payload: PushPayload) {
   const subscriptions = await listWebPushSubscriptions();
   const filteredSubscriptions = subscriptions.filter(({ topics }) =>
     !payload.topics?.length || topics.length === 0 || topics.some((topic) => payload.topics?.includes(topic)),
-  );
+  ).filter(({ installationId }) =>
+    !payload.installationIds?.length || (installationId ? payload.installationIds.includes(installationId) : false),
+  ).filter((row): row is { subscription: webpush.PushSubscription; topics: string[]; installationId?: string } => Boolean(row.subscription?.endpoint));
   const report: DeliveryStats = {
     attempted: filteredSubscriptions.length,
     delivered: 0,
@@ -292,6 +295,8 @@ export async function sendPushToAll(payload: PushPayload): Promise<DeliveryRepor
   const registrations = await listNativePushRegistrations();
   const filteredRegistrations = registrations.filter((row) =>
     !payload.topics?.length || !row.topics?.length || row.topics.some((topic) => payload.topics?.includes(topic)),
+  ).filter((row) =>
+    !payload.installationIds?.length || (row.installation_id ? payload.installationIds.includes(row.installation_id) : false),
   );
   const androidTokens = filteredRegistrations.filter((row) => row.platform === "android").map((row) => row.token);
   const iosTokens = filteredRegistrations.filter((row) => row.platform === "ios").map((row) => row.token);

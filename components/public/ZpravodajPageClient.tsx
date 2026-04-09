@@ -5,6 +5,8 @@ import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
 import Link from "next/link";
 import Image from "next/image";
+import { getEventDetailHref, getNewsDetailHref } from "@/lib/content-links";
+import { formatRelativeDateLabel, getDateBadgeParts } from "@/lib/date-display";
 import type { PublicEventItem, PublicNewsItem } from "@/lib/public-content";
 
 const catColor: Record<string, string> = {
@@ -22,14 +24,6 @@ const eventCatColor: Record<string, { bg: string; text: string }> = {
   trhy: { bg: "var(--secondary-container)", text: "var(--on-secondary-container)" },
   úřad: { bg: "var(--surface-container)", text: "var(--on-surface-variant)" },
 };
-
-function formatRelative(value: string) {
-  const diff = Math.floor((Date.now() - new Date(value).getTime()) / 86400000);
-  if (diff === 0) return "Dnes";
-  if (diff === 1) return "Včera";
-  if (diff < 7) return `Před ${diff} dny`;
-  return `Před ${Math.floor(diff / 7)} týd.`;
-}
 
 export function ZpravodajPageClient({
   news,
@@ -56,7 +50,7 @@ export function ZpravodajPageClient({
               <span className="mb-3 inline-flex w-fit items-center rounded-full px-3 py-1 text-[11px] font-black tracking-[0.18em] uppercase" style={{ background: "rgba(215,232,223,0.16)", color: "#d7e8df", border: "1px solid rgba(215,232,223,0.18)" }}>
                 Městský zpravodaj
               </span>
-              <h1 className="max-w-[16rem] font-headline font-extrabold text-3xl leading-tight tracking-tight text-white md:max-w-[22rem] md:text-[2.7rem]">
+              <h1 className="max-w-[16rem] font-headline font-extrabold text-[2.2rem] leading-tight tracking-tight text-white md:max-w-[22rem] md:text-[2.7rem]">
                 Zprávy a události
                 <br />
                 z města
@@ -93,23 +87,23 @@ export function ZpravodajPageClient({
                     Důležité upozornění
                   </div>
                 ) : null}
-                <div className="absolute bottom-5 left-5 right-5">
-                  <p className="text-white/70 text-xs font-medium mb-1">{formatRelative(featured.date)}</p>
+                  <div className="absolute bottom-5 left-5 right-5">
+                  <p className="text-white/70 text-xs font-medium mb-1">{formatRelativeDateLabel(featured.date)}</p>
                   <h2 className="font-headline font-bold text-xl text-white leading-tight">{featured.title}</h2>
                 </div>
               </div>
               <div className="p-5" style={{ background: "var(--surface-container-lowest)" }}>
                 <p className="text-sm text-on-surface-variant leading-relaxed line-clamp-2 mb-3">{featured.summary}</p>
-                <button className="flex items-center gap-1.5 text-primary font-bold text-sm group">
-                  Číst více
+                <Link href={getNewsDetailHref(featured)} className="flex items-center gap-1.5 text-primary font-bold text-sm group">
+                  Otevřít detail
                   <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                </button>
+                </Link>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {rest.map((item) => (
-                <div key={item.id} className="rounded-[1.5rem] overflow-hidden flex flex-col justify-between transition-colors" style={{ background: "var(--surface-container-low)" }}>
+                <Link key={item.id} href={getNewsDetailHref(item)} className="rounded-[1.5rem] overflow-hidden flex flex-col justify-between transition-colors" style={{ background: "var(--surface-container-low)" }}>
                   <div className="relative h-40">
                     <Image src={item.image} alt={item.title} fill className="object-cover" />
                     <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(24,28,32,0.52) 0%, transparent 65%)" }} />
@@ -117,21 +111,31 @@ export function ZpravodajPageClient({
                       <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: "#fff", background: catColor[item.category] ?? "var(--on-surface-variant)", padding: "6px 10px", borderRadius: "999px" }}>
                         {item.category}
                       </span>
-                      <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.86)" }}>{formatRelative(item.date)}</span>
+                      <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.86)" }}>{formatRelativeDateLabel(item.date)}</span>
                     </div>
                     <div className="absolute bottom-4 left-4 right-4">
                       <h3 className="font-headline font-bold text-base leading-snug text-white">{item.title}</h3>
                     </div>
                   </div>
                   <div className="p-5">
-                    <p className="text-sm text-on-surface-variant mt-2 line-clamp-3 leading-relaxed">{item.summary}</p>
+                    <p className="mt-2 text-[15px] leading-relaxed text-on-surface-variant line-clamp-3">{item.summary}</p>
                   </div>
                   <div className="flex items-center gap-1 px-5 pb-5 text-sm font-semibold text-primary">
-                    Více informací
+                    Otevřít detail
                     <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>info</span>
                   </div>
-                </div>
+                </Link>
               ))}
+            </div>
+          </div>
+        ) : null}
+
+        {tab === "zpravy" && !featured ? (
+          <div className="px-4 pb-4">
+            <div className="rounded-[2rem] px-6 py-12 text-center" style={{ background: "var(--surface-container-lowest)", boxShadow: "0 10px 24px rgba(67,17,24,0.06)" }}>
+              <span className="material-symbols-outlined mb-3 block text-5xl" style={{ color: "var(--outline)" }}>newspaper</span>
+              <p className="font-headline text-xl font-extrabold" style={{ color: "var(--on-surface)" }}>Zprávy se teď nepodařilo načíst</p>
+              <p className="mt-2 text-sm" style={{ color: "var(--on-surface-variant)" }}>Zkus to prosím za chvíli znovu.</p>
             </div>
           </div>
         ) : null}
@@ -140,30 +144,31 @@ export function ZpravodajPageClient({
           <div className="px-4 pb-4">
             <div className="flex justify-between items-end mb-5">
               <div>
-                <h2 className="font-headline font-bold text-xl text-on-surface">Nadcházející události</h2>
-                <p className="text-on-surface-variant text-sm mt-0.5">Co se děje v našem městě</p>
+                <h2 className="font-headline font-bold text-[1.45rem] text-on-surface">Nadcházející události</h2>
+                <p className="mt-0.5 text-[15px] text-on-surface-variant">Co se děje v našem městě</p>
               </div>
-              <Link href="/akce" className="text-primary font-bold text-sm">Vše →</Link>
+              <Link href="/akce" className="text-primary font-bold text-sm">Otevřít</Link>
             </div>
 
             <div className="space-y-3">
               {upcoming.map((event) => {
                 const style = eventCatColor[event.category] ?? { bg: "var(--surface-container)", text: "var(--on-surface-variant)" };
+                const badgeDate = getDateBadgeParts(event.date);
                 return (
-                  <div key={event.id} className="rounded-3xl p-4 flex gap-4 items-center" style={{ background: "var(--surface-container-lowest)", boxShadow: "0 1px 8px rgba(24,28,32,0.06)" }}>
+                  <Link key={event.id} href={getEventDetailHref(event)} className="rounded-3xl p-4 flex gap-4 items-center" style={{ background: "var(--surface-container-lowest)", boxShadow: "0 1px 8px rgba(24,28,32,0.06)" }}>
                     <div className="w-14 h-16 rounded-2xl flex flex-col items-center justify-center shrink-0" style={{ background: style.bg }}>
                       <span className="font-headline font-black text-xl leading-none" style={{ color: style.text }}>
-                        {new Date(event.date).getDate()}
+                        {badgeDate.day}
                       </span>
                       <span className="text-xs uppercase font-semibold" style={{ color: style.text, opacity: 0.7 }}>
-                        {new Date(event.date).toLocaleDateString("cs-CZ", { month: "short" })}
+                        {badgeDate.month}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <span className="text-[10px] font-bold tracking-widest uppercase block mb-0.5" style={{ color: style.text === "var(--on-primary-fixed)" ? "var(--primary)" : "var(--secondary)" }}>
                         {event.place} · {event.time}
                       </span>
-                      <h4 className="font-headline font-bold text-base text-on-surface leading-tight truncate">{event.title}</h4>
+                      <h4 className="font-headline font-bold text-[1.05rem] text-on-surface leading-tight truncate">{event.title}</h4>
                       <div className="mt-1.5">
                         <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={event.free
                           ? { background: "var(--secondary-container)", color: "var(--on-secondary-container)" }
@@ -172,13 +177,21 @@ export function ZpravodajPageClient({
                         </span>
                       </div>
                     </div>
-                    <button className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors" style={{ background: "var(--surface-container-low)", color: "var(--on-surface-variant)" }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>calendar_add_on</span>
-                    </button>
-                  </div>
+                    <div className="rounded-full px-3 py-2 text-sm font-semibold shrink-0 transition-colors" style={{ background: "var(--surface-container-low)", color: "var(--on-surface-variant)" }}>
+                      Otevřít
+                    </div>
+                  </Link>
                 );
               })}
             </div>
+
+            {upcoming.length === 0 ? (
+              <div className="rounded-[2rem] px-6 py-12 text-center" style={{ background: "var(--surface-container-lowest)", boxShadow: "0 10px 24px rgba(67,17,24,0.06)" }}>
+                <span className="material-symbols-outlined mb-3 block text-5xl" style={{ color: "var(--outline)" }}>event_busy</span>
+                <p className="font-headline text-xl font-extrabold" style={{ color: "var(--on-surface)" }}>Žádné nadcházející akce</p>
+                <p className="mt-2 text-sm" style={{ color: "var(--on-surface-variant)" }}>Jakmile přibudou nové termíny, zobrazí se tady.</p>
+              </div>
+            ) : null}
           </div>
         ) : null}
 

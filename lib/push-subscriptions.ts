@@ -7,6 +7,7 @@ export type NativePushRegistration = {
   token: string;
   platform: NativePlatform;
   topics?: string[];
+  installationId?: string;
 };
 
 type NativePushRow = {
@@ -14,11 +15,13 @@ type NativePushRow = {
   platform: NativePlatform;
   last_seen_at: string;
   topics?: string[];
+  installation_id?: string | null;
 };
 
 type WebPushStored = {
   subscription: webpush.PushSubscription;
   topics: string[];
+  installationId?: string;
 };
 
 const webSubscriptions = new Map<string, WebPushStored>();
@@ -47,11 +50,15 @@ function createSupabaseAdminClient(): SupabaseClient | null {
   );
 }
 
-export async function saveWebPushSubscription(subscription: webpush.PushSubscription, topics: string[] = []) {
+export async function saveWebPushSubscription(
+  subscription: webpush.PushSubscription,
+  topics: string[] = [],
+  installationId?: string,
+) {
   const supabase = createSupabaseAdminClient();
 
   if (!supabase) {
-    webSubscriptions.set(subscription.endpoint, { subscription, topics });
+    webSubscriptions.set(subscription.endpoint, { subscription, topics, installationId });
     return { persisted: false, total: webSubscriptions.size };
   }
 
@@ -60,6 +67,7 @@ export async function saveWebPushSubscription(subscription: webpush.PushSubscrip
       endpoint: subscription.endpoint,
       subscription,
       topics,
+      installation_id: installationId ?? null,
       last_seen_at: new Date().toISOString(),
     },
     { onConflict: "endpoint" },
@@ -110,7 +118,10 @@ export async function saveNativePushRegistration(registration: NativePushRegistr
 
   if (!supabase) {
     nativeRegistrations.set(registration.token, {
-      ...registration,
+      token: registration.token,
+      platform: registration.platform,
+      topics: registration.topics,
+      installation_id: registration.installationId,
       last_seen_at: new Date().toISOString(),
     });
     return { persisted: false, total: nativeRegistrations.size };
@@ -121,6 +132,7 @@ export async function saveNativePushRegistration(registration: NativePushRegistr
       token: registration.token,
       platform: registration.platform,
       topics: registration.topics ?? [],
+      installation_id: registration.installationId ?? null,
       last_seen_at: new Date().toISOString(),
     },
     { onConflict: "token" },
@@ -175,7 +187,7 @@ export async function listWebPushSubscriptions() {
 
   const { data, error } = await supabase
     .from("web_push_subscriptions")
-    .select("subscription, topics")
+    .select("subscription, topics, installation_id")
     .order("last_seen_at", { ascending: false });
 
   if (error) {
@@ -186,8 +198,9 @@ export async function listWebPushSubscriptions() {
     .map((row) => ({
       subscription: row.subscription as webpush.PushSubscription | null,
       topics: Array.isArray(row.topics) ? row.topics.filter((item): item is string => typeof item === "string") : [],
+      installationId: typeof row.installation_id === "string" ? row.installation_id : undefined,
     }))
-    .filter((row): row is { subscription: webpush.PushSubscription; topics: string[] } => Boolean(row.subscription?.endpoint));
+    .filter((row): row is { subscription: webpush.PushSubscription; topics: string[]; installationId: string | undefined } => Boolean(row.subscription?.endpoint));
 }
 
 export async function listNativePushRegistrations() {
@@ -199,7 +212,7 @@ export async function listNativePushRegistrations() {
 
   const { data, error } = await supabase
     .from("device_push_tokens")
-    .select("token, platform, last_seen_at, topics")
+    .select("token, platform, last_seen_at, topics, installation_id")
     .order("last_seen_at", { ascending: false });
 
   if (error) {

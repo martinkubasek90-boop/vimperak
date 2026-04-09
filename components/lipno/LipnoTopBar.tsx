@@ -7,7 +7,10 @@ export default function LipnoTopBar() {
   return (
     <header
       className="fixed top-0 w-full z-50 glass-header"
-      style={{ borderBottom: "1px solid rgba(12,74,110,0.08)" }}
+      style={{
+        borderBottom: "1px solid rgba(12,74,110,0.08)",
+        paddingTop: "var(--safe-top)",
+      }}
     >
       <div className="max-w-2xl mx-auto flex justify-between items-center px-5 h-[72px]">
         <div className="flex items-center gap-3">

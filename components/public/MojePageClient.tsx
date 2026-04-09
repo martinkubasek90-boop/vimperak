@@ -25,6 +25,8 @@ export function MojePageClient({ directory }: { directory: PublicDirectoryItem[]
   const [recentViews, setRecentViews] = useState<RecentViewItem[]>([]);
   const [savedEvents, setSavedEvents] = useState<SavedEventItem[]>([]);
   const [trackedReports, setTrackedReports] = useState<TrackedReportItem[]>([]);
+  const [reminderMessage, setReminderMessage] = useState<string | null>(null);
+  const [reminderError, setReminderError] = useState(false);
 
   useEffect(() => {
     setPreferences(loadHomePreferences());
@@ -40,11 +42,15 @@ export function MojePageClient({ directory }: { directory: PublicDirectoryItem[]
 
   async function syncReminder(event: SavedEventItem, reminder: SavedEventItem["reminder"]) {
     const installationId = getAnonymousInstallationId();
-    if (!installationId) return;
+    if (!installationId) {
+      setReminderError(false);
+      setReminderMessage("Připomenutí zůstalo uložené jen v tomto zařízení.");
+      return;
+    }
 
     try {
       if (reminder === "none") {
-        await fetch("/api/reminders", {
+        const response = await fetch("/api/reminders", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -52,10 +58,15 @@ export function MojePageClient({ directory }: { directory: PublicDirectoryItem[]
             eventId: event.id,
           }),
         });
+        if (!response.ok) {
+          throw new Error("Reminder delete failed");
+        }
+        setReminderError(false);
+        setReminderMessage("Serverové připomenutí bylo vypnuto.");
         return;
       }
 
-      await fetch("/api/reminders", {
+      const response = await fetch("/api/reminders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -69,8 +80,18 @@ export function MojePageClient({ directory }: { directory: PublicDirectoryItem[]
           reminderType: reminder,
         }),
       });
+      if (!response.ok) {
+        throw new Error("Reminder save failed");
+      }
+      setReminderError(false);
+      setReminderMessage("Připomenutí bylo synchronizováno.");
     } catch {
-      // Local anonymous fallback remains active in this device.
+      setReminderError(true);
+      setReminderMessage(
+        reminder === "none"
+          ? "Připomenutí bylo vypnuto jen lokálně. Na serveru mohlo zůstat aktivní."
+          : "Připomenutí je uložené jen lokálně. Serverová synchronizace se nepodařila.",
+      );
     }
   }
 
@@ -87,16 +108,16 @@ export function MojePageClient({ directory }: { directory: PublicDirectoryItem[]
         <section className="px-4 pt-5">
           <div className="editorial-shell rounded-[2rem] p-6">
             <p className="text-[11px] font-black uppercase tracking-[0.18em]" style={{ color: "var(--secondary)" }}>
-              Osobní přehled
+              Uloženo v zařízení
             </p>
-            <h1 className="mt-3 font-headline text-3xl font-extrabold" style={{ color: "var(--primary)" }}>
-              Moje
+            <h1 className="mt-3 font-headline text-[2.35rem] font-extrabold leading-tight" style={{ color: "var(--primary)" }}>
+              Uložené
             </h1>
-            <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
-              Oblíbené kontakty, uložené akce, moje hlášení, poslední otevřené a notifikace na jednom místě.
+            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
+              Oblíbené kontakty, uložené akce, hlášení a poslední otevřené na jednom místě.
             </p>
-            <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
-              Bez účtu a bez veřejného profilu. Osobní věci jsou navázané anonymně jen na tohle zařízení.
+            <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
+              Funguje bez účtu. Tvoje uložené věci zůstávají anonymně jen v tomto zařízení.
             </p>
           </div>
         </section>
@@ -110,7 +131,7 @@ export function MojePageClient({ directory }: { directory: PublicDirectoryItem[]
               { label: "Nedávno otevřené", value: recentViews.length },
             ].map((item) => (
               <div key={item.label} className="rounded-[1.4rem] p-4" style={{ background: "var(--surface-container-lowest)", boxShadow: "0 10px 24px rgba(67,17,24,0.06)" }}>
-                <p className="text-xs font-semibold" style={{ color: "var(--on-surface-variant)" }}>{item.label}</p>
+                <p className="text-[13px] font-semibold leading-snug" style={{ color: "var(--on-surface-variant)" }}>{item.label}</p>
                 <p className="mt-2 font-headline text-2xl font-black" style={{ color: "var(--primary)" }}>{item.value}</p>
               </div>
             ))}
@@ -118,6 +139,17 @@ export function MojePageClient({ directory }: { directory: PublicDirectoryItem[]
         </section>
 
         <Section title="Uložené akce" actionHref="/kalendar">
+          {reminderMessage ? (
+            <div
+              className="mb-3 rounded-[1.4rem] px-4 py-3 text-sm font-medium"
+              style={reminderError
+                ? { background: "var(--error-container)", color: "var(--on-error-container)" }
+                : { background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}
+            >
+              {reminderMessage}
+            </div>
+          ) : null}
+
           {savedEvents.length > 0 ? savedEvents.map((event) => (
             <div key={event.id} className="rounded-[1.6rem] p-4" style={{ background: "var(--surface-container-lowest)", boxShadow: "0 10px 24px rgba(67,17,24,0.06)" }}>
               <Link href={event.href} className="block">
@@ -127,8 +159,8 @@ export function MojePageClient({ directory }: { directory: PublicDirectoryItem[]
                 <h3 className="mt-2 font-headline text-lg font-extrabold" style={{ color: "var(--on-surface)" }}>{event.title}</h3>
                 <p className="mt-2 text-sm" style={{ color: "var(--on-surface-variant)" }}>{event.place}</p>
               </Link>
-              <p className="mt-2 text-xs font-semibold" style={{ color: "var(--primary)" }}>
-                Reminder: {event.reminder === "1d" ? "1 den předem" : event.reminder === "2h" ? "2 hodiny předem" : "vypnutý"}
+              <p className="mt-2 text-sm font-semibold" style={{ color: "var(--primary)" }}>
+                Připomenutí: {event.reminder === "1d" ? "1 den předem" : event.reminder === "2h" ? "2 hodiny předem" : "vypnuté"}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {[
@@ -191,7 +223,7 @@ export function MojePageClient({ directory }: { directory: PublicDirectoryItem[]
               Notifikace
             </h2>
             <p className="mt-2 text-sm" style={{ color: "var(--on-surface-variant)" }}>
-              Vyber si témata, která chceš dostávat. Nastavení se propsalo i do homepage.
+              Vyber si témata, která chceš dostávat. Nastavení se propíše i do úvodní stránky.
             </p>
             <div className="mt-5">
               <PushNotificationButton
@@ -224,7 +256,7 @@ function Section({
   return (
     <section className="px-4 pt-8">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="font-headline text-xl font-extrabold" style={{ color: "var(--on-surface)" }}>{title}</h2>
+        <h2 className="font-headline text-[1.5rem] font-extrabold leading-tight" style={{ color: "var(--on-surface)" }}>{title}</h2>
         {actionHref ? <Link href={actionHref} className="text-sm font-bold" style={{ color: "var(--secondary)" }}>Otevřít</Link> : null}
       </div>
       <div className="space-y-3">

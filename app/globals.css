@@ -4,6 +4,12 @@
 
 /* ── MD3 Design Tokens ────────────────────────────────────────── */
 :root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --topbar-height: 78px;
+  --topbar-offset: calc(var(--topbar-height) + var(--safe-top));
+  --bottom-nav-offset: calc(88px + var(--safe-bottom));
+
   --primary:                #9f1d2f;
   --primary-container:      #c83846;
   --on-primary:             #ffffff;
@@ -91,11 +97,21 @@
       radial-gradient(circle at top left, rgba(200, 56, 70, 0.10), transparent 26%),
       radial-gradient(circle at top right, rgba(47, 91, 79, 0.10), transparent 24%),
       linear-gradient(180deg, #faf4ef 0%, #f4ede6 100%);
+    padding-bottom: var(--safe-bottom);
   }
   ::selection {
     background: var(--primary-container);
     color: var(--on-primary-container);
   }
+}
+
+main[class*="pt-20"] {
+  padding-top: var(--topbar-offset) !important;
+}
+
+main[class*="pb-28"],
+main[class*="pb-36"] {
+  padding-bottom: max(var(--bottom-nav-offset), 7rem) !important;
 }
 
 @layer components {

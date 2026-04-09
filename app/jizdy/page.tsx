@@ -6,6 +6,34 @@ import BottomNav from "@/components/layout/BottomNav";
 import { busLines } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
+const DEFAULT_FROM = "Vimperk";
+
+function buildIdosConnectionLink(to: string) {
+  const params = new URLSearchParams({
+    f: DEFAULT_FROM,
+    t: to,
+    submit: "true",
+  });
+
+  return `https://idos.idnes.cz/vlakyautobusy/spojeni/?${params.toString()}`;
+}
+
+function buildIdosDeparturesLink(stop: string) {
+  const params = new URLSearchParams({
+    f: stop,
+    submit: "true",
+  });
+
+  return `https://idos.idnes.cz/autobusy/odjezdy/?${params.toString()}`;
+}
+
+const featuredDestinations = [
+  { label: "Prachatice", hint: "rychlé spojení", href: buildIdosConnectionLink("Prachatice") },
+  { label: "České Budějovice", hint: "přestupy i přímé linky", href: buildIdosConnectionLink("České Budějovice") },
+  { label: "Volary", hint: "směr Šumava", href: buildIdosConnectionLink("Volary") },
+  { label: "Kašperské Hory", hint: "turistický směr", href: buildIdosConnectionLink("Kašperské Hory") },
+];
+
 export default function JizdyPage() {
   const [now, setNow] = useState("");
   const [activeLine, setActiveLine] = useState<number | null>(null);
@@ -40,15 +68,15 @@ export default function JizdyPage() {
                   Jízdní řády
                 </h1>
                 <p className="mt-2 text-sm leading-relaxed max-w-md" style={{ color: "var(--on-surface-variant)" }}>
-                  Rychlý přehled autobusových spojů z Vimperka. Orientační časy držíme v kompaktní podobě, aby byl obsah po ruce hned.
+                  V appce držíme rychlý přehled nejčastějších směrů z Vimperka. Pro přesný aktuální odjezd otevřete předvyplněný detail v IDOS.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { label: "Prachatice", tone: "var(--primary-fixed)" },
                   { label: "Budějovice", tone: "var(--tertiary-fixed)" },
-                  { label: "Šumava", tone: "var(--secondary-fixed)" },
-                  { label: "MHD info", tone: "var(--surface-container)" },
+                  { label: "Volary", tone: "var(--secondary-fixed)" },
+                  { label: "IDOS detail", tone: "var(--surface-container)" },
                 ].map((item) => (
                   <div key={item.label} className="rounded-[1.35rem] p-4" style={{ background: item.tone }}>
                     <span className="material-symbols-outlined text-2xl" style={{ color: "var(--primary)" }}>directions_bus</span>
@@ -56,6 +84,52 @@ export default function JizdyPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <div className="rounded-[2rem] p-5" style={{ background: "var(--surface-container-lowest)", boxShadow: "0 12px 24px rgba(67,17,24,0.06)" }}>
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em]" style={{ color: "var(--primary)" }}>
+                  Nejčastější směry
+                </p>
+                <h2 className="mt-1 font-headline text-xl font-extrabold" style={{ color: "var(--on-surface)" }}>
+                  Otevřít spojení z Vimperka
+                </h2>
+              </div>
+              <a
+                href={buildIdosDeparturesLink(DEFAULT_FROM)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex shrink-0 items-center gap-2 rounded-full px-3 py-2 text-xs font-bold"
+                style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}
+              >
+                <span className="material-symbols-outlined text-base">schedule</span>
+                Odjezdy z Vimperka
+              </a>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {featuredDestinations.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-[1.35rem] p-4 transition-transform active:scale-[0.99]"
+                  style={{ background: "var(--surface-container-low)", border: "1px solid rgba(159,29,47,0.08)" }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-base font-bold" style={{ color: "var(--on-surface)" }}>{item.label}</p>
+                      <p className="mt-1 text-sm" style={{ color: "var(--on-surface-variant)" }}>{item.hint}</p>
+                    </div>
+                    <span className="material-symbols-outlined" style={{ color: "var(--primary)" }}>open_in_new</span>
+                  </div>
+                </a>
+              ))}
             </div>
           </div>
         </section>
@@ -72,8 +146,8 @@ export default function JizdyPage() {
             <p className="text-4xl font-headline font-black tracking-tight">{now || "––:––"}</p>
           </div>
           <div className="ml-auto text-right">
-            <p className="text-xs opacity-60">Ověřte na</p>
-            <p className="font-bold text-sm">IDOS.cz</p>
+            <p className="text-xs opacity-60">Právě teď</p>
+            <p className="font-bold text-sm">zkontrolujte odjezd</p>
           </div>
         </div>
 
@@ -82,7 +156,7 @@ export default function JizdyPage() {
              style={{ background: "var(--tertiary-fixed)", color: "var(--on-tertiary-fixed)", boxShadow: "0 8px 18px rgba(67,17,24,0.06)" }}>
           <span className="material-symbols-outlined text-xl mt-0.5">info</span>
           <p className="text-sm leading-relaxed">
-            Jízdní řády jsou orientační. Vždy ověřte na&nbsp;IDOS.cz nebo u&nbsp;dopravce.
+            Přehled v appce je orientační a rychlý na první pohled. Přesné odjezdy, zpoždění a aktuální spojení vždy ověřte v&nbsp;IDOS.
           </p>
         </div>
 
@@ -168,8 +242,21 @@ export default function JizdyPage() {
                 {expanded && (
                   <div className="px-5 pb-5">
                     <div className="h-px mb-4" style={{ background: "var(--outline-variant)" }} />
-                    <p className="text-xs font-bold uppercase tracking-widest mb-3"
-                       style={{ color: "var(--on-surface-variant)" }}>Všechny odjezdy</p>
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                      <p className="text-xs font-bold uppercase tracking-widest"
+                         style={{ color: "var(--on-surface-variant)" }}>Všechny odjezdy</p>
+                      <a
+                        href={buildIdosConnectionLink(line.to)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold"
+                        style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <span className="material-symbols-outlined text-base">open_in_new</span>
+                        Ověřit v IDOS
+                      </a>
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {line.departures.map((dep) => {
                         const isPast = now && dep < now;
@@ -197,18 +284,6 @@ export default function JizdyPage() {
             );
           })}
         </div>
-
-        {/* IDOS link */}
-        <a
-          href="https://idos.cz"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-8 flex items-center justify-center gap-3 w-full py-4 rounded-2xl font-semibold transition-all active:scale-95"
-          style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)", boxShadow: "0 10px 20px rgba(67,17,24,0.08)" }}
-        >
-          <span className="material-symbols-outlined">open_in_new</span>
-          Otevřít IDOS.cz — kompletní jízdní řády
-        </a>
       </main>
 
       <BottomNav />

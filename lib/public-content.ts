@@ -1,15 +1,27 @@
-import { getDirectory, getEvents, getNews, getPolls } from "@/lib/db";
+import { getDirectory, getEvents, getNews, getPolls, getReportById, getReports } from "@/lib/db";
 import type {
   DirectoryItem as MockDirectoryItem,
   Event as MockEvent,
   NewsItem as MockNewsItem,
-  Poll as MockPoll,
+  Report as MockReport,
 } from "@/lib/data";
 
 export type PublicNewsItem = MockNewsItem;
 export type PublicEventItem = MockEvent;
-export type PublicPoll = MockPoll;
 export type PublicDirectoryItem = MockDirectoryItem;
+export type PublicReport = MockReport;
+export type PublicPoll = {
+  id: string | number;
+  question: string;
+  options: Array<{
+    id: string | number;
+    text: string;
+    votes: number;
+  }>;
+  totalVotes: number;
+  endsAt: string;
+  category: "infrastruktura" | "kultura" | "doprava" | "obecné";
+};
 
 const newsImageByCategory: Record<PublicNewsItem["category"], string> = {
   upozornění: "/news/upozorneni.svg",
@@ -32,6 +44,7 @@ function normalizeNewsItem(item: Record<string, unknown>): PublicNewsItem {
     id: typeof item.id === "number" ? item.id : Number(String(item.id).slice(0, 8).replace(/\D/g, "")) || 0,
     title: String(item.title ?? ""),
     summary: String(item.summary ?? ""),
+    body: typeof item.body === "string" ? item.body : undefined,
     date: dateSource.slice(0, 10),
     category,
     urgent: Boolean(item.urgent),
@@ -67,16 +80,16 @@ function normalizePoll(item: Record<string, unknown>): PublicPoll {
     const candidate = option as Record<string, unknown>;
     return {
       id:
-        typeof candidate.id === "number"
+        typeof candidate.id === "number" || typeof candidate.id === "string"
           ? candidate.id
-          : Number(String(candidate.id).slice(0, 8).replace(/\D/g, "")) || index + 1,
+          : index + 1,
       text: String(candidate.text ?? ""),
       votes: Number(candidate.votes ?? 0),
     };
   });
 
   return {
-    id: typeof item.id === "number" ? item.id : Number(String(item.id).slice(0, 8).replace(/\D/g, "")) || 0,
+    id: typeof item.id === "number" || typeof item.id === "string" ? item.id : 0,
     question: String(item.question ?? ""),
     options,
     totalVotes: options.reduce((sum, option) => sum + option.votes, 0),
@@ -150,4 +163,31 @@ export async function getPublicPolls(): Promise<PublicPoll[]> {
 export async function getPublicDirectory(): Promise<PublicDirectoryItem[]> {
   const items = await getDirectory();
   return items.map((item) => normalizeDirectoryItem(item as Record<string, unknown>));
+}
+
+function normalizeReport(item: Record<string, unknown>): PublicReport {
+  return {
+    id: String(item.id ?? ""),
+    title: String(item.title ?? ""),
+    description: String(item.description ?? ""),
+    category: String(item.category ?? "jiné") as PublicReport["category"],
+    status: String(item.status ?? "přijato") as PublicReport["status"],
+    lat: typeof item.lat === "number" ? item.lat : typeof item.lat === "string" ? Number(item.lat) : undefined,
+    lng: typeof item.lng === "number" ? item.lng : typeof item.lng === "string" ? Number(item.lng) : undefined,
+    address: typeof item.address === "string" ? item.address : undefined,
+    photo_url: typeof item.photo_url === "string" ? item.photo_url : undefined,
+    reporter_email: typeof item.reporter_email === "string" ? item.reporter_email : undefined,
+    created_at: String(item.created_at ?? new Date().toISOString()),
+    updated_at: typeof item.updated_at === "string" ? item.updated_at : undefined,
+  };
+}
+
+export async function getPublicReports(ids?: string[]): Promise<PublicReport[]> {
+  const items = await getReports(ids);
+  return items.map((item) => normalizeReport(item as Record<string, unknown>));
+}
+
+export async function getPublicReport(id: string): Promise<PublicReport | null> {
+  const item = await getReportById(id);
+  return item ? normalizeReport(item as Record<string, unknown>) : null;
 }

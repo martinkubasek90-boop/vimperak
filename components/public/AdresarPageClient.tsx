@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import BottomNav from "@/components/layout/BottomNav";
 import TopBar from "@/components/layout/TopBar";
@@ -9,6 +10,7 @@ import {
   saveHomePreferences,
   saveRecentView,
 } from "@/lib/client-storage";
+import { getContactDetailHref } from "@/lib/content-links";
 import type { PublicDirectoryItem } from "@/lib/public-content";
 
 type Cat = PublicDirectoryItem["category"] | "vše";
@@ -108,7 +110,7 @@ export function AdresarPageClient({
       id: `directory-${item.id}`,
       type: "directory",
       title: item.name,
-      href: `/adresar?k=${encodeURIComponent(item.category)}`,
+      href: getContactDetailHref(item),
       subtitle: `${item.category} · ${item.phone}`,
     });
   }
@@ -261,6 +263,9 @@ export function AdresarPageClient({
                   {favoriteIds.includes(featured.id) ? "V oblíbených" : "Přidat"}
                 </button>
                 <h3 className="mt-4 font-headline text-2xl font-extrabold text-white">{featured.name}</h3>
+                <Link href={getContactDetailHref(featured)} className="mt-2 inline-flex text-sm font-bold text-white underline underline-offset-4">
+                  Otevřít detail kontaktu
+                </Link>
                 {featured.rating ? (
                   <div className="mt-2 flex items-center gap-2 text-white">
                     <span
@@ -307,7 +312,7 @@ export function AdresarPageClient({
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-headline text-base font-bold leading-snug text-on-surface">{item.name}</h3>
+                    <Link href={getContactDetailHref(item)} className="font-headline text-base font-bold leading-snug text-on-surface block">{item.name}</Link>
                     {item.rating ? (
                       <div className="shrink-0 rounded-lg px-2 py-0.5" style={{ background: "var(--surface-container-low)" }}>
                         <span className="text-sm font-bold text-on-surface">{item.rating}</span>

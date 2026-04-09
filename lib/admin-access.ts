@@ -9,6 +9,7 @@ export type AdminSection =
   | "přehled"
   | "zpravodaj"
   | "akce"
+  | "ankety"
   | "kontakty"
   | "závady";
 
@@ -18,6 +19,7 @@ type RoleConfig = {
   sections: AdminSection[];
   canCreateNews: boolean;
   canCreateEvents: boolean;
+  canManagePolls: boolean;
   canManageDirectory: boolean;
   canResolveReports: boolean;
   canPublishUrgent: boolean;
@@ -39,6 +41,7 @@ const ROLE_CONFIG: Record<AdminRole, RoleConfig> = {
     sections: ["přehled"],
     canCreateNews: false,
     canCreateEvents: false,
+    canManagePolls: false,
     canManageDirectory: false,
     canResolveReports: false,
     canPublishUrgent: false,
@@ -47,9 +50,10 @@ const ROLE_CONFIG: Record<AdminRole, RoleConfig> = {
   editor: {
     label: "Redaktor",
     description: "Správa zpravodaje a kalendáře akcí.",
-    sections: ["přehled", "zpravodaj", "akce", "kontakty"],
+    sections: ["přehled", "zpravodaj", "akce", "ankety", "kontakty"],
     canCreateNews: true,
     canCreateEvents: true,
+    canManagePolls: true,
     canManageDirectory: true,
     canResolveReports: false,
     canPublishUrgent: false,
@@ -61,6 +65,7 @@ const ROLE_CONFIG: Record<AdminRole, RoleConfig> = {
     sections: ["přehled", "závady"],
     canCreateNews: false,
     canCreateEvents: false,
+    canManagePolls: false,
     canManageDirectory: false,
     canResolveReports: true,
     canPublishUrgent: false,
@@ -69,9 +74,10 @@ const ROLE_CONFIG: Record<AdminRole, RoleConfig> = {
   approver: {
     label: "Schvalovatel",
     description: "Publikace obsahu a schvalování urgentních sdělení.",
-    sections: ["přehled", "zpravodaj", "akce", "kontakty", "závady"],
+    sections: ["přehled", "zpravodaj", "akce", "ankety", "kontakty", "závady"],
     canCreateNews: true,
     canCreateEvents: true,
+    canManagePolls: true,
     canManageDirectory: true,
     canResolveReports: true,
     canPublishUrgent: true,
@@ -80,9 +86,10 @@ const ROLE_CONFIG: Record<AdminRole, RoleConfig> = {
   superadmin: {
     label: "Superadmin",
     description: "Technická správa, role a krizové zásahy.",
-    sections: ["přehled", "zpravodaj", "akce", "kontakty", "závady"],
+    sections: ["přehled", "zpravodaj", "akce", "ankety", "kontakty", "závady"],
     canCreateNews: true,
     canCreateEvents: true,
+    canManagePolls: true,
     canManageDirectory: true,
     canResolveReports: true,
     canPublishUrgent: true,

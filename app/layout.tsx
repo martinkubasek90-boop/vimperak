@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import MobileAppBootstrap from "@/components/MobileAppBootstrap";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://vimperk.app";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://vimperaci.cz";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
@@ -51,6 +52,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -71,6 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="pb-32" style={{ background: "var(--surface)", color: "var(--on-surface)", fontFamily: "Inter, sans-serif" }}>
+        <MobileAppBootstrap />
         <ServiceWorkerRegistrar />
         {children}
       </body>

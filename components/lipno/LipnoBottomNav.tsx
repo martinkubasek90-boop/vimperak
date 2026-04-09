@@ -18,7 +18,11 @@ export default function LipnoBottomNav() {
   return (
     <nav
       className="fixed bottom-0 left-0 w-full z-50 glass-header rounded-t-3xl"
-      style={{ boxShadow: "0 -8px 28px rgba(12,74,110,0.12)", borderTop: "1px solid rgba(12,74,110,0.08)" }}
+      style={{
+        boxShadow: "0 -8px 28px rgba(12,74,110,0.12)",
+        borderTop: "1px solid rgba(12,74,110,0.08)",
+        paddingBottom: "var(--safe-bottom)",
+      }}
     >
       <div className="max-w-2xl mx-auto flex justify-around items-center px-3 pb-6 pt-2">
         {items.map(({ href, icon, label }) => {

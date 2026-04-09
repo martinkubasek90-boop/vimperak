@@ -652,6 +652,7 @@ export type NewsItem = {
   id: number;
   title: string;
   summary: string;
+  body?: string;
   date: string;
   category: "radnice" | "sport" | "kultura" | "upozornění" | "komunita";
   urgent?: boolean;
@@ -663,6 +664,7 @@ export const news: NewsItem[] = [
     id: 1,
     title: "Uzavírka ulice Pivovarská — od 28. března",
     summary: "Z důvodu opravy vodovodu bude ulice Pivovarská uzavřena pro dopravu od 28. 3. do 15. 4. 2026. Objízdná trasa přes ulici Steinbrenerovu.",
+    body: "Správa vodovodů oznamuje plánovanou opravu potrubí v úseku ulice Pivovarská. Po dobu prací bude doprava odkloněna přes Steinbrenerovu ulici a přilehlé lokality. Město prosí obyvatele o zvýšenou opatrnost při pohybu v okolí stavby a doporučuje sledovat aktuální dopravní značení.",
     date: "2026-03-25",
     category: "upozornění",
     urgent: true,
@@ -672,6 +674,7 @@ export const news: NewsItem[] = [
     id: 2,
     title: "Nová hřiště v parku Blanice — hlasování spuštěno",
     summary: "Radnice spustila hlasování o podobě nových dětských hřišť v parku Blanice. Vyberte ze tří variant — hlasování trvá do 10. dubna.",
+    body: "Město připravilo tři různé varianty budoucího hřiště v parku Blanice. Obyvatelé mohou rozhodnout, zda preferují moderní prolézačky, tradiční dětské prvky nebo kombinaci s menším sportovištěm. Výsledky ankety budou podkladem pro projektovou dokumentaci i rozpočet na příští rok.",
     date: "2026-03-24",
     category: "radnice",
     image: "/news/radnice.svg",
@@ -680,6 +683,7 @@ export const news: NewsItem[] = [
     id: 3,
     title: "HC Vimperk slaví postup do krajské ligy!",
     summary: "Hokejisté Vimperka porazili v neděli Klatovy 4:2 a zajistili si postup do vyšší soutěže. Gratulujeme!",
+    body: "Domácí tým zvládl rozhodující zápas sezóny a po vítězství 4:2 potvrzuje postup do vyšší soutěže. Klub děkuje fanouškům za podporu během celé sezóny a zve veřejnost na slavnostní setkání s týmem na zimním stadionu.",
     date: "2026-03-23",
     category: "sport",
     image: "/news/sport.svg",
@@ -688,6 +692,7 @@ export const news: NewsItem[] = [
     id: 4,
     title: "Jarní svoz nebezpečného odpadu — 5. dubna",
     summary: "Město Vimperk organizuje svoz nebezpečného odpadu. Přistavení kontejnerů proběhne 5. dubna na náměstí Svobody od 9:00 do 13:00.",
+    body: "Občané mohou během neděle odevzdat barvy, rozpouštědla, elektroodpad, autobaterie nebo další nebezpečné složky komunálního odpadu. Na místě bude přítomna obsluha, která pomůže s tříděním. Prosíme, aby odpad nebyl odkládán mimo vyhrazené časy svozu.",
     date: "2026-03-22",
     category: "radnice",
     image: "/news/radnice.svg",
@@ -696,6 +701,7 @@ export const news: NewsItem[] = [
     id: 5,
     title: "Turistická sezóna na Šumavě se blíží",
     summary: "NP Šumava hlásí, že od 1. dubna budou otevřeny všechny pěší trasy v okolí Vimperka. Připravte si boty!",
+    body: "S otevřením jarní sezóny se vrací plný provoz turistických tras a informačních bodů. Infocentrum doporučuje sledovat počasí a případná krátkodobá omezení. Pro návštěvníky budou připravené i doprovodné komentované vycházky a víkendové programy.",
     date: "2026-03-20",
     category: "kultura",
     image: "/news/kultura.svg",
@@ -704,13 +710,13 @@ export const news: NewsItem[] = [
 
 // ─── POLLS ────────────────────────────────────────────────────────────────────
 export type PollOption = {
-  id: number;
+  id: string | number;
   text: string;
   votes: number;
 };
 
 export type Poll = {
-  id: number;
+  id: string | number;
   question: string;
   options: PollOption[];
   totalVotes: number;
@@ -743,6 +749,49 @@ export const polls: Poll[] = [
     totalVotes: 489,
     endsAt: "2026-04-15",
     category: "doprava",
+  },
+];
+
+// ─── REPORTS ─────────────────────────────────────────────────────────────────
+export type Report = {
+  id: string;
+  title: string;
+  description: string;
+  category: "komunikace" | "veřejné osvětlení" | "zeleň" | "odpad" | "jiné";
+  status: "přijato" | "v řešení" | "vyřešeno" | "zamítnuto";
+  lat?: number;
+  lng?: number;
+  address?: string;
+  photo_url?: string;
+  reporter_email?: string;
+  created_at: string;
+  updated_at?: string;
+};
+
+export const reports: Report[] = [
+  {
+    id: "mock-report-1",
+    title: "Výtluk v ulici 1. máje",
+    description: "Před přechodem je hlubší výtluk, který komplikuje průjezd aut i kol.",
+    category: "komunikace",
+    status: "v řešení",
+    address: "1. máje, Vimperk",
+    lat: 49.0589,
+    lng: 13.7759,
+    created_at: "2026-03-29T08:20:00Z",
+    updated_at: "2026-03-30T10:10:00Z",
+  },
+  {
+    id: "mock-report-2",
+    title: "Nesvítící lampa u parku",
+    description: "Večer nesvítí lampa mezi parkem a chodníkem směrem k zastávce.",
+    category: "veřejné osvětlení",
+    status: "vyřešeno",
+    address: "Park Blanice, Vimperk",
+    lat: 49.0571,
+    lng: 13.7812,
+    created_at: "2026-03-22T18:00:00Z",
+    updated_at: "2026-03-24T07:45:00Z",
   },
 ];
 

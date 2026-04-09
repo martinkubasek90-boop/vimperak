@@ -15,6 +15,7 @@ import {
   cityDepartmentLabels,
   scoreFeaturedContact,
 } from "@/lib/directory";
+import { getContactDetailHref } from "@/lib/content-links";
 import type { PublicDirectoryItem } from "@/lib/public-content";
 
 type Cat = PublicDirectoryItem["category"] | "vše";
@@ -76,6 +77,7 @@ export function KontaktyPageClient({
   const [search, setSearch] = useState("");
   const [favoriteIds, setFavoriteIds] = useState<Array<string | number>>([]);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [cat, setCat] = useState<Cat>(
     filters.some((item) => item.value === initialCategory)
       ? (initialCategory as Cat)
@@ -123,6 +125,9 @@ export function KontaktyPageClient({
   }, []);
 
   async function copyContact(value: string) {
+    if (typeof navigator === "undefined" || !navigator.clipboard) {
+      throw new Error("Clipboard API unavailable");
+    }
     await navigator.clipboard.writeText(value);
   }
 
@@ -131,11 +136,17 @@ export function KontaktyPageClient({
       title: item.name,
       text: [item.phone, item.address, item.email ?? ""].filter(Boolean).join(" · "),
     };
-    if (navigator.share) {
-      await navigator.share(payload);
-      return;
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share(payload);
+        setActionMessage("Kontakt byl připravený ke sdílení.");
+        return;
+      }
+      await copyContact(`${item.name}\n${payload.text}`);
+      setActionMessage("Kontakt byl zkopírován.");
+    } catch {
+      setActionMessage("Kontakt se nepodařilo sdílet ani zkopírovat.");
     }
-    await copyContact(`${item.name}\n${payload.text}`);
   }
 
   function toggleFavorite(id: string | number) {
@@ -152,7 +163,7 @@ export function KontaktyPageClient({
       id: `directory-${item.id}`,
       type: "directory",
       title: item.name,
-      href: item.category === "město" ? "/kontakty" : `/adresar?k=${encodeURIComponent(item.category)}`,
+      href: getContactDetailHref(item),
       subtitle: `${item.category} · ${item.phone}`,
     });
   }
@@ -168,7 +179,7 @@ export function KontaktyPageClient({
                 <h1 className="font-headline text-3xl font-extrabold tracking-tight md:text-[2.6rem]" style={{ color: "var(--primary)" }}>
                   Kontakty
                 </h1>
-                <p className="mt-2 max-w-md text-sm leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
+                <p className="mt-2 max-w-md text-[15px] leading-relaxed" style={{ color: "var(--on-surface-variant)" }}>
                   Radnice, odbory města, městská policie i praktické služby přehledně na jednom místě.
                 </p>
               </div>
@@ -194,7 +205,7 @@ export function KontaktyPageClient({
                     <span className="material-symbols-outlined text-[1.3rem]" style={{ color: "var(--secondary)" }}>
                       {item.icon}
                     </span>
-                    <p className="mt-2 text-[11px] font-semibold leading-tight" style={{ color: "var(--on-surface)" }}>
+                    <p className="mt-2 text-[12px] font-semibold leading-tight" style={{ color: "var(--on-surface)" }}>
                       {item.label}
                     </p>
                   </button>
@@ -218,11 +229,16 @@ export function KontaktyPageClient({
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Hledat radnici, policii, lékaře nebo služby..."
-                className="w-full bg-transparent text-sm outline-none"
+                className="w-full bg-transparent text-[15px] outline-none"
                 style={{ color: "var(--on-surface)" }}
               />
             </div>
           </div>
+          {actionMessage ? (
+            <p className="mt-3 text-sm font-medium" style={{ color: actionMessage.includes("nepodařilo") ? "var(--error)" : "var(--secondary)" }}>
+              {actionMessage}
+            </p>
+          ) : null}
         </section>
 
         <div className="hide-scrollbar flex gap-2.5 overflow-x-auto px-4 pb-2 pt-4">
@@ -371,6 +387,9 @@ export function KontaktyPageClient({
                 {favoriteIds.includes(featured.id) ? "V oblíbených" : "Do oblíbených"}
               </button>
               <h3 className="mt-4 font-headline text-2xl font-extrabold text-white">{featured.name}</h3>
+              <Link href={getContactDetailHref(featured)} className="mt-2 inline-flex text-sm font-bold text-white underline underline-offset-4">
+                Otevřít detail
+              </Link>
               <div className="mt-4 space-y-1.5 text-sm text-white/90">
                 <div>{featured.phone}</div>
                 <div>{featured.address}</div>
@@ -495,9 +514,9 @@ export function KontaktyPageClient({
                 </span>
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-headline text-base font-bold leading-snug" style={{ color: "var(--on-surface)" }}>
+                <Link href={getContactDetailHref(item)} className="font-headline text-base font-bold leading-snug block" style={{ color: "var(--on-surface)" }}>
                   {item.name}
-                </h3>
+                </Link>
                 <button
                   type="button"
                   onClick={() => toggleFavorite(item.id)}
@@ -506,7 +525,7 @@ export function KontaktyPageClient({
                     ? { background: "var(--secondary-container)", color: "var(--on-secondary-container)" }
                     : { background: "var(--surface-container-low)", color: "var(--on-surface)" }}
                 >
-                  {favoriteIds.includes(item.id) ? "Uloženo" : "Do oblíbených"}
+                  {favoriteIds.includes(item.id) ? "Uloženo" : "Uložit"}
                 </button>
                 {item.cityDepartment ? (
                   <div className="mt-1 text-[11px] font-semibold uppercase tracking-wide" style={{ color: "var(--secondary)" }}>
@@ -536,7 +555,7 @@ export function KontaktyPageClient({
                         className="rounded-full px-3 py-2 text-xs font-bold"
                         style={{ background: "var(--secondary-container)", color: "var(--on-secondary-container)" }}
                       >
-                        {item.appointmentLabel ?? "Objednat online"}
+                        {item.appointmentLabel ?? "Objednat termín"}
                       </a>
                     ) : null}
                     {item.website ? (
@@ -548,7 +567,7 @@ export function KontaktyPageClient({
                         className="rounded-full px-3 py-2 text-xs font-bold"
                         style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
                       >
-                        Web
+                        Otevřít web
                       </a>
                     ) : null}
                     {!item.website && item.sourceUrl && item.category === "město" ? (
@@ -573,7 +592,7 @@ export function KontaktyPageClient({
                       className="rounded-full px-3 py-2 text-xs font-bold"
                       style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
                     >
-                      E-mail
+                      Napsat e-mail
                     </a>
                   ) : null}
                   <a
@@ -584,7 +603,7 @@ export function KontaktyPageClient({
                     className="rounded-full px-3 py-2 text-xs font-bold"
                     style={{ background: "var(--surface-container-low)", color: "var(--on-surface)" }}
                   >
-                    Mapa
+                    Otevřít mapu
                   </a>
                   <button
                     type="button"

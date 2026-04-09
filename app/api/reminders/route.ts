@@ -19,7 +19,7 @@ function createSupabaseAdminClient() {
   );
 }
 
-function computeReminderAt(date: string, time: string, reminderType: "2h" | "1d") {
+function computeReminderAt(date: string, time: string | undefined, reminderType: "2h" | "1d") {
   const eventDate = new Date(`${date}T${time || "18:00"}:00`);
   return new Date(
     eventDate.getTime() - (reminderType === "1d" ? 24 * 60 * 60 * 1000 : 2 * 60 * 60 * 1000),
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       reminderType?: "2h" | "1d";
     };
 
-    if (!body.installationId || !body.eventId || !body.title || !body.date || !body.time || !body.place || !body.url) {
+    if (!body.installationId || !body.eventId || !body.title || !body.date || !body.place || !body.url) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 

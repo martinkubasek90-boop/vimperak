@@ -3,7 +3,12 @@
 import { useState, useEffect } from "react";
 import type { PluginListenerHandle } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
-import { base64UrlToUint8Array, getNativePlatform, isNativeApp } from "@/lib/push-client";
+import {
+  base64UrlToUint8Array,
+  getAnonymousInstallationId,
+  getNativePlatform,
+  isNativeApp,
+} from "@/lib/push-client";
 import { NOTIFICATION_TOPICS, type NotificationTopicId } from "@/lib/user-preferences";
 
 type State = "idle" | "loading" | "subscribed" | "denied" | "unsupported";
@@ -17,6 +22,8 @@ export default function PushNotificationButton({
 }) {
   const [state, setState] = useState<State>("idle");
   const [nativeToken, setNativeToken] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const installationId = getAnonymousInstallationId();
 
   useEffect(() => {
     if (isNativeApp()) {
@@ -33,6 +40,7 @@ export default function PushNotificationButton({
         } else {
           setState("idle");
         }
+        setErrorMessage(null);
       };
 
       const bindNativeListeners = async () => {
@@ -41,6 +49,7 @@ export default function PushNotificationButton({
 
           if (!platform) {
             setState("unsupported");
+            setErrorMessage("Nepodařilo se rozpoznat zařízení pro notifikace.");
             return;
           }
 
@@ -54,19 +63,23 @@ export default function PushNotificationButton({
               token: value,
               platform,
               topics,
+              installationId,
             }),
           });
 
           if (!response.ok) {
             setState("idle");
+            setErrorMessage("Registrace notifikací se nepodařila dokončit.");
             throw new Error("Native push registration upload failed");
           }
 
+          setErrorMessage(null);
           setState("subscribed");
         });
 
         registrationErrorListener = await PushNotifications.addListener("registrationError", (error) => {
           console.error("[native push registration]", error);
+          setErrorMessage("Systém odmítl registraci notifikací.");
           setState("idle");
         });
       };
@@ -82,6 +95,7 @@ export default function PushNotificationButton({
 
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
       setState("unsupported");
+      setErrorMessage(null);
       return;
     }
     if (Notification.permission === "granted") setState("subscribed");
@@ -103,6 +117,7 @@ export default function PushNotificationButton({
           token: nativeToken,
           platform,
           topics,
+          installationId,
         }),
       });
       return;
@@ -116,13 +131,14 @@ export default function PushNotificationButton({
       await fetch("/api/push-subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "web", subscription: sub.toJSON(), topics }),
+        body: JSON.stringify({ type: "web", subscription: sub.toJSON(), topics, installationId }),
       });
     })();
   }, [nativeToken, state, topics]);
 
   async function subscribe() {
     setState("loading");
+    setErrorMessage(null);
     try {
       if (isNativeApp()) {
         const permission = await PushNotifications.requestPermissions();
@@ -145,27 +161,33 @@ export default function PushNotificationButton({
       if (perm !== "granted") { setState("denied"); return; }
 
       // Subscribe to push
+      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidPublicKey) {
+        throw new Error("Missing VAPID public key");
+      }
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly:      true,
-        applicationServerKey: base64UrlToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
+        applicationServerKey: base64UrlToUint8Array(vapidPublicKey),
       });
 
       // Send to server
       await fetch("/api/push-subscribe", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ type: "web", subscription: sub.toJSON(), topics }),
+        body:    JSON.stringify({ type: "web", subscription: sub.toJSON(), topics, installationId }),
       });
 
       setState("subscribed");
     } catch (err) {
       console.error("[push]", err);
+      setErrorMessage("Notifikace se nepodařilo zapnout. Zkus to prosím znovu.");
       setState("idle");
     }
   }
 
   async function unsubscribe() {
     try {
+      setErrorMessage(null);
       if (isNativeApp()) {
         if (nativeToken) {
           await fetch("/api/push-subscribe", {
@@ -193,10 +215,15 @@ export default function PushNotificationButton({
       setState("idle");
     } catch (err) {
       console.error("[push unsubscribe]", err);
+      setErrorMessage("Notifikace se nepodařilo vypnout.");
     }
   }
 
   if (state === "unsupported") return null;
+
+  const deniedMessage = isNativeApp()
+    ? "Notifikace blokovány v nastavení zařízení"
+    : "Notifikace blokovány v nastavení prohlížeče";
 
   return (
     <div>
@@ -215,7 +242,7 @@ export default function PushNotificationButton({
         <div className="flex items-center gap-2 text-sm px-4 py-2 rounded-2xl"
              style={{ background: "var(--error-container)", color: "var(--on-error-container)" }}>
           <span className="material-symbols-outlined text-base">notifications_off</span>
-          Notifikace blokovány v nastavení prohlížeče
+          {deniedMessage}
         </div>
       ) : (
         <button
@@ -230,6 +257,12 @@ export default function PushNotificationButton({
           {state === "loading" ? "Aktivuji…" : "Zapnout notifikace"}
         </button>
       )}
+
+      {errorMessage ? (
+        <p className="mt-3 text-sm font-medium" style={{ color: "var(--error)" }}>
+          {errorMessage}
+        </p>
+      ) : null}
 
       <div className="mt-4">
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--secondary)" }}>

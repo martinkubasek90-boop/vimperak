@@ -1,18 +1,32 @@
 # Android Release Guide
 
-## Co uz je hotove
+## Aktualni stav projektu
 
-- Android projekt je v `android/`
-- debug build funguje
-- release signing v `android/app/build.gradle` je pripraveny pres environment variables
+- `applicationId`: `cz.vimperaci.app`
+- `compileSdk` / `targetSdk`: `35`
+- release signing je pripraveny pres environment variables v [android/app/build.gradle](/Users/Mk/vimperk-app/android/app/build.gradle)
+- debug i emulator build uz byly overene lokalne
+- pro release sync pouzij `npm run cap:sync:android:release`
 
-## Co je potreba pripravit
+## Dulezite pred prvnim uploadem
 
-### 1. Keystore
+### 1. Pouzit produkcni URL
 
-Vytvor Android keystore, ktery se bude pouzivat pro vsechny budouci release buildy.
+Mobilni wrapper uz defaultne pouziva produkcni URL `https://vimperaci.cz`.
 
-Priklad:
+Debug `localhost` se pouzije jen pri explicitnim:
+
+```bash
+CAPACITOR_USE_LOCAL_SERVER=true
+```
+
+To znamena, ze pro store build uz nehrozi omylem zabalit `localhost`.
+
+### 2. Pripravit upload keystore
+
+Google Play vyzaduje konzistentni podpis release buildu.
+
+Priklad vytvoreni:
 
 ```bash
 keytool -genkeypair \
@@ -24,11 +38,9 @@ keytool -genkeypair \
   -validity 10000
 ```
 
-Tento soubor necommituj do repa.
+Ten soubor necommituj do repa.
 
-### 2. Environment variables pro signing
-
-Pred release buildem nastav:
+### 3. Nastavit signing env promene
 
 ```bash
 export ANDROID_KEYSTORE_PATH="/absolute/path/to/vimperaci-upload-keystore.jks"
@@ -37,46 +49,33 @@ export ANDROID_KEY_ALIAS="vimperaci"
 export ANDROID_KEY_PASSWORD="..."
 ```
 
-### 3. Local toolchain
+### 4. Toolchain na tomto Macu
 
-Pro lokalni build je potreba:
-
-- `JAVA_HOME`
-- `ANDROID_HOME` nebo `android/local.properties`
-- funkcni `Gradle`
-
-Na tomto stroji byl pouzit:
+Pouzity JDK:
 
 ```bash
-export JAVA_HOME="/tmp/jdk-vimperak/jdk-21.0.10+7/Contents/Home"
-export GRADLE_USER_HOME="/tmp/gradle-vimperak"
+export JAVA_HOME="/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
 ```
 
-SDK je nastavene v `android/local.properties`.
+SDK:
+
+- `android/local.properties`
+- nebo standardni `~/Library/Android/sdk`
 
 ## Release build
 
-### APK
+### Sync Android projektu na release konfiguraci
 
 ```bash
 cd /Users/Mk/vimperk-app
-GRADLE_USER_HOME=/tmp/gradle-vimperak \
-JAVA_HOME=/tmp/jdk-vimperak/jdk-21.0.10+7/Contents/Home \
-./android/gradlew -p android assembleRelease
+npm run cap:sync:android:release
 ```
 
-Vystup:
-
-- `android/app/build/outputs/apk/release/app-release.apk`
-
-### AAB pro Google Play
-
-Pro Google Play je lepsi `AAB`:
+### Vytvoreni AAB pro Google Play
 
 ```bash
 cd /Users/Mk/vimperk-app
-GRADLE_USER_HOME=/tmp/gradle-vimperak \
-JAVA_HOME=/tmp/jdk-vimperak/jdk-21.0.10+7/Contents/Home \
+JAVA_HOME="/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home" \
 ./android/gradlew -p android bundleRelease
 ```
 
@@ -84,20 +83,44 @@ Vystup:
 
 - `android/app/build/outputs/bundle/release/app-release.aab`
 
-## Google Play Internal Testing
+### Vytvoreni release APK pro lokalni test
 
-1. Otevrit `Google Play Console`
-2. Vytvorit aplikaci
-3. Vyplnit zakladni store metadata
-4. Otevrit `Testing` -> `Internal testing`
-5. Vytvorit novy release
-6. Nahrat `app-release.aab`
-7. Pridat testery
-8. Publikovat internal testing release
+```bash
+cd /Users/Mk/vimperk-app
+JAVA_HOME="/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home" \
+./android/gradlew -p android assembleRelease
+```
 
-## Dalsi doporuceni pred uploadem
+Vystup:
 
-- nahradit defaultni Android ikony vlastnimi store ikonami
-- otestovat release build na realnem telefonu
-- pripravit `google-services.json`, pokud se bude pouzivat Firebase pro push
-- zkontrolovat privacy policy URL a support URL
+- `android/app/build/outputs/apk/release/app-release.apk`
+
+## Co vyplnit v Play Console
+
+1. `Create app`
+2. `Store listing`
+3. `App content`
+4. `Data safety`
+5. `Content rating`
+6. `Target audience`
+7. `Pricing and distribution`
+8. `Testing > Internal testing` nebo `Closed testing`
+9. nahrat `app-release.aab`
+
+## Co jeste muze blokovat vydani
+
+- chybi finalni release keystore, pokud jeste neni vytvoreny
+- `google-services.json` neni v projektu, takze nativni FCM push nebude fungovat, dokud nepridas Firebase konfiguraci
+- `versionCode` a `versionName` jsou zatim `1` a `1.0`, pred dalsimi releasy je nutne je zvysovat v [android/app/build.gradle](/Users/Mk/vimperk-app/android/app/build.gradle)
+- Play Console bude chtit finalni:
+  - ikonu
+  - screenshoty
+  - privacy policy URL
+  - kontakt pro podporu
+
+## Nejrychlejsi prvni vydani
+
+1. internal testing
+2. kontrola na realnem Android telefonu
+3. closed testing
+4. production

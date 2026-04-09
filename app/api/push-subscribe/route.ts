@@ -15,12 +15,14 @@ type PushSubscribeRequest =
       type: "web";
       subscription: webpush.PushSubscription;
       topics?: string[];
+      installationId?: string;
     }
   | {
       type: "native";
       token: string;
       platform: "android" | "ios";
       topics?: string[];
+      installationId?: string;
     };
 
 export async function POST(req: NextRequest) {
@@ -36,6 +38,7 @@ export async function POST(req: NextRequest) {
         token: body.token,
         platform: body.platform,
         topics: body.topics ?? [],
+        installationId: body.installationId,
       });
 
       return NextResponse.json({ success: true, mode: "native", ...result });
@@ -47,7 +50,11 @@ export async function POST(req: NextRequest) {
     }
 
     initVapid();
-    const result = await saveWebPushSubscription(subscription, body.type === "web" ? body.topics ?? [] : []);
+    const result = await saveWebPushSubscription(
+      subscription,
+      body.type === "web" ? body.topics ?? [] : [],
+      body.type === "web" ? body.installationId : undefined,
+    );
 
     await webpush.sendNotification(
       subscription,
